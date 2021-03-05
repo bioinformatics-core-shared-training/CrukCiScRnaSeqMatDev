@@ -1,0 +1,207 @@
+--- 
+title: "CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis"
+subtitle: 'Heterogeneity in childhood acute lymphoblastic leukemia with droplet-based 10X Chromium assay.'
+author: "Stephane Ballereau, Zeynep Kalender Atak"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output:
+  bookdown::gitbook:
+      toc_depth: 6
+      includes:
+        in_header: header.html
+documentclass: book
+bibliography: [book.bib]
+biblio-style: apalike
+link-citations: yes
+github-repo: rstudio/bookdown-demo
+description: "A report for all analyses (bookdown::gitbook)."
+params:
+  outDirBit: "AnaWiSce/Ana1"
+---
+
+**WORKING DOCUMENT - IN PROGRESS**
+
+<!--
+Useful links: https://bioinformatics-core-shared-training.github.io/cruk-summer-school-2018/SingleCell/practical/QC_and_normalization.html
+-->
+
+```{r index.knitr.setup, include=FALSE, cache=FALSE}
+# Add a common class name for every chunks
+knitr::opts_chunk$set(
+  echo = TRUE)
+```
+
+```{r htmlTemp3, echo=FALSE, eval=TRUE}
+codejs <- readr::read_lines("js/codefolding.js")
+collapsejs <- readr::read_lines("js/collapse.js")
+transitionjs <- readr::read_lines("js/transition.js")
+dropdownjs <- readr::read_lines("js/dropdown.js")
+
+htmlhead <- c(
+  paste('
+<script>',
+paste(transitionjs, collapse = "\n"),
+'</script>
+<script>',
+paste(collapsejs, collapse = "\n"),
+'</script>
+<script>',
+paste(codejs, collapse = "\n"),
+'</script>
+<script>',
+paste(dropdownjs, collapse = "\n"),
+'</script>
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+.row { display: flex; }
+.collapse { display: none; }
+.in { display:block }
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+.open > .dropdown-menu {
+    display: block;
+}
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "hide");
+});
+</script>
+', sep = "\n"),
+paste0('
+<script>
+document.write(\'<div class="btn-group pull-right" style="position: absolute; top: 20%; right: 2%; z-index: 200"><button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-_extension-text-contrast=""><span>Code</span> <span class="caret"></span></button><ul class="dropdown-menu" style="min-width: 50px;"><li><a id="rmd-show-all-code" href="#">Show All Code</a></li><li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li></ul></div>\')
+</script>
+')
+)
+readr::write_lines(htmlhead, path = "header.html")
+```
+
+# Preamble {#Preamble}
+
+```{r, cache=FALSE, eval=FALSE, echo=FALSE}
+outDirBit <- params$outDirBit # "SingleCellExp1", "AnaWiSce"
+print(outDirBit)
+```
+
+## The study
+
+"Childhood acute lymphoblastic leukemia (cALL) is the most common pediatric cancer. It is characterized by bone marrow lymphoid precursors that acquire genetic alterations, resulting in disrupted maturation and uncontrollable proliferation." [Caron et al. 2020](https://www.nature.com/articles/s41598-020-64929-x). Nowaways, up to 85–90% of patients are cured, but others do not respond to treatment or relapse and die. The aim of the study is to characterise the heterogeneity of gene expression at the cell level, within and between patients.
+
+<!--
+See similar findings in CRC
+https://www.cell.com/cell-stem-cell/fulltext/S1934-5909(20)30151-X?rss=yes
+
+https://www.nature.com/articles/s41568-020-0276-8
+https://www.sciencedirect.com/science/article/pii/S1934590920302034
+
+https://scinapse.io/papers/2955045010
+(https://www.nature.com/articles/nm.4505)
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4273416/
+https://www.nature.com/articles/s41375-018-0127-8
+-->
+
+Four type of samples are considered:
+
+* eight patients:
+  * six B-ALL
+  * two T-ALL
+* three healthy pediatric controls
+* eight healthy adult controls, publicly available
+
+As the study aims at identifying cell populations, large numbers of cells were sequenced with the droplet-based 10X Chromium assay.
+
+## The plan
+
+We will follow several steps:
+
+* sequencing quality check
+* alignment of reads to the human genome (GRCh38) with 10X software cellranger
+* quality control (cell calls, cells and genes filtering) <!-- mention doublet detection -->
+* count normalisation
+* data set integration
+* feature selection
+* dimensionality reduction
+* clustering
+* marker gene identification
+* cell type annotation
+* cell cycle assignment
+* trajectory analysis
+
+<!--
+TODO: add analysis flowchart?
+-->
+
+## The analyses
+
+This report includes:
+
+* **Sequence Quality** is good (see \@ref(SeqQualTop)) <!-- seqQual.Rmd -->
+* **cellranger** output suggests the data sets are good quality (see \@ref(AliFeatCountTop)) <!-- cellRanger.Rmd -->
+* **Quality control** - a first glance at the RNA data set comprising all droplets deemed to contain at leat one cell, to check the data quality and biological signal (eg. do we observe cell types we expect?) (see \@ref(PreProcTop)) <!-- preProc.Rmd -->
+* an annotation of RNA clusters using known PBMC marker genes (see \@ref(AllDropletsCellTypeAnnotTop)) <!-- .Rmd -->
+
+## Overall summary
+
+<!-- seurat3Adt_glanceAtGex.Rmd -->
+* 
+
+<!-- seurat3Adt_10x3kPbmcMarkers.Rmd -->
+* 
+
+<!-- seurat3Hto.Rmd -->
+* 
+
+## Conclusion
+
+```{r index.libraries, include=FALSE}
+library(knitr) # for knit_exit()
+```
+
+## Abbreviations
+
+* BMMC: Bone Marrow Mononuclear Cell
+* HCA: Human Cell Atlas
+* PCA: Principal Component Analysis
+* UMI: Unique Molecular Identifier
+
+```{r index.variables, include=FALSE}
+nbFig <- 1
+nbTab <- 1
+```
+
+```{r index.setup, echo = FALSE, include=FALSE, eval=TRUE}
+# Check the project folder exists.
+scratchDir <- "/ssd/personal/baller01"
+projName <- "20200511_FernandesM_ME_crukBiSs2020" 
+
+projDir <- sprintf("%s/%s", scratchDir, projName)
+if(! dir.exists(projDir))
+{
+        stop(sprintf("Cannot find projDir '%s'", projDir))
+}
+```
