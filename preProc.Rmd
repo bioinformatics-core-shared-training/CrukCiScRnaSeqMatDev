@@ -115,9 +115,11 @@ We will load both the Caron and Hca data sets.
 
 ```{r sampleSheet}
 # CaronBourque2020
-cb_sampleSheetFn <- file.path(projDir, "Data/CaronBourque2020/SraRunTable.txt")
+cb_sampleSheetFn <- file.path(projDir,
+			      "Data/CaronBourque2020/SraRunTable.txt")
 # Human Cell Atlas
-hca_sampleSheetFn <- file.path(projDir, "Data/Hca/accList_Hca.txt")
+hca_sampleSheetFn <- file.path(projDir,
+			       "Data/Hca/accList_Hca.txt")
 
 # read sample sheet in:
 splShtColToKeep <- c("Run", "Sample.Name", "source_name")
@@ -128,7 +130,8 @@ colnames(hca_sampleSheet) <- "Sample.Name"
 hca_sampleSheet$Run <- hca_sampleSheet$Sample.Name
 hca_sampleSheet$source_name <- "ABMMC" # adult BMMC
 
-sampleSheet <- rbind(cb_sampleSheet[,splShtColToKeep], hca_sampleSheet[,splShtColToKeep])
+sampleSheet <- rbind(cb_sampleSheet[,splShtColToKeep],
+		     hca_sampleSheet[,splShtColToKeep])
 
 sampleSheet %>%
 	as.data.frame() %>%
@@ -155,7 +158,8 @@ We will load the data for the first sample in the sample sheet: SRR9264343.
 
 ```{r example_load}
 i <- 1
-sample.path <- sprintf("%s/%s/%s/outs/raw_feature_bc_matrix/", wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
+sample.path <- sprintf("%s/%s/%s/outs/raw_feature_bc_matrix/",
+		       wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
 sce.raw <- read10xCounts(sample.path, col.names=TRUE)
 sce.raw
 ```
@@ -214,7 +218,8 @@ We will use the information stored in the 'molecule info' file to count the numb
 ##mol.info <- read10xMolInfo(mol.info.file)
 # or mol.info object if issue with H5Fopen
 i <- 1
-mol.info.file <- sprintf("%s/%s/%s/outs/molecule_info_h5.Rds", wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
+mol.info.file <- sprintf("%s/%s/%s/outs/molecule_info_h5.Rds",
+			 wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
 mol.info <- readRDS(mol.info.file)
 ```
 
@@ -484,9 +489,18 @@ sce.list <- vector("list", length = nrow(sampleSheet))
 
 for (i in 1:nrow(sampleSheet))
 {
-	print(sprintf("%s: %s", sampleSheet[i,"Run"], sampleSheet[i,"Sample.Name"]))
+	print(sprintf("%s: %s",
+		      sampleSheet[i,"Run"],
+		      sampleSheet[i,"Sample.Name"]))
 	sample.path <- sprintf("%s/%s/%s/outs/filtered_feature_bc_matrix/",
-			      wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
+			      #wrkDir,
+			      sprintf("%s/%s/grch38300",
+				      projDir,
+				      ifelse(sampleSheet[i,"Sample.Name"] == "ABMMC",
+					     "Hca",
+					     "CaronBourque2020")),
+			      sampleSheet[i,"Run"],
+			      sampleSheet[i,"Run"])
 	sce.list[[i]] <- read10xCounts(sample.path)
 	#print(sce.list[[i]])
 	print(dim(sce.list[[i]]))
