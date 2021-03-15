@@ -25,7 +25,9 @@ params:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=TRUE)
 #opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=FALSE)
-opts_chunk$set(fig.width=7, fig.height=7) 
+opts_chunk$set(fig.width=7, fig.height=7)
+opts_chunk$set(dev = c("png"))
+options(bitmapType='cairo')
 ```
 
 # Quality Control  {#QcTop}
@@ -87,7 +89,11 @@ qcPlotDirBit <- "QcPlots"
 poolBool <- TRUE # FALSE # whether to read each sample in and pool them and write object to file, or just load that file.
 biomartBool <- TRUE # biomaRt sometimes fails, do it once, write to file and use that copy.
 addQcBool <- TRUE # biomaRt sometimes fails, do it once, write to file and use that copy.
-runAll <- FALSE # TRUE
+runAll <- TRUE
+saveRds <- TRUE # overwrite existing Rds files
+dir.create(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit),
+            showWarnings = FALSE,
+           recursive = TRUE)
 ```
 
 ```{r libraries, include=FALSE}
@@ -104,6 +110,16 @@ library(DT)
 library(dplyr)
 ```
 
+```{r, eval=FALSE}
+projDir
+outDirBit
+
+x <- sprintf("%s/%s/Robjects", projDir, outDirBit)
+x
+#dir.create(x)
+dir.exists(x)
+```
+
 ```{r}
 dir.create(sprintf("%s/%s/Robjects", projDir, outDirBit),
 	   showWarnings = FALSE)
@@ -115,11 +131,9 @@ We will load both the Caron and Hca data sets.
 
 ```{r sampleSheet}
 # CaronBourque2020
-cb_sampleSheetFn <- file.path(projDir,
-			      "Data/CaronBourque2020/SraRunTable.txt")
+cb_sampleSheetFn <- file.path(projDir, "Data/CaronBourque2020/SraRunTable.txt")
 # Human Cell Atlas
-hca_sampleSheetFn <- file.path(projDir,
-			       "Data/Hca/accList_Hca.txt")
+hca_sampleSheetFn <- file.path(projDir, "Data/Hca/accList_Hca.txt")
 
 # read sample sheet in:
 splShtColToKeep <- c("Run", "Sample.Name", "source_name")
@@ -130,8 +144,7 @@ colnames(hca_sampleSheet) <- "Sample.Name"
 hca_sampleSheet$Run <- hca_sampleSheet$Sample.Name
 hca_sampleSheet$source_name <- "ABMMC" # adult BMMC
 
-sampleSheet <- rbind(cb_sampleSheet[,splShtColToKeep],
-		     hca_sampleSheet[,splShtColToKeep])
+sampleSheet <- rbind(cb_sampleSheet[,splShtColToKeep], hca_sampleSheet[,splShtColToKeep])
 
 sampleSheet %>%
 	as.data.frame() %>%
@@ -159,7 +172,9 @@ We will load the data for the first sample in the sample sheet: SRR9264343.
 ```{r example_load}
 i <- 1
 sample.path <- sprintf("%s/%s/%s/outs/raw_feature_bc_matrix/",
-		       wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
+                       wrkDir,
+                       sampleSheet[i,"Run"],
+                       sampleSheet[i,"Run"])
 sce.raw <- read10xCounts(sample.path, col.names=TRUE)
 sce.raw
 ```
@@ -218,8 +233,7 @@ We will use the information stored in the 'molecule info' file to count the numb
 ##mol.info <- read10xMolInfo(mol.info.file)
 # or mol.info object if issue with H5Fopen
 i <- 1
-mol.info.file <- sprintf("%s/%s/%s/outs/molecule_info_h5.Rds",
-			 wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
+mol.info.file <- sprintf("%s/%s/%s/outs/molecule_info_h5.Rds", wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
 mol.info <- readRDS(mol.info.file)
 ```
 
@@ -296,6 +310,7 @@ libSizeDf <- dd %>% group_by(cell) %>%
 ```
 
 ```{r nUmis_hist }
+#slow?
 ggplot(libSizeDf, aes(x=log10(nUmis))) + geom_histogram(bins = 50)
 ```
 
@@ -472,7 +487,7 @@ points(log10(e.out$Total)[tmpBoolInflex & tmpBoolSmall], -e.out$LogProb[tmpBoolI
 Let's filter out empty droplets.
 
 ```{r cellCall_emptyDrops_ditch}
-sce.ed <- sce.raw[,which(e.out$FDR <= 0.001)] # ed for empty droplet
+sce.ed <- sce.raw[,which(e.out$FDR <= 0.001)] # 'ed' for empty droplet
 sce.ed
 ```
 
@@ -482,25 +497,25 @@ Cell calling in cellranger v3 uses a method similar to emptyDrops() and a 'filte
 
 Each sample was analysed with cellranger separately. We load filtered matrices one sample at a time, showing for each the name and number of features and cells.
 
-```{r dataSets_load, eval=poolBool}
-# a bit slow
+```{r dataSets_load, eval=poolBool, cache.lazy = FALSE}
 # load data:
+# a bit slow
+# adding 'cache.lazy = FALSE' to avoid 'long vectors not supported yet' when 'cache=TRUE'
 sce.list <- vector("list", length = nrow(sampleSheet))
 
 for (i in 1:nrow(sampleSheet))
 {
-	print(sprintf("%s: %s",
-		      sampleSheet[i,"Run"],
-		      sampleSheet[i,"Sample.Name"]))
+	print(sprintf("%s: %s", sampleSheet[i,"Run"], sampleSheet[i,"Sample.Name"]))
 	sample.path <- sprintf("%s/%s/%s/outs/filtered_feature_bc_matrix/",
 			      #wrkDir,
 			      sprintf("%s/%s/grch38300",
 				      projDir,
-				      ifelse(sampleSheet[i,"Sample.Name"] == "ABMMC",
+				      ifelse(sampleSheet[i,"source_name"] == "ABMMC",
 					     "Hca",
 					     "CaronBourque2020")),
 			      sampleSheet[i,"Run"],
 			      sampleSheet[i,"Run"])
+	#print(sample.path); next;
 	sce.list[[i]] <- read10xCounts(sample.path)
 	#print(sce.list[[i]])
 	print(dim(sce.list[[i]]))
@@ -957,7 +972,7 @@ DataFrame(LibSize=sum(qc.lib2),
 The steps above may be run at once with quickPerCellQC():
 
 ```{r adapThres_quickPerCellQC}
-reasons <- quickPerCellQC(sce,
+reasons <- quickPerCellQC(colData(sce),
 			  percent_subsets=c("subsets_Mito_percent"))
 colSums(as.matrix(reasons)) %>%
   as.data.frame() %>%
@@ -977,7 +992,8 @@ The two data sets analysed here may have been obtained in experiments with diffe
 We will use the quickPerCellQC() 'batch' option.
 
 ```{r quickPerCellQC_batch_compute}
-batch.reasons <- quickPerCellQC(sce, percent_subsets=c("subsets_Mito_percent"), batch=sce$setName)
+batch.reasons <- quickPerCellQC(colData(sce),
+                                percent_subsets=c("subsets_Mito_percent"), batch=sce$setName)
 colSums(as.matrix(batch.reasons)) %>%
   as.data.frame() %>%
 	datatable(rownames = TRUE)
@@ -1005,16 +1021,20 @@ plotColData(sce, x="block", y="sum", colour_by="discard",
 Number of genes detected:
 
 ```{r}
-    plotColData(sce, x="block", y="detected", colour_by="discard", 
-        other_fields="setName") +
-	#facet_wrap(~setName) + 
-        scale_y_log10() + ggtitle("Detected features")
+plotColData(sce,
+            x="block", y="detected",
+            colour_by="discard", 
+            other_fields="setName") +
+  # facet_wrap(~setName) +
+  scale_y_log10() + ggtitle("Detected features")
 ```
 
 
 ```{r}
-plotColData(sce, x="block", y="detected", colour_by="discard", 
-        other_fields="setName") +
+plotColData(sce,
+            x="block", y="detected",
+            colour_by="discard",
+            other_fields="setName") +
 	      facet_wrap(~colour_by) + 
         scale_y_log10() + ggtitle("Detected features")
 ```
@@ -1022,11 +1042,12 @@ plotColData(sce, x="block", y="detected", colour_by="discard",
 Mitochondrial content:
 
 ```{r}
-    plotColData(sce, x="block", y="subsets_Mito_percent", 
-        colour_by="discard", other_fields="setName") + 
-        #facet_wrap(~setName) +
-  	ggtitle("Mito percent")
-
+plotColData(sce,
+            x="block", y="subsets_Mito_percent",
+            colour_by="discard",
+            other_fields="setName") +
+  #facet_wrap(~setName) +
+  ggtitle("Mito percent")
 ```
 
 ### Identify poor-quality batches
@@ -1204,13 +1225,13 @@ sce
 
 We also write the R object to file to use later if need be.
 
-```{r sce_qc_write, eval=runAll}
+```{r sce_qc_write, eval=saveRds}
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sce_postQc.Rds", projDir, outDirBit)
 saveRDS(sce, tmpFn)
 ```
 
-```{r sce_qc_read, eval=!runAll}
+```{r sce_qc_read, eval=!saveRds}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sce_postQc.Rds", projDir, outDirBit)
 sce <- readRDS(tmpFn)
@@ -1265,9 +1286,9 @@ The approach above identified poor-quality using thresholds on the number of gen
 
 ### Remove genes that are not expressed at all
 
-Genes that are not expressed at all are not informative, so we remove them
+Genes that are not expressed at all are not informative, so we remove them:
 
-```{r sce_nz, eval=runAll}
+```{r sce_nz_write, eval=saveRds}
 not.expressed <- rowSums(counts(scePreQc)) == 0
 
 # store the cell-wise information
@@ -1282,15 +1303,13 @@ colData(sce.nz) <- cols.meta
 rowData(sce.nz) <- rows.meta[!not.expressed, ]
 
 sce.nz
-```
 
-```{r sce_nz_write, eval=runAll}
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sce_nz.Rds", projDir, outDirBit)
 saveRDS(sce.nz, tmpFn)
 ```
 
-```{r sce_nz_read, eval=!runAll}
+```{r sce_nz_read, eval=!saveRds}
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sce_nz.Rds", projDir, outDirBit)
 sce.nz <- readRDS(tmpFn)
@@ -1303,7 +1322,7 @@ We will compute:
 * the cell sparsity: for each cell, the proportion of genes that are not detected
 * the gene sparsity: for each gene, the proportion of cells in which it is not detected
 
-```{r sparsity_compute, eval=runAll}
+```{r sparsity_compute, eval=saveRds}
 # compute - SLOW
 cell_sparsity <- apply(counts(sce.nz) == 0, 2, sum)/nrow(counts(sce.nz))
 gene_sparsity <- apply(counts(sce.nz) == 0, 1, sum)/ncol(counts(sce.nz))
@@ -1318,7 +1337,7 @@ saveRDS(list("colData" = colData(sce.nz),
 	tmpFn)
 ```
 
-```{r sparsity_readRds, eval=!runAll}
+```{r sparsity_readRds, eval=!saveRds}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sce_nz_sparsityCellGene.Rds", projDir, outDirBit)
 tmpList <- readRDS(tmpFn)
@@ -1367,7 +1386,7 @@ Number of cells removed:
 table(sparse.cells, mito.cells)
 ```
 
-```{r sparsity_ditch, eval=runAll}
+```{r sparsity_ditch, eval=saveRds}
 # remove cells from the SCE object that are poor quality
 # remove the sparse genes, then re-set the counts and row data accordingly
 cols.meta <- colData(sce.nz)
@@ -1378,15 +1397,13 @@ sce.nz <- SingleCellExperiment(assays=list(counts=counts.nz))
 colData(sce.nz) <- cols.meta[!(sparse.cells | mito.cells),]
 rowData(sce.nz) <- rows.meta[!sparse.genes, ]
 sce.nz
-```
 
-```{r sparsity_filter_write, eval=runAll}
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sce_nz_postQc.Rds", projDir, outDirBit)
 saveRDS(sce.nz, tmpFn)
 ```
 
-```{r sparsity_filter_read, eval=!runAll}
+```{r sparsity_filter_read, eval=!saveRds}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sce_nz_postQc.Rds", projDir, outDirBit)
 sce.nz <- readRDS(tmpFn)
@@ -1414,7 +1431,7 @@ setName <- "caron"
 sce.x <- sce.nz.caron
 ```
 
-```{r Caron_sparsity_compute, eval=runAll}
+```{r Caron_sparsity_compute, eval=saveRds}
 # compute - SLOW
 cell_sparsity <- apply(counts(sce.x) == 0, 2, sum)/nrow(counts(sce.x))
 gene_sparsity <- apply(counts(sce.x) == 0, 1, sum)/ncol(counts(sce.x))
@@ -1429,7 +1446,7 @@ saveRDS(list("colData" = colData(sce.x),
 	tmpFn)
 ```
 
-```{r Caron_sparsity_readRds, eval=!runAll}
+```{r Caron_sparsity_readRds, eval=!saveRds}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds", projDir, outDirBit, setName)
 tmpList <- readRDS(tmpFn)
@@ -1464,7 +1481,9 @@ min.cells <- 1 - (20/length(cell_sparsity))
 sparse.genes <- gene_sparsity > min.cells
 ```
 
-```{r Caron_sparsity_ditch, eval=runAll}
+We write the R object to 'caron_sce_nz_postQc.Rds'.
+
+```{r Caron_sparsity_ditch, eval=saveRds}
 # remove cells from the SCE object that are poor quality
 # remove the sparse genes, then re-set the counts and row data accordingly
 cols.meta <- colData(sce.x)
@@ -1475,18 +1494,14 @@ sce.x <- SingleCellExperiment(assays=list(counts=counts.x))
 colData(sce.x) <- cols.meta[!(sparse.cells | mito.cells),]
 rowData(sce.x) <- rows.meta[!sparse.genes, ]
 sce.x
-```
 
-We write the R object to 'caron_sce_nz_postQc.Rds'.
-
-```{r Caron_sparsity_filter_write, eval=runAll}
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
 saveRDS(sce.x, tmpFn)
 rm(sce.x)
 ```
 
-```{r Caron_sparsity_filter_read, eval=!runAll}
+```{r Caron_sparsity_filter_read, eval=!saveRds}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
 sce.nz.caron <- readRDS(tmpFn)
@@ -1499,7 +1514,7 @@ setName <- "hca"
 sce.x <- sce.nz.hca
 ```
 
-```{r Hca_sparsity_compute, eval=runAll}
+```{r Hca_sparsity_compute, eval=saveRds}
 # compute - SLOW
 cell_sparsity <- apply(counts(sce.x) == 0, 2, sum)/nrow(counts(sce.x))
 gene_sparsity <- apply(counts(sce.x) == 0, 1, sum)/ncol(counts(sce.x))
@@ -1514,7 +1529,7 @@ saveRDS(list("colData" = colData(sce.x),
 	tmpFn)
 ```
 
-```{r Hca_sparsity_readRds, eval=runAll}
+```{r Hca_sparsity_readRds, eval=!saveRds}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds", projDir, outDirBit, setName)
 tmpList <- readRDS(tmpFn)
@@ -1549,7 +1564,9 @@ min.cells <- 1 - (20/length(cell_sparsity))
 sparse.genes <- gene_sparsity > min.cells
 ```
 
-```{r Hca_sparsity_ditch, eval=runAll}
+We write the R object to 'hca_sce_nz_postQc.Rds'.
+
+```{r Hca_sparsity_ditch, eval=saveRds}
 # remove cells from the SCE object that are poor quality
 # remove the sparse genes, then re-set the counts and row data accordingly
 cols.meta <- colData(sce.x)
@@ -1560,17 +1577,13 @@ sce.x <- SingleCellExperiment(assays=list(counts=counts.x))
 colData(sce.x) <- cols.meta[!(sparse.cells | mito.cells),]
 rowData(sce.x) <- rows.meta[!sparse.genes, ]
 sce.x
-```
 
-We write the R object to 'hca_sce_nz_postQc.Rds'.
-
-```{r Hca_sparsity_filter_write, eval=runAll}
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
 saveRDS(sce.x, tmpFn)
 ```
 
-```{r Hca_sparsity_filter_read, eval=!runAll}
+```{r Hca_sparsity_filter_read, eval=!saveRds}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
 sce.nz.hca <- readRDS(tmpFn)
