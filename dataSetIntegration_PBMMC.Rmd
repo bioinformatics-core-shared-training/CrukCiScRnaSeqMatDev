@@ -24,9 +24,6 @@ params:
 ---
 
 ```{r}
-#projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
-#projDir <- "/data/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
-#outDirBit <- "AnaWiSce/Attempt3"
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
