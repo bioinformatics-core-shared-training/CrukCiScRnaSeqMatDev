@@ -1,0 +1,8 @@
+book_filename: "MkWoC"
+language:
+  ui:
+    chapter_name: "Chapter "
+delete_merged_file: false
+#rmd_files: ["index.Rmd", "seqQual.Rmd", "cellRanger.Rmd", "geneAnnot.Rmd"]
+#rmd_files: ["index.Rmd", "seqQual.Rmd", "cellRanger.Rmd", "preProc.Rmd"]
+rmd_files: ["index.Rmd", "seqQual.Rmd", "cellRanger.Rmd", "preProcAllCells.Rmd", "preProc.Rmd", "normalisation_whole.Rmd", "normalisation_5hcps.Rmd", "normalisation_GSM3872434_simple.Rmd", "dimRedForViz.Rmd", "confounding_caron.Rmd", "featSelec.Rmd", "batch_GSM3872442.Rmd", "dimRedForAna.Rmd", "dataSetIntegration_PBMMC.Rmd", "dataSetIntegration_ETV6-RUNX1.Rmd", "dataSetIntegration_HHD.Rmd", "dataSetIntegration_PRE-T.Rmd", "dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd", "clusteringPostDsi.Rmd", "clusterMarkerGenes.Rmd"]
