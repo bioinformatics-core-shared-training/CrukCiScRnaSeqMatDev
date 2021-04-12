@@ -1,0 +1,613 @@
+---
+title: "CRUK CI Summer School 2020 - introduction to single-cell RNA-seq analysis"
+subtitle: 'Normalisation'
+
+author: "Stephane Ballereau"
+output:
+  html_notebook:
+    code_folding: hide
+    toc: yes
+    toc_float: yes
+    number_sections: true
+  html_document:
+    df_print: paged
+    toc: yes
+    number_sections: true
+    code_folding: hide
+  html_book:
+    code_folding: hide
+params:
+  projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
+  dirRel: ".."
+  inpDirBit: "AnaWiSce/Ana1"
+  outDirBit: "AnaWiSce/Ana1"
+  cacheBool: FALSE
+---
+
+```{r norm.knitr_options, echo=FALSE, results="hide", message=FALSE}
+cacheBool <- params$cacheBool
+require(knitr)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
+opts_chunk$set(fig.width=7, fig.height=7)
+opts_chunk$set(dev = c("png"))
+options(bitmapType='cairo')
+```
+
+# Normalisation {#NormalisationAllCells}
+
+Why normalise?
+
+Systematic differences in sequencing coverage between libraries
+caused by low input material, differences in cDNA capture and PCR amplification.
+Normalisation removes such differences so that differences between cells are not technical but biological, allowing meaningful comparison of expression profiles between cells.
+
+**TODO** difference between normalisation and batch correction. norm: technical differences only. batch correction: technical and biological. different assumptions and methods.
+
+In scaling normalization, the “normalization factor” is an estimate of the library size relative to the other cells. 
+steps: compute a cell-specific 'scaling' or 'size' factor that represents the relative bias in that cell and divide all counts for the cell by that factor to remove that bias. Assumption: any cell specific bias will affect genes the same way.
+
+Scaling methods typically generate normalised counts-per-million (CPM) or transcripts-per-million (TPM_ values.
+
+```{r variables_norm}
+projDir <- params$projDir
+dirRel <- params$dirRel
+outDirBit <- params$outDirBit
+compuBool <- TRUE # whether to run computation again (dev)
+#qcPlotDirBit <- "Plots/Norm"
+```
+
+```{r}
+library(scuttle)
+library(scran)
+library(ggplot2)
+library(dplyr)
+```
+
+## Caron
+
+<!--
+Should have Caron and HCA separately
+projDir <- "/mnt/scratchb/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
+outDirBit <- "AnaWiSce/Attempt1"
+-->
+
+Load object 
+
+```{r Caron_readIn}
+setName <- "caron"
+setSuf = "_allCells" # suffix to add to file name to say all cells are used, with no downsampling
+# Read object in:
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
+sce <- readRDS(tmpFn)
+```
+
+### Library size normalization
+
+For each cell, the library size factor is proportional to the library size such that the average size factor across cell is one.
+
+Advantage: normalised counts are on the same scale as the initial counts.
+
+Compute size factors:
+
+```{r}
+lib.sf <- librarySizeFactors(sce)
+summary(lib.sf)
+```
+
+Size factor distribution: wide range, typical of scRNA-seq data.
+
+```{r}
+hist(log10(lib.sf), xlab="Log10[Size factor]", col='grey80')
+```
+
+Assumption: absence of compositional bias; differential expression two cells is balanced: upregulation in some genes is accompanied by downregulation of other genes. Not observed.
+
+Inaccurate normalisation due to unaccounted-for composition bias affects the size of the log fold change measured between clusters, but less so the clustering itself. It is thus sufficient to identify clusters and top marker genes.
+
+### Deconvolution
+
+Composition bias occurs when differential expression beteween two samples or here cells is not balanced. For a fixed library size, identical in both cells, upregulation of one gene in the a cell will means fewer UMIs can be assigned to other genes, which would then appear down regulated. Even if library sizes are allowed to differ in size, with that for the cell with upregulation being higher, scaling normalisation will reduce noralised counts. Non-upregulated would therefore also appear downregulated. 
+
+For bulk RNA-seq, composition bias is removed by assuming that most genes are not differentially expressed between samples, so that differences in non-DE genes would amount to the bias, and used to compute size factors.
+
+Given the sparsity of scRNA-seq data, the methods are not appropriate.
+
+The method below increases read counts by pooling cells into groups, computing size factors within each of these groups and scaling them so they are comparable across clusters. This process is repeated many times, changing pools each time to collect several size factors for each cell, frome which is derived a single value for that cell.
+
+<!--
+see DESeq2 estimateSizeFactorsFromMatrix
+see edgeR calcNormFactors
+-->
+
+Cluster cells, normalise :
+
+```{r, eval=!FALSE}
+set.seed(100) # clusters with PCA from irlba with approximation
+clust <- quickCluster(sce) # slow with all cells.
+
+# write to file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+saveRDS(clust, tmpFn)
+```
+
+```{r}
+# read from file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+clust <- readRDS(tmpFn)
+table(clust)
+```
+
+### Compute size factors
+
+```{r, eval=!FALSE}
+deconv.sf <- calculateSumFactors(sce, cluster=clust)
+
+# write to file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+saveRDS(deconv.sf, tmpFn)
+```
+
+```{r}
+# read from file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+deconv.sf <- readRDS(tmpFn)
+
+summary(deconv.sf)
+```
+
+Plot
+
+```{r}
+plot(lib.sf, deconv.sf, xlab="Library size factor",
+    ylab="Deconvolution size factor", log='xy', pch=16,
+    col=as.integer(factor(sce$source_name)))
+abline(a=0, b=1, col="red")
+```
+
+```{r}
+deconvDf <- data.frame(lib.sf, deconv.sf,
+			"source_name" = sce$source_name,
+			"sum" = sce$sum,
+			"mito_content" = sce$subsets_Mito_percent,
+			"cell_sparsity" = sce$cell_sparsity)
+
+sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=source_name)) +
+  geom_point()
+sp + facet_wrap(~source_name)
+
+sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=sum)) +
+  geom_point()
+sp
+
+sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=mito_content)) +
+  geom_point()
+sp
+
+sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=cell_sparsity)) +
+  geom_point()
+sp
+
+#ggMarginal(sp)
+```
+
+#### Apply size factors
+
+For each cell, raw counts for genes are divided by the size factor for that cell and log-transformed so downstream analyses focus on genes with strong relative differences. We use `scater::logNormCounts()`.
+
+```{r}
+sce <- logNormCounts(sce)
+assayNames(sce)
+```
+
+#### Save object
+
+```{r}
+sce_caron <- sce
+```
+
+```{r, eval=!FALSE}
+# write to file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+saveRDS(sce_caron, tmpFn)
+```
+
+## Hca
+
+Load object 
+
+```{r Hca_readIn}
+# the 5kCellPerSpl subset
+setName <- "hca"
+setSuf <- "_5kCellPerSpl"
+# Read object in:
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+sce <- readRDS(tmpFn)
+```
+
+### Library size normalization
+
+For each cell, the library size factor is proportioanl to the library size such that the average size factor across cell is one.
+
+Advantage: normalised counts are on the same scale as the initial counts.
+
+Compute size factors:
+
+```{r}
+lib.sf <- librarySizeFactors(sce)
+summary(lib.sf)
+```
+
+Size factor distribution: wide range, typical of scRNA-seq data.
+
+```{r}
+hist(log10(lib.sf), xlab="Log10[Size factor]", col='grey80')
+```
+
+Assumption: absence of compositional bias; differential expression two cells is balanced: upregulation in some genes is accompanied by downregulation of other genes. Not observed.
+
+Inaccurate normalisation due to unaccounted-for composition bias affects the size of the log fold change measured between clusters, but less so the clusterisation itself. It is thus sufficient to identify clustrs and top arker genes.
+
+### Deconvolution
+
+Composition bias occurs when differential expression beteween two samples or here cells is not balanced. For a fixed library size, identical in both cells, upregulation of one gene in the a cell will means fewer UMIs can be assigned to other genes, which would then appear down regulated. Even if library sizes are allowed to differ in size, with that for the cell with upregulation being higher, scaling normalisation will reduce noralised counts. Non-upregulated would therefore also appear downregulated. 
+
+For bulk RNA-seq, composition bias is removed by assuming that most genes are not differentially expressed between samples, so that differences in non-DE genes would amount to the bias, and used to compute size factors.
+
+Given the sparsity of scRNA-seq data, the methods are not appropriate.
+
+The method below increases read counts by pooling cells into groups, computing size factors within each of these groups and scaling them so they are comparable across clusters. This process is repeated many times, changing pools each time to collect several size factors for each cell, frome which is derived a single value for that cell.
+
+<!--
+see DESeq2 estimateSizeFactorsFromMatrix
+see edgeR calcNormFactors
+-->
+
+Cluster cells, normalise :
+
+```{r, eval=!FALSE}
+#library(scran)
+set.seed(100) # clusters with PCA from irlba with approximation
+clust <- quickCluster(sce) # slow with all cells.
+
+# write to file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+saveRDS(clust, tmpFn)
+```
+
+```{r}
+# read from file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+clust <- readRDS(tmpFn)
+table(clust)
+```
+
+### Compute size factors
+
+```{r, eval=!FALSE}
+deconv.sf <- calculateSumFactors(sce, cluster=clust)
+
+# write to file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+saveRDS(deconv.sf, tmpFn)
+```
+
+```{r}
+# read from file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+deconv.sf <- readRDS(tmpFn)
+
+summary(deconv.sf)
+```
+
+Plot
+
+```{r}
+plot(lib.sf, deconv.sf, xlab="Library size factor",
+    ylab="Deconvolution size factor", log='xy', pch=16,
+    col=as.integer(factor(sce$source_name)))
+abline(a=0, b=1, col="red")
+```
+
+```{r}
+deconvDf <- data.frame(lib.sf, deconv.sf,
+			"source_name" = sce$source_name,
+			"sum" = sce$sum,
+			"mito_content" = sce$subsets_Mito_percent,
+			"cell_sparsity" = sce$cell_sparsity)
+
+sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=source_name)) +
+  geom_point()
+sp + facet_wrap(~source_name)
+
+sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=sum)) +
+  geom_point()
+sp
+
+sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=mito_content)) +
+  geom_point()
+sp
+
+sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=cell_sparsity)) +
+  geom_point()
+sp
+
+#ggMarginal(sp)
+```
+
+#### Apply size factors
+
+For each cell, raw counts for genes are divided by the size factor for that cell and log-transformed so downstream analyses focus on genes with strong relative differences. We use `scater::logNormCounts()`.
+
+```{r}
+sce <- logNormCounts(sce)
+assayNames(sce)
+```
+
+#### Save object
+
+```{r}
+sce_hca <- sce
+```
+
+```{r, eval=!FALSE}
+# write to file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+saveRDS(sce_hca, tmpFn)
+```
+
+## SCTransform
+
+<!--
+https://rawgit.com/ChristophH/sctransform/master/inst/doc/variance_stabilizing_transformation.html
+-->
+
+With scaling normalisation a correlation remains between the mean and variation of expression (heteroskedasticity). This affects downstream dimensionality reduction as the few main new dimensions are usually correlated with library size. SCTransform addresses the issue by regressing library size out of raw counts and providing residuals to use as normalized and variance-stabilized expression values in downstream analysis.
+
+### Caron
+
+```{r}
+setName <- "caron"
+setSuf = "_allCells" # suffix to add to file name to say which cells are used, eg downsampling
+
+sce <- sce_caron
+
+counts <- counts(sce)
+class(counts)
+colnames(counts) <- colData(sce)$Barcode
+```
+
+Inspect data
+
+We will now calculate some properties and visually inspect the data. Our main interest is in the general trends not in individual outliers. Neither genes nor cells that stand out are important at this step, but we focus on the global trends.
+
+Derive gene and cell attributes from the UMI matrix.
+
+```{r}
+gene_attr <- data.frame(mean = rowMeans(counts), 
+                        detection_rate = rowMeans(counts > 0),
+                        var = apply(counts, 1, var))
+gene_attr$log_mean <- log10(gene_attr$mean)
+gene_attr$log_var <- log10(gene_attr$var)
+rownames(gene_attr) <- rownames(counts)
+cell_attr <- data.frame(n_umi = colSums(counts),
+                        n_gene = colSums(counts > 0))
+rownames(cell_attr) <- colnames(counts)
+```
+
+```{r}
+ggplot(gene_attr, aes(log_mean, log_var)) + 
+  geom_point(alpha=0.3, shape=16) + 
+  geom_density_2d(size = 0.3) +
+  geom_abline(intercept = 0, slope = 1, color='red')
+```
+
+Mean-variance relationship
+
+For the genes, we can see that up to a mean UMI count of ca. 0.1 the variance follows the line through the origin with slop one, i.e. variance and mean are roughly equal as expected under a Poisson model. However, genes with a higher average UMI count show overdispersion compared to Poisson.
+
+```{r}
+# add the expected detection rate under Poisson model
+x = seq(from = -3, to = 2, length.out = 1000)
+poisson_model <- data.frame(log_mean = x, detection_rate = 1 - dpois(0, lambda = 10^x))
+ggplot(gene_attr, aes(log_mean, detection_rate)) + 
+  geom_point(alpha=0.3, shape=16) + 
+  geom_line(data=poisson_model, color='red') +
+  theme_gray(base_size = 8)
+```
+
+Mean-detection-rate relationship
+
+In line with the previous plot, we see a lower than expected detection rate in the medium expression range. However, for the highly expressed genes, the rate is at or very close to 1.0 suggesting that there is no zero-inflation in the counts for those genes and that zero-inflation is a result of overdispersion, rather than an independent systematic bias.
+
+```{r}
+ggplot(cell_attr, aes(n_umi, n_gene)) + 
+  geom_point(alpha=0.3, shape=16) + 
+  geom_density_2d(size = 0.3)
+```
+
+
+General idea of transformation
+
+Based on the observations above, which are not unique to this particular data set, we propose to model the expression of each gene as a negative binomial random variable with a mean that depends on other variables. Here the other variables can be used to model the differences in sequencing depth between cells and are used as independent variables in a regression model. In order to avoid overfitting, we will first fit model parameters per gene, and then use the relationship between gene mean and parameter values to fit parameters, thereby combining information across genes. Given the fitted model parameters, we transform each observed UMI count into a Pearson residual which can be interpreted as the number of standard deviations an observed count was away from the expected mean. If the model accurately describes the mean-variance relationship and the dependency of mean and latent factors, then the result should have mean zero and a stable variance across the range of expression.
+Estimate model parameters and transform data
+
+The vst function estimates model parameters and performs the variance stabilizing transformation. Here we use the log10 of the total UMI counts of a cell as variable for sequencing depth for each cell. After data transformation we plot the model parameters as a function of gene mean (geometric mean).
+
+```{r}
+# We use the Future API for parallel processing; set parameters here
+future::plan(strategy = 'multicore', workers = 4)
+options(future.globals.maxSize = 10 * 1024 ^ 3)
+
+set.seed(44)
+vst_out <- sctransform::vst(counts,
+			    latent_var = c('log_umi'),
+			    return_gene_attr = TRUE,
+			    return_cell_attr = TRUE,
+			    show_progress = FALSE)
+sctransform::plot_model_pars(vst_out)
+```
+
+Inspect model
+
+We will look at several genes in more detail.
+
+```{r}
+#sctransform::plot_model(vst_out, counts, c('MALAT1', 'RPL10', 'FTL'), plot_residual = TRUE)
+rowData(sce) %>% as.data.frame %>% filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
+sctransform::plot_model(vst_out, counts, c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'), plot_residual = TRUE)
+```
+
+```{r}
+sctransform::plot_model(vst_out, counts, c('ENSG00000087086'), plot_residual = TRUE, show_nr = TRUE, arrange_vertical = FALSE)
+```
+
+```{r, eval=FALSE}
+# Error in seq_len(n) : argument must be coercible to non-negative integer
+rowData(sce) %>% as.data.frame %>% filter(Symbol %in% c('GNLY', 'S100A9'))
+#sctransform::plot_model(vst_out, counts, c('ENSG00000115523', 'ENSG00000163220'), plot_residual = TRUE, show_nr = TRUE)
+sctransform::plot_model(vst_out, counts, c('ENSG00000115523'), plot_residual = TRUE, show_nr = TRUE)
+# ok # sctransform::plot_model(vst_out, counts, c('ENSG00000087086'), plot_residual = TRUE, show_nr = TRUE)
+```
+
+```{r}
+ggplot(vst_out$gene_attr, aes(residual_mean)) + geom_histogram(binwidth=0.01)
+ggplot(vst_out$gene_attr, aes(residual_variance)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept=1, color='red') + xlim(0, 10)
+ggplot(vst_out$gene_attr, aes(x=residual_mean, y=residual_variance)) +
+	geom_point(alpha=0.3, shape=16) + 
+	xlim(0, 2.5) +
+	ylim(0, 10) +
+	geom_density_2d()
+```
+
+```{r}
+ggplot(vst_out$gene_attr, aes(log10(gmean), residual_variance)) + geom_point(alpha=0.3, shape=16) +
+  geom_density_2d(size = 0.3)
+```
+
+```{r}
+dd <- head(round(vst_out$gene_attr[order(-vst_out$gene_attr$residual_variance), ], 2), 22)
+dd %>% tibble::rownames_to_column("ensembl_gene_id") %>%
+	left_join(as.data.frame(rowData(sce))[,c("ensembl_gene_id", "Symbol")], "ensembl_gene_id")
+```
+
+```{r, eval=!FALSE}
+# write to file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_vst_out%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+saveRDS(vst_out, tmpFn)
+```
+
+### Hca
+
+Load object 
+
+```{r}
+setName <- "hca"
+setSuf <- "_5kCellPerSpl"
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+sce_hca <- readRDS(tmpFn)
+sce <- sce_hca
+counts <- counts(sce)
+class(counts)
+colnames(counts) <- colData(sce)$Barcode
+```
+
+Inspect data
+
+```{r}
+gene_attr <- data.frame(mean = rowMeans(counts), 
+                        detection_rate = rowMeans(counts > 0),
+                        var = apply(counts, 1, var))
+gene_attr$log_mean <- log10(gene_attr$mean)
+gene_attr$log_var <- log10(gene_attr$var)
+rownames(gene_attr) <- rownames(counts)
+cell_attr <- data.frame(n_umi = colSums(counts),
+                        n_gene = colSums(counts > 0))
+rownames(cell_attr) <- colnames(counts)
+```
+
+Mean-variance relationship
+
+```{r}
+# add the expected detection rate under Poisson model
+x = seq(from = -3, to = 2, length.out = 1000)
+poisson_model <- data.frame(log_mean = x, detection_rate = 1 - dpois(0, lambda = 10^x))
+ggplot(gene_attr, aes(log_mean, detection_rate)) + 
+  geom_point(alpha=0.3, shape=16) + 
+  geom_line(data=poisson_model, color='red') +
+  theme_gray(base_size = 8)
+```
+
+Mean-detection-rate relationship
+
+```{r}
+ggplot(cell_attr, aes(n_umi, n_gene)) + 
+  geom_point(alpha=0.3, shape=16) + 
+  geom_density_2d(size = 0.3)
+```
+
+
+```{r}
+# We use the Future API for parallel processing; set parameters here
+future::plan(strategy = 'multicore', workers = 4)
+options(future.globals.maxSize = 10 * 1024 ^ 3)
+
+set.seed(44)
+vst_out <- sctransform::vst(counts, latent_var = c('log_umi'), return_gene_attr = TRUE, return_cell_attr = TRUE, show_progress = FALSE)
+sctransform::plot_model_pars(vst_out)
+```
+
+Inspect model
+
+We will look at several genes in more detail.
+
+```{r}
+#sctransform::plot_model(vst_out, counts, c('MALAT1', 'RPL10', 'FTL'), plot_residual = TRUE)
+rowData(sce) %>% as.data.frame %>% filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
+sctransform::plot_model(vst_out, counts, c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'), plot_residual = TRUE)
+```
+
+```{r}
+sctransform::plot_model(vst_out, counts, c('ENSG00000087086'), plot_residual = TRUE, show_nr = TRUE, arrange_vertical = FALSE)
+```
+
+```{r}
+ggplot(vst_out$gene_attr, aes(residual_mean)) + geom_histogram(binwidth=0.01)
+ggplot(vst_out$gene_attr, aes(residual_variance)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept=1, color='red') + xlim(0, 10)
+
+ggplot(vst_out$gene_attr, aes(x=residual_mean, y=residual_variance)) +
+	geom_point(alpha=0.3, shape=16) + 
+	xlim(0, 2.5) +
+	ylim(0, 10) +
+	geom_density_2d()
+```
+
+```{r}
+ggplot(vst_out$gene_attr, aes(log10(gmean), residual_variance)) + geom_point(alpha=0.3, shape=16) +
+  geom_density_2d(size = 0.3)
+```
+
+```{r}
+dd <- head(round(vst_out$gene_attr[order(-vst_out$gene_attr$residual_variance), ], 2), 22)
+dd %>% tibble::rownames_to_column("ensembl_gene_id") %>%
+	left_join(as.data.frame(rowData(sce))[,c("ensembl_gene_id", "Symbol")], "ensembl_gene_id")
+```
+
+```{r, eval=!FALSE}
+# write to file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_vst_out%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
+saveRDS(vst_out, tmpFn)
+```
