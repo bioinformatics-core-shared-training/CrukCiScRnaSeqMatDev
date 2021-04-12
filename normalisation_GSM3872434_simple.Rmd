@@ -16,8 +16,21 @@ output:
   html_book:
     code_folding: hide
 params:
-  outDirBit: "AnaWiSce/Attempt1"
+  projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
+  dirRel: ".."
+  inpDirBit: "AnaWiSce/Ana1"
+  outDirBit: "AnaWiSce/Ana1"
+  cacheBool: FALSE
 ---
+
+```{r norm_GSM3872434.knitr_options, echo=FALSE, results="hide", message=FALSE}
+cacheBool <- params$cacheBool
+require(knitr)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
+opts_chunk$set(fig.width=7, fig.height=7)
+opts_chunk$set(dev = c("png"))
+options(bitmapType='cairo')
+```
 
 # Normalisation - GSM3872434 set
 
@@ -29,8 +42,13 @@ Systematic differences in sequencing coverage between libraries occur because of
 Normalisation removes such differences so that differences between cells are not technical but biological, allowing meaningful comparison of expression profiles between cells. Normalisation and batch correction have different aims. Normalisation addresses technical differences only, while batch correction considers both technical and biological differences.
 
 ```{r GSM3872434_variables_norm}
-qcPlotDirBit <- "NormPlots"
+normPlotDirBit <- "Plots/Norm"
 setName <- "GSM3872434"
+
+projDir <- params$projDir
+dirRel <- params$dirRel
+outDirBit <- params$outDirBit
+dir.create(sprintf("%s/%s/%s", projDir, outDirBit, normPlotDirBit), showWarnings = FALSE)
 ```
 
 ```{r, include=FALSE, results='hide', message=FALSE, warning=FALSE}
@@ -44,15 +62,11 @@ library(BiocSingular)
 Load object 
 
 ```{r GSM3872434_readIn}
-projDir <- "/home/ubuntu/Course_Materials/scRNAseq"
-outDirBit <- "AnaWiSce/Attempt1"
-
 setSuf <- ""
 if(setName == "hca") {setSuf <- "_5kCellPerSpl"}
 
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds", projDir, outDirBit, "caron", setSuf)
-print(tmpFn)
 if(!file.exists(tmpFn))
 {
 	knitr::knit_exit()
@@ -209,7 +223,11 @@ see DESeq2 estimateSizeFactorsFromMatrix
 see edgeR calcNormFactors
 -->
 
-![scranFig3](`r sprintf("%s/Images/scran_Fig3.png", projDir)`)
+```{r}
+tmpFn <- sprintf("%s/Images/scran_Fig3.png", "..")
+knitr::include_graphics(tmpFn, auto_pdf = TRUE)
+rm(tmpFn)
+```
 
 Cluster cells then normalise.
 
@@ -219,7 +237,7 @@ Cluster cells then normalise.
 set.seed(100) # clusters with PCA from irlba with approximation
 clust <- quickCluster(sce) # slow with all cells.
 
-# write to file
+# write to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds", projDir, outDirBit, setName, setSuf)
 saveRDS(clust, tmpFn)
 ```
@@ -304,7 +322,7 @@ print(assayNames(sce))
 #### Save object
 
 ```{r, eval=TRUE}
-# write to file
+# write to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
 saveRDS(sce, tmpFn)
 ```
@@ -406,7 +424,11 @@ future::plan(strategy = 'multicore', workers = 4)
 options(future.globals.maxSize = 10 * 1024 ^ 3)
 
 set.seed(44)
-vst_out <- sctransform::vst(counts, latent_var = c('log_umi'), return_gene_attr = TRUE, return_cell_attr = TRUE, show_progress = FALSE)
+vst_out <- sctransform::vst(counts,
+                            latent_var = c('log_umi'),
+                            return_gene_attr = TRUE,
+                            return_cell_attr = TRUE,
+                            show_progress = FALSE)
 sctransform::plot_model_pars(vst_out)
 ```
 
@@ -422,24 +444,39 @@ We will look at several genes in more detail.
 
 ```{r}
 #sctransform::plot_model(vst_out, counts, c('MALAT1', 'RPL10', 'FTL'), plot_residual = TRUE)
-rowData(sce) %>% as.data.frame %>% filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
-sctransform::plot_model(vst_out, counts, c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'), plot_residual = TRUE)
+rowData(sce) %>%
+  as.data.frame %>%
+  filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
+
+sctransform::plot_model(vst_out,
+                        counts,
+                        c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'),
+                        plot_residual = TRUE)
 ```
 
 ```{r}
-sctransform::plot_model(vst_out, counts, c('ENSG00000087086'), plot_residual = TRUE, show_nr = TRUE, arrange_vertical = FALSE)
+sctransform::plot_model(vst_out,
+                        counts,
+                        c('ENSG00000087086'),
+                        plot_residual = TRUE,
+                        show_nr = TRUE,
+                        arrange_vertical = FALSE)
 ```
 
 Distribution of residual mean:
 
 ```{r}
-ggplot(vst_out$gene_attr, aes(residual_mean)) + geom_histogram(binwidth=0.01)
+ggplot(vst_out$gene_attr, aes(residual_mean)) +
+  geom_histogram(binwidth=0.01)
 ```
 
 Distribution of residual variance:
 
 ```{r}
-ggplot(vst_out$gene_attr, aes(residual_variance)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept=1, color='red') + xlim(0, 10)
+ggplot(vst_out$gene_attr, aes(residual_variance)) +
+  geom_histogram(binwidth=0.1) +
+  geom_vline(xintercept=1, color='red') +
+  xlim(0, 10)
 ```
 
 Variance against mean (residuals):
@@ -470,7 +507,7 @@ dd %>% tibble::rownames_to_column("ensembl_gene_id") %>%
 Write outcome to file:
 
 ```{r, eval=TRUE}
-# write to file
+# write to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_vst_out%s.Rds", projDir, outDirBit, setName, setSuf)
 saveRDS(vst_out, tmpFn)
 ```
@@ -512,7 +549,7 @@ assay(sce, "sctrans_norm") <- vstMat # as(vst_out$y[rownames(sce),], "dgCMatrix"
 ### Save SCE object
 
 ```{r, eval=TRUE}
-# write to file
+# write to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postSct%s.Rds", projDir, outDirBit, setName, setSuf)
 saveRDS(sce, tmpFn)
 ```
@@ -547,11 +584,13 @@ p <- plotPCA(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
 ```{r}
+tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sPca.png",
+                 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -570,11 +609,13 @@ p <- plotRLE(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+                 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
 ```{r, eval=FALSE, include=FALSE}
+tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sRle.png",
+                 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -604,11 +645,13 @@ p <- plotPCA(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
 ```{r}
+tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sPca.png",
+                 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -626,11 +669,13 @@ p <- plotRLE(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
 ```{r, eval=FALSE, include=FALSE}
+tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
+                 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -662,11 +707,13 @@ p <- plotPCA(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
 ```{r}
+tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sPca.png",
+                 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -693,11 +740,13 @@ p <- plotReducedDim(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
 ```{r}
+tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
+                 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -726,7 +775,7 @@ p <- plotReducedDim(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
@@ -749,7 +798,7 @@ p <- plotRLE(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
@@ -782,11 +831,13 @@ p <- plotReducedDim(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
 ```{r}
+tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sPca.png",
+                 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -813,11 +864,13 @@ p <- plotReducedDim(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
 ```{r}
+tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
+                 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -846,7 +899,7 @@ p <- plotReducedDim(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
@@ -866,11 +919,13 @@ p <- plotRLE(
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
-		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
+		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 ggsave(filename=tmpFn, plot=p)
 ```
 
 ```{r}
+tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sRle.png",
+                 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
