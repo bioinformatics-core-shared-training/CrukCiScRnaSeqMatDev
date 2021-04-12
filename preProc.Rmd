@@ -17,17 +17,14 @@ output:
     code_folding: hide
 params:
   projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
-  projDirRel: "../.."
-  projDirScriptsRel: "../.."
-  projDirBookRel: "../.."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
 ---
 
 ```{r preProc.knitr_options, echo=FALSE, results="hide", message=FALSE}
 require(knitr)
-#opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=TRUE)
-opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=FALSE)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=TRUE)
+#opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
 opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
@@ -82,16 +79,9 @@ We will then:
 * irlba - for faster PCA
 
 ```{r variables_qc}
-#wrkDir <- "/mnt/scratchb/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300"
-#projDir <- "/home/ubuntu/Course_Materials/scRNAseq"
 projDir <- params$projDir
-projDirRel <- params$projDirRel
-projDirBookRel <- params$projDirBookRel
-#projDirScriptsRel <- params$projDirScriptsRel
 wrkDir <- sprintf("%s/CaronBourque2020/grch38300", projDir) 
-#setwd(wrkDir)
 outDirBit <- params$outDirBit # "AnaWiSeurat/Attempt1"
-#qcPlotDirBit <- "QcPlots"
 qcPlotDirBit <- "Plots/Qc"
 poolBool <- TRUE # FALSE # whether to read each sample in and pool them and write object to file, or just load that file.
 biomartBool <- FALSE # TRUE # biomaRt sometimes fails, do it once, write to file and use that copy.
@@ -105,7 +95,6 @@ dir.create(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit),
 
 ```{r}
 print(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit))
-#knit_exit()
 ```
 
 ```{r libraries, include=FALSE, cache=FALSE}
@@ -163,20 +152,11 @@ We will use a [SingleCellExperiment](https://bioconductor.org/packages/SingleCel
 * outcome of downstream analysis such as dimensionality reduction
 
 ```{r tenxLibStructureV3, out.width="80%"}
-#tmpFn <- sprintf("%s/Images/tenxLibStructureV3.png", projDirScriptsRel)
 tmpFn <- sprintf("%s/Images/tenxLibStructureV3.png", "..")
-#tmpFn <- "Images/tenxLibStructureV3.png"
 print(getwd())
 print(tmpFn)
 print(file.exists(tmpFn))
-```
-
-```{r, eval=TRUE}
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
-```
-
-```{r}
-#knit_exit()
 ```
 
 ## Example
@@ -223,7 +203,6 @@ Counts, with counts(). Given the large number of droplets in a sample, count mat
 
 ```{r example_counts}
 counts(sce.raw) <- as(counts(sce.raw), "dgCMatrix")
-#class(counts(sce.raw))
 counts(sce.raw)[1:10, 1:10]
 ```
 
@@ -494,8 +473,6 @@ To evaluate the outcome of the analysis, we will plot the strength of the eviden
 
 ```{r cellCall_emptyDrops_isCell}
 is.cell <- e.out$FDR <= 0.001
-#is.cell <- e.out$FDR <= 0.01
-#sum(is.cell, na.rm=TRUE)
 ```
 
 Number of cells detected: `r sum(is.cell, na.rm=TRUE)`.
@@ -514,14 +491,13 @@ cellColour <- ifelse(is.cell, "red", "black") # rep("black", nrow((e.out)))
 tmpBoolInflex <- e.out$Total > metadata(br.out)$inflection
 # boolean for presence of cells as defined by the emptyDrops method
 tmpBoolSmall <- e.out$FDR <= 0.001
-#table(tmpBoolInflex, tmpBoolSmall)
 tmpBoolRecov <- !tmpBoolInflex & tmpBoolSmall
 cellColour[tmpBoolRecov] <- "green" # 'recovered' cells
 
 # plot strength of significance vs library size
 plot(log10(e.out$Total),
      -e.out$LogProb,
-     col=cellColour, # ifelse(is.cell, "red", "black"),
+     col=cellColour,
      xlim=c(2,max(log10(e.out$Total))),
      xlab="Total UMI count",
      ylab="-Log Probability")
@@ -570,9 +546,7 @@ for (i in 1:nrow(sampleSheet))
 					     "CaronBourque2020")),
 			      sampleSheet[i,"Run"],
 			      sampleSheet[i,"Run"])
-	#print(sample.path); next;
 	sce.list[[i]] <- read10xCounts(sample.path)
-	#print(sce.list[[i]])
 	print(dim(sce.list[[i]]))
 }
 ```
@@ -583,7 +557,7 @@ We first check the feature lists are identical.
 
 ```{r dataSets_checkRows, eval=poolBool}
 # check row names are the same
-# compare to taht for the first sample
+# compare to that for the first sample
 
 rowNames1 <- rownames(sce.list[[1]])
 for (i in 2:nrow(sampleSheet))
@@ -616,7 +590,6 @@ for (i in 2:nrow(sampleSheet))
   }
 	colData(sce.tmp)$Barcode <- gsub("([0-9])$", i, colData(sce.tmp)$Barcode)
 	sce <- cbind(sce, sce.tmp)
-	#print(head(colData(sce)$Barcode))
 	print(tail(colData(sce)$Barcode, 2))
 }
 ```
@@ -625,7 +598,6 @@ We now add the sample sheet information to the object metadata.
 
 ```{r dataSets_addSplSheet, eval=poolBool}
 colDataOrig <- colData(sce)
-#colData(sce) <- colDataOrig[,1:2]
 
 # split path:
 tmpList <- strsplit(colDataOrig$Sample, split="/")
@@ -646,14 +618,12 @@ colData(sce) %>% head()
 Let's save the object for future reference.
 
 ```{r dataSets_writeRds, eval=poolBool}
-#```{r dataSets_writeRds, eval=TRUE, cache=FALSE}
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds", projDir, outDirBit)
 saveRDS(sce, tmpFn)
 ```
 
 ```{r dataSets_readRds, eval=!poolBool}
-#```{r dataSets_readRds, eval=TRUE, cache=FALSE}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds", projDir, outDirBit)
 sce <- readRDS(tmpFn)
@@ -672,16 +642,15 @@ dd <- mol.info$data %>% data.frame()
 dd$umi <- as.character(dd$umi)
 
 tmpFn <- sprintf("%s/%s/Robjects/sce_preProc_ampDf2.Rds", projDir, outDirBit)
-#if(!FALSE) # slow
 if(!file.exists(tmpFn)) # slow, but needs running at least once
 {
-ampDf <- dd %>%
+  ampDf <- dd %>%
 	filter(paste(cell,gem_group, sep="-") %in% sce$Barcode) %>%
   group_by(cell, gene) %>%
 	summarise(nUmis = n(), totReads=sum(reads)) %>%
 	data.frame()
-# Write object to file
-saveRDS(ampDf, tmpFn)
+  # Write object to file
+  saveRDS(ampDf, tmpFn)
 } else {
   ampDf <- readRDS(tmpFn)
 }
@@ -793,7 +762,6 @@ We will first annotate genes, to know which lie in the mitochondrial genome, the
 Annotate genes with biomaRt.
 
 ```{r qc_annot, eval=biomartBool}
-#```{r qc_annot, eval=TRUE, cache=FALSE}
 # retrieve the feature information
 gene.info <- rowData(sce)
 
@@ -802,11 +770,14 @@ ensembl <- useEnsembl(biomart='ensembl', dataset='hsapiens_gene_ensembl')
 
 # retrieve the attributes of interest from biomaRt using the Ensembl gene ID as the key
 # beware that this will only retrieve information for matching IDs
-gene_symbol <- getBM(attributes=c('ensembl_gene_id', 'external_gene_name',
-				  'chromosome_name',
-				  'start_position', 'end_position',
-				  'strand'),
-                     filters='ensembl_gene_id', mart=ensembl,
+gene_symbol <- getBM(attributes=c('ensembl_gene_id',
+                                  'external_gene_name',
+                                  'chromosome_name',
+                                  'start_position',
+                                  'end_position',
+                                  'strand'),
+                     filters='ensembl_gene_id',
+                     mart=ensembl,
                      values=gene.info[, 1])
 
 # create a new data frame of the feature information
@@ -821,7 +792,6 @@ rowData(sce) <- gene.merge
 ```
 
 ```{r qc_annot_writeRds, eval=biomartBool}
-#```{r qc_annot_writeRds, eval=TRUE, cache=FALSE}
 # slow
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sce_postBiomart.Rds", projDir, outDirBit)
@@ -829,7 +799,6 @@ saveRDS(sce, tmpFn)
 ```
 
 ```{r qc_annot_readRds, eval=!biomartBool}
-#```{r qc_annot_readRds, eval=TRUE, cache=FALSE}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sce_postBiomart.Rds", projDir, outDirBit)
 sce <- readRDS(tmpFn)
@@ -851,11 +820,9 @@ is.mito <- which(rowData(sce)$chromosome_name=="MT")
 Calculate and store QC metrics for genes with addPerFeatureQC() and for cells with addPerCellQC().
 
 ```{r qc_addPerFeatureQC, eval=addQcBool}
-#```{r qc_addPerFeatureQC, eval=TRUE, cache=FALSE}
 # long
 # for genes
 sce <- addPerFeatureQC(sce)
-# colnames(rowData(sce))
 head(rowData(sce)) %>%
 	as.data.frame() %>%
 	datatable(rownames = FALSE) # ENS ID
@@ -868,7 +835,6 @@ Three columns of interest for cells:
 * 'subsets_Mito_percent': percentage of reads mapped to mitochondrial transcripts
 
 ```{r qc_addPerCellQC, eval=addQcBool}
-#```{r qc_addPerCellQC, eval=TRUE, cache=FALSE}
 # for cells
 sce <- addPerCellQC(sce, subsets=list(Mito=is.mito))
 head(colData(sce)) %>%
@@ -877,14 +843,12 @@ head(colData(sce)) %>%
 ```
 
 ```{r qc_addQc_writeRds, eval=addQcBool}
-#```{r qc_addQc_writeRds, eval=TRUE, cache=FALSE}
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sce_postAddQc.Rds", projDir, outDirBit)
 saveRDS(sce, tmpFn)
 ```
 
 ```{r qc_addQc_readRds, eval=!addQcBool}
-#```{r qc_addQc_readRds, eval=TRUE, cache=FALSE}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sce_postAddQc.Rds", projDir, outDirBit)
 sce <- readRDS(tmpFn)
@@ -937,12 +901,7 @@ p
 ```
 
 ```{r qc_metricDistrib_plotColData_write, eval=runAll}
-print(projDir)
-print(outDirBit)
-print(qcPlotDirBit)
 tmpFn <- sprintf("%s/%s/%s/qc_metricDistrib_plotColData2.png", projDir, outDirBit, qcPlotDirBit)
-print(tmpFn)
-
 png(tmpFn)
 # violin plots
 gridExtra::grid.arrange(
@@ -961,27 +920,18 @@ dev.off()
 ```
 
 ```{r qc_metricDistrib_plotColData_show, out.width="80%", eval=TRUE}
-#tmpFn <- sprintf("%s/%s/%s/qc_metricDistrib_plotColData.png", projDir, outDirBit, qcPlotDirBit)
 tmpFn <- sprintf("../%s/qc_metricDistrib_plotColData2.png", qcPlotDirBit)
-#print(getwd())
-#print(tmpFn)
-#print(file.exists(tmpFn))
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
-```
-
-```{r}
-#knit_exit()
 ```
 
 Correlation between the number of genes detected and library size ('detected' against 'sum'):
 
 ```{r}
-#sp <- ggplot(data.frame(colData(sce)), aes(x=sum, y=detected, col=source_name)) +
-#  geom_point()
-#sp + facet_wrap(~source_name)
-
-sp <- ggplot(data.frame(colData(sce)), aes(x=sum, y=detected, col=subsets_Mito_percent)) +
+sp <- ggplot(data.frame(colData(sce)),
+             aes(x=sum,
+                 y=detected,
+                 col=subsets_Mito_percent)) +
   geom_point()
 sp + facet_wrap(~source_name)
 ```
@@ -1097,7 +1047,6 @@ Library size:
 ```{r}
 plotColData(sce, x="block", y="sum", colour_by="discard",
         other_fields="setName") +
-	#facet_wrap(~setName) + 
         scale_y_log10() + ggtitle("Total count")
 ```
 
@@ -1109,7 +1058,6 @@ plotColData(sce,
             x="block", y="detected",
             colour_by="discard", 
             other_fields="setName") +
-  # facet_wrap(~setName) +
   scale_y_log10() + ggtitle("Detected features")
 ```
 
@@ -1130,7 +1078,6 @@ plotColData(sce,
             x="block", y="subsets_Mito_percent",
             colour_by="discard",
             other_fields="setName") +
-  #facet_wrap(~setName) +
   ggtitle("Mito percent")
 ```
 
@@ -1143,6 +1090,7 @@ We will now consider the 'sample' batch to illustrate how to identify batches wi
 ```{r qc_poorBatch_detected_compute, eval=TRUE}
 # compute
 discard.nexprs <- isOutlier(sce$detected, log=TRUE, type="lower", batch=sce$Sample.Name)
+
 nexprs.thresholds <- attr(discard.nexprs, "thresholds")["lower",]
 nexprs.thresholds %>%
   round(0) %>%
@@ -1288,7 +1236,6 @@ Mind distributions:
 sp <- ggplot(data.frame(colData(sce)), aes(x=detected, y=subsets_Mito_percent)) +
   geom_point(size = 0.05, alpha = 0.0)
 sp + 
-  #geom_density_2d_filled(alpha = 0.5) +
   geom_density_2d(size = 0.5, colour = "black")
 
 #sp <- ggplot(data.frame(colData(sce)), aes(x=detected, y=subsets_Mito_percent)) +
@@ -1309,14 +1256,12 @@ sce
 We also write the R object to file to use later if need be.
 
 ```{r sce_qc_write, eval=saveRds}
-#```{r sce_qc_write, eval=TRUE, cache=FALSE}
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sce_postQc.Rds", projDir, outDirBit)
 saveRDS(sce, tmpFn)
 ```
 
 ```{r sce_qc_read, eval=!saveRds}
-#```{r sce_qc_read, eval=TRUE, cache=FALSE}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sce_postQc.Rds", projDir, outDirBit)
 sce <- readRDS(tmpFn)
@@ -1551,7 +1496,6 @@ dev.off()
 ```
 
 ```{r Caron_sparsity_show, out.width="80%"}
-#tmpFn <- sprintf("%s/%s/%s/%s_sparsity.png", projDirRel, outDirBit, qcPlotDirBit, setName)
 tmpFn <- sprintf("../%s/%s_sparsity.png", qcPlotDirBit, setName)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
@@ -1634,7 +1578,6 @@ dev.off()
 ```
 
 ```{r Hca_sparsity_show, out.width="80%"}
-#tmpFn <- sprintf("%s/%s/%s/%s_sparsity.png", projDirRel, outDirBit, qcPlotDirBit, setName)
 tmpFn <- sprintf("../%s/%s_sparsity.png", qcPlotDirBit, setName)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
