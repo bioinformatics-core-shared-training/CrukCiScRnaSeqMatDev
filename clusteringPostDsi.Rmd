@@ -222,6 +222,33 @@ Cell counts for each cluster (rows) and each sample (columns):
 # per sample
 table(hc.clusters, sce$Sample.Name)
 ```
+```{r}
+tmpTab <- table(hc.clusters, sce$Sample.Name)
+rownames(tmpTab) = paste("hc", rownames(tmpTab), sep = "_")
+
+# columns annotation with cell name:
+mat_col <- colData(sce) %>% data.frame() %>% select(Sample.Name, source_name) %>% unique
+rownames(mat_col) <- mat_col$Sample.Name
+mat_col$Sample.Name <- NULL
+
+# Prepare colours for clusters:
+colourCount = length(unique(mat_col$source_name))
+getPalette = grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
+
+mat_colors <- list(source_name = getPalette(colourCount))
+names(mat_colors$source_name) <- unique(mat_col$source_name)
+
+# with column clustering
+pheatmap::pheatmap(tmpTab,
+           annotation_col    = mat_col,
+           annotation_colors = mat_colors)
+
+# without column clustering
+pheatmap::pheatmap(tmpTab,
+           cluster_cols = FALSE,
+           annotation_col    = mat_col,
+           annotation_colors = mat_colors)
+```
 
 If clusters mostly include cells from one sample or the other, it suggests that the samples differ, and/or the presence of batch effect.
 
@@ -401,7 +428,30 @@ ggplot(clusterings, aes(k, tot.withinss)) +
   geom_line()
 ```
 
-The plot above suggests that k would be best chosen between 6 and 9.
+```{r}
+clusterings %>% 
+  mutate(tot.withinss.diff = tot.withinss - lag(tot.withinss)) %>%
+  arrange(desc(tot.withinss.diff))
+# get the smallest negative drop
+k_neg <- clusterings %>% 
+  mutate(tot.withinss.diff = tot.withinss - lag(tot.withinss)) %>%
+  filter(tot.withinss.diff < 0) %>%
+  #arrange(desc(tot.withinss.diff)) %>%
+  slice_max(tot.withinss.diff, n = 1) %>%
+  pull(k)
+# get the first positive diff
+k_pos <- clusterings %>% 
+  mutate(tot.withinss.diff = tot.withinss - lag(tot.withinss)) %>%
+  filter(tot.withinss.diff >= 0) %>%
+  #arrange(desc(tot.withinss.diff)) %>%
+  slice_min(k, n = 1) %>%
+  pull(k)
+```
+
+The plot above suggests reasonable values for k may be:
+
+* `r k_neg` (where the drop in total within-cluster sum-of-squares is the smallest)
+* `r k_pos` (lowest cluster number where the difference in consecutive total within-cluster sum-of-squares is positive)
 
 ##### Silhouette
 
@@ -518,7 +568,7 @@ For the same number of clusters (10), fewer cells have negative values with k-me
 
 One may also use multiple metrics rather than only one and check how they concord, using `NbClust::NbClust()` (see manual for a description of metrics computed):
 
-```{r NbClust_run, eval=!FALSE}
+```{r NbClust_run, eval=FALSE}
 # run only once and save outcome to file to load later.
 
 library(NbClust)
@@ -1038,7 +1088,7 @@ p
 
 Split by sample type:
 
-```{r show_leiden_tsne_2, fig.width=10, fig.height=10}
+```{r show_leiden_tsne_2, fig.width=2*5, fig.height=ceiling(nlevels(droplevels(sce$source_name))/2)*5}
 # facet by sample group:
 p + facet_wrap(~ sce$source_name)
 ```
@@ -1092,7 +1142,8 @@ legend('bottomright',
 The t-SNE plot below shows cells color-coded by cluster membership split by
 sample type:
 
-```{r, out.width = '100%'}
+```{r, fig.width=2*5, fig.height=ceiling(nlevels(droplevels(sce$source_name))/2)*5}
+ # ```{r, out.width = '100%'}
 sce$cluster.out.10 <- cluster.out.10
 sce$cluster.out.10.col <- cols[cluster.out.10]
 
@@ -1181,36 +1232,69 @@ plotExpression(sce,
 We now show the distribution of expression levels for marker genes of other PBMC types.
 
 ```{r}
-markGenes <- c("IL7R", "CCR7", "S100A4", "CD14", "LYZ", "MS4A1", "CD8A", "FCGR3A", "MS4A7", "GNLY", "NKG7", "FCER1A", "CST3", "PPBP")
+#markGenes <- c("IL7R", "CCR7", "S100A4", "CD14", "LYZ", "MS4A1", "CD8A", "FCGR3A", "MS4A7", "GNLY", "NKG7", "FCER1A", "CST3", "PPBP")
+markGenesFull <- list(
+  "Naive CD4+ T cells"=c("IL7R", "CCR7"),
+  "Memory CD4+ T cells"=c("IL7R", "S100A4"),
+  "B cells"=c("MS4A1"),
+  "CD8+ T cells"=c("CD8A"),
+  "NK cells"=c("GNLY", "NKG7"),
+  "CD14+ Monocytes"=c("CD14", "LYZ"),
+  "FCGR3A+ Monocytes"=c("FCGR3A", "MS4A7"),
+  "Dendritic Cells"=c("FCER1A", "CST3"),
+  "Platelets"=c("PPBP")
+)
+markGenesAvail <- lapply(markGenesFull,
+                         function(x){
+                           x[x %in% rownames(sce)]
+                         })
 ```
 
 ```{r}
-# Naive CD4+ T
-plotExpression(sce, exprs_values = "reconstructed", x=cluToUse, colour_by=cluToUse, features=markGenes[1:2]) + ggtitle("Naive CD4+ T cells")
+plotExpression2 <- function(sce, ctx, markGenesAvail) {
+  if(length(markGenesAvail[[ctx]])>0) {
+    plotExpression(sce, exprs_values = "reconstructed",
+                   x=cluToUse, colour_by=cluToUse,
+                   features=markGenesAvail[[ctx]]) + ggtitle(ctx)
+  }
+}
 
+# Naive CD4+ T
+ctx <- "Naive CD4+ T cells"
+plotExpression2(sce, ctx, markGenesAvail)
+  
 # Memory CD4+
-plotExpression(sce, exprs_values = "reconstructed", x=cluToUse, colour_by=cluToUse, features=markGenes[c(1,3)]) + ggtitle("Memory CD4+ T cells")
+ctx <- "Memory CD4+ T cells"
+plotExpression2(sce, ctx, markGenesAvail)
 
 # B cells
 ##plotExpression(sce, exprs_values = "reconstructed", x=cluToUse, colour_by=cluToUse, features=markGenes[6]) + ggtitle("B cells")
+ctx <- "B cells"
+plotExpression2(sce, ctx, markGenesAvail)
 
 # CD8+ T
-plotExpression(sce, exprs_values = "reconstructed", x=cluToUse, colour_by=cluToUse, features=markGenes[7]) + ggtitle("CD8+ T cells")
+ctx <- "CD8+ T cells"
+plotExpression2(sce, ctx, markGenesAvail)
 
 # NK
-plotExpression(sce, exprs_values = "reconstructed", x=cluToUse, colour_by=cluToUse, features=markGenes[10:11]) + ggtitle("NK")
+ctx <- "NK cells"
+plotExpression2(sce, ctx, markGenesAvail)
 
 # CD14+ Mono
-plotExpression(sce, exprs_values = "reconstructed", x=cluToUse, colour_by=cluToUse, features=markGenes[4:5]) + ggtitle("CD14+ Monocytes")
+ctx <- "CD14+ Monocytes"
+plotExpression2(sce, ctx, markGenesAvail)
 
 # FCGR3A+ Mono
-plotExpression(sce, exprs_values = "reconstructed", x=cluToUse, colour_by=cluToUse, features=markGenes[8:9]) + ggtitle("FCGR3A+ Monocytes")
+ctx <- "FCGR3A+ Monocytes"
+plotExpression2(sce, ctx, markGenesAvail)
 
 # DC
-plotExpression(sce, exprs_values = "reconstructed", x=cluToUse, colour_by=cluToUse, features=markGenes[12:13]) + ggtitle("Dendritic Cells")
+ctx <- "Dendritic Cells"
+plotExpression2(sce, ctx, markGenesAvail)
 
 # Platelet
-plotExpression(sce, exprs_values = "reconstructed", x=cluToUse, colour_by=cluToUse, features=markGenes[14]) + ggtitle("Platelet")
+ctx <- "Platelets"
+plotExpression2(sce, ctx, markGenesAvail)
 ```
 
 ## Save data
