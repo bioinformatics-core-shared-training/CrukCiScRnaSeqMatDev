@@ -23,11 +23,14 @@ params:
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE  
+  setName: "caron"
   splSetToGet: "PBMMC,ETV6-RUNX1"
-  setSuf: '_allCells'
+  setSuf: '_5hCellPerSpl'
+  dsiSuf: '_dsi'
 ---
 
 <!--
+  setSuf: '_allCells'
 source /home/baller01/.local/share/r-miniconda/bin/activate r-reticulate
 source /home/baller01/.local/share/r-miniconda/bin/deactivate r-reticulate
 -->
@@ -49,8 +52,11 @@ dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
 splSetToGet <- params$splSetToGet
+setName <- params$setName
 setSuf <- params$setSuf
+dsiSuf <- params$dsiSuf # 'dsi' for data set integration
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
+splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 ```
@@ -102,12 +108,13 @@ We will load the R file keeping the SCE (SingleCellExperiment) object with the n
 -->
 
 ```{r}
-setName <- "caron"
+#setName <- "caron"
 #setSuf <- "_5hCellPerSpl"
 #setSuf <- "" # dev with 1k/spl, should be _1kCellPerSpl
 #setSuf <- "_allCells" # dev with 1k/spl, should be _1kCellPerSpl
 
 # need library size
+# all sample types
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
 if(!file.exists(tmpFn))
 {
@@ -116,6 +123,7 @@ if(!file.exists(tmpFn))
 sce0 <- readRDS(tmpFn)
 
 # Read mnn.out object in:
+# only sample types in splSetToGet2
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s.Rds",
 		projDir, outDirBit, setName, setSuf, splSetToGet2)
@@ -1297,12 +1305,16 @@ ctx <- "Platelets"
 plotExpression2(sce, ctx, markGenesAvail)
 ```
 
+Add clusters to initial sce (not the output fastMNN)
+
 ## Save data
 
 Write SCE object to file.
 
 ```{r}
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clustered.Rds", projDir, outDirBit, setName, setSuf)
+#tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_clustered.Rds",
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_clust.Rds",
+                 projDir, outDirBit, setName, setSuf, dsiSuf, splSetToGet2)
 print(tmpFn)
 saveRDS(sce, file=tmpFn)
 ```

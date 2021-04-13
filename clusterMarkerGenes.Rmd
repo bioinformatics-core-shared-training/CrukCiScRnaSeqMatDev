@@ -23,6 +23,8 @@ params:
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE  
   splSetToGet: "PBMMC,ETV6-RUNX1"
+  setName: "caron"
+  setSuf: "_5hCellPerSpl"
 ---
 
 # Cluster marker genes
@@ -41,6 +43,8 @@ dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
 splSetToGet <- params$splSetToGet
+setName <- params$setName
+setSuf <- params$setSuf
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
 nbPcToComp <- 50
 figSize <- 7
@@ -69,7 +73,7 @@ library(pheatmap)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-Source: we will follow the [OSCA chapter on marker detection](https://osca.bioconductor.org/marker-detection.html) (with some of its text copied here with little modification). See also the Hemberg group chapter on [differential analysis section](https://scrnaseq-course.cog.sanger.ac.uk/website/biological-analysis.html#dechapter).
+Source: we will follow the [OSCA chapter on marker detection](https://bioconductor.org/books/release/OSCA/marker-detection.html) (with some of its text copied here with little modification). See also the Hemberg group chapter on [differential analysis section](https://scrnaseq-course.cog.sanger.ac.uk/website/biological-analysis.html#dechapter).
 
 To interpret our clustering results, we identify the genes that drive separation between clusters. These marker genes allow us to assign biological meaning to each cluster based on their functional annotation. In the most obvious case, the marker genes for each cluster are a priori associated with particular cell types, allowing us to treat the clustering as a proxy for cell type identity. The same principle can be applied to discover more subtle differences between clusters (e.g., changes in activation or differentiation state) based on the behavior of genes in the affected pathways.
 
@@ -90,17 +94,24 @@ Identification of marker genes is usually based around the retrospective detecti
 We will load the R file keeping the SCE (SingleCellExperiment) object with the outcome of the clustering performed after feature selection and dimensionality reduction of the normalised counts for 500 cells per sample.
 
 ```{r}
-setName <- "caron"
-setSuf <- "_5hCellPerSpl"
+# read uncorrected counts
+fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_uncorr.Rds",
+              projDir,
+              outDirBit,
+              setName,
+              setSuf,
+              splSetToGet2) # 'dsi' for data set integration
+uncorrected <- readRDS(file=fn)
 
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clustered.Rds", projDir, outDirBit, setName, setSuf)
+#tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clustered.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clust.Rds", projDir, outDirBit, setName, setSuf)
 print(tmpFn)
 if(!file.exists(tmpFn))
 {
 	knitr::knit_exit()
 }
-sce <- readRDS(tmpFn)
+mmn.out <- readRDS(tmpFn)
 ```
 
 Number of cells: `r ncol(sce)`.
@@ -124,7 +135,7 @@ sce$clusterStg <- factor(paste0("c", sce$cluster),
 # run scran::findMarkers()
 # with default parameters for now
 # check the function's manual for details (?scran::findMarkers)
-# (the test.type and pval.type options are covered below)
+# (the test.type and pval.type options are covered below)
 markers <- findMarkers(x=sce, groups=sce$clusterStg)
 ```
 
@@ -454,7 +465,7 @@ print(tmpFn)
 saveRDS(combined, file=tmpFn)
 ```
 
-## Invalidity of p-values
+## Invalidity of p-values
 
 ### 11.5.1 From data snooping
 

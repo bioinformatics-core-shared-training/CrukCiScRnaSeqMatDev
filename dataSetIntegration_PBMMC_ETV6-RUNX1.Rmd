@@ -21,8 +21,14 @@ params:
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE  
+  setName: "caron"
+  setSuf: "_5hCellPerSpl"
   splSetToGet: "PBMMC,ETV6-RUNX1"
 ---
+
+<!--
+  setSuf: "_allCells"
+-->
 
 ```{r, eval=FALSE}
 # OLD
@@ -40,7 +46,10 @@ dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
 splSetToGet <- params$splSetToGet
+setName <- params$setName
+setSuf <- params$setSuf
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
+splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 ```
@@ -94,11 +103,11 @@ Computational correction of these effects is critical for eliminating batch-to-b
 We will load the R file keeping the SCE object with the normalised counts, and subset 1000 cells per sample.
 
 ```{r}
-setName <- "caron"
+##setName <- "caron"
 #setSuf <- ""
-setSuf <- "_allCells"
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
-
+##setSuf <- "_allCells"
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
+                 projDir, outDirBit, setName, setSuf)
 print(tmpFn)
 
 if(!file.exists(tmpFn))
@@ -126,18 +135,35 @@ sce <- sceOrig[,sce$source_name %in% splSetVec ]
 nbCells <- 1000
 #nbCells <- 3000
 all.sce <- list()
-for(spx in splVec)
+
+# if '_allCells', then downsample for faster run
+# else (ie _5hCellPerSpl so far), do not downsample.
+if(setSuf == "_allCells")
 {
-	vec.bc <- colData(sce) %>%
-		data.frame() %>%
-		filter(Sample.Name == spx) %>%
-		#slice_sample(min(nbCells,) %>%
-		slice_sample(n=nbCells) %>%
-		pull(Barcode)
-	tmpInd <- which(colData(sce)$Barcode %in% vec.bc)
+  for(spx in splVec)
+  {
+    nbCellsToGet <- min(ncol(sce), nbCells)
+  	vec.bc <- colData(sce) %>%
+  		data.frame() %>%
+  		filter(Sample.Name == spx) %>%
+  		###slice_sample(n=nbCellsToGet) %>%
+  		pull(Barcode)
+  	tmpInd <- which(colData(sce)$Barcode %in% vec.bc)
 	
-	all.sce[[spx]] <- sce[,tmpInd]
-}
+  	all.sce[[spx]] <- sce[,tmpInd]
+  }
+} else {
+  for(spx in splVec)
+  {
+  	vec.bc <- colData(sce) %>%
+  		data.frame() %>%
+  		filter(Sample.Name == spx) %>%
+  		pull(Barcode)
+  	tmpInd <- which(colData(sce)$Barcode %in% vec.bc)
+	
+  	all.sce[[spx]] <- sce[,tmpInd]
+  }
+}  
 nbSpl <- length(all.sce)
 ```
 
@@ -296,7 +322,6 @@ p2 <- ggplot(data=tmpMat, aes(x=clusters, fill=batch)) +
 	theme(axis.text.x=element_text(angle = 90, hjust = 0)) +
   ggtitle("uncorrected, proportions")
 ```
-
 ```{r}
 gridExtra::grid.arrange(p1, p2)
 ```
@@ -309,11 +334,30 @@ uncorrected <- runTSNE(uncorrected, dimred="PCA")
 p <- plotTSNE(uncorrected, colour_by="batch")
 ```
 
+```{r}
+p
+```
+
 ```{r, fig.height=figSize*1/2, fig.width=figSize}
 p + facet_wrap(~uncorrected$source_name)
 ```
 
 Of course, the other explanation for batch-specific clusters is that there are cell types that are unique to each batch. The degree of intermingling of cells from different batches is not an effective diagnostic when the batches involved might actually contain unique cell subpopulations. If a cluster only contains cells from a single batch, one can always debate whether that is caused by a failure of the correction method or if there is truly a batch-specific subpopulation. For example, do batch-specific metabolic or differentiation states represent distinct subpopulations? Or should they be merged together? We will not attempt to answer this here, only noting that each batch correction algorithm will make different (and possibly inappropriate) decisions on what constitutes “shared” and “unique” populations.
+
+Let's write the corresponding SCE object.
+
+```{r}
+splSetToGet2 <- gsub(",", "_", splSetToGet)
+# save object?
+fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_uncorr.Rds",
+              projDir,
+              outDirBit,
+              setName,
+              setSuf,
+              splSetToGet2) # 'dsi' for data set integration
+saveRDS(uncorrected, file=fn)
+```
+
 
 ## Linear regression
 
@@ -1338,7 +1382,6 @@ We suggest limiting the use of per-gene corrected values to visualization, e.g.,
 # Mind sets may have been downsampled, eg with nbCells set to 1000.
 # But that is not in the file name (yet?)
 
-splSetToGet2 <- gsub(",", "_", splSetToGet)
 # save object?
 fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s.Rds",
 #fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi2_%s.Rds",
@@ -1350,6 +1393,8 @@ fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s.Rds",
 saveRDS(mnn.out, file=fn)
 #saveRDS(mnn.out2, file=fn)
 ```
+
+
 
 ## Identify clusters with PBMMC cells
 
@@ -1658,7 +1703,7 @@ p + facet_wrap(mnn.out$source_name~mnn.out$tmpCluBool)
 Select cluster to keep.
 
 Inclusion criteria:
-- proportion od PBMMC cells in cluster is lower than the threshold for the proportion of PBMMC cell in a cluster, eg 50%
+- proportion of PBMMC cells in cluster is lower than the threshold for the proportion of PBMMC cell in a cluster, eg 50%
 - proportion of cancer cells in cluster lower than 10% of cells of that sample type
 
 
