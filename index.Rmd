@@ -16,7 +16,10 @@ link-citations: yes
 github-repo: rstudio/bookdown-demo
 description: "A report for all analyses (bookdown::gitbook)."
 params:
+  projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
+  inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  cacheBool: FALSE
 ---
 
 **WORKING DOCUMENT - IN PROGRESS**
