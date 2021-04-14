@@ -20,6 +20,7 @@ params:
   projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  cacheBool: FALSE
 ---
 
 **WORKING DOCUMENT - IN PROGRESS**
@@ -30,9 +31,9 @@ TODO:
 
 
 ```{r cellranger.knitr_options, echo=FALSE, results="hide", message=FALSE}
+cacheBool <- params$cacheBool
 require(knitr)
-#opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=TRUE)
-opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=FALSE)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 opts_chunk$set(fig.width=7, fig.height=7) 
 ```
 
