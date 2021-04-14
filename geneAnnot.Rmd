@@ -1,0 +1,168 @@
+---
+title: "CRUK CI Summer School 2020 - introduction to single-cell RNA-seq analysis"
+subtitle: 'Gene Annotation'
+author: "Stephane Ballereau"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    number_sections: true
+    code_folding: hide
+  html_notebook:
+    code_folding: hide
+    toc: yes
+    toc_float: yes
+    number_sections: true
+  html_book:
+    code_folding: hide
+params:
+  projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
+  inpDirBit: "AnaWiSce/Ana1"
+  outDirBit: "AnaWiSce/Ana1"
+  cacheBool: FALSE
+---
+
+```{r preProc.knitr_options, echo=FALSE, results="hide", message=FALSE}
+cacheBool <- params$cacheBool
+require(knitr)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
+opts_chunk$set(fig.width=7, fig.height=7)
+opts_chunk$set(dev = c("png"))
+options(bitmapType='cairo')
+```
+
+# Gene annotation {#GeneAnnotTop}
+
+## Introduction
+
+The 10X cellranger pipeline describes gene with Ensembl IDs and gene symbols.
+We will need chromosomal location to identify mitochondrial genes to use in quality control.
+
+The online resource used to annotate genes is not always available (see biomaRt package).
+We will therefore annotate genes now in a separate chapter that can be run separately.
+The annotation is written to a file that is used in following chapters. 
+
+As cellranger generates count matrices with a fixed gene list,
+we will use the outcome for a single sample, eg SRR9264343.
+
+```{r geneAnnot_variables}
+projDir <- params$projDir
+wrkDir <- sprintf("%s/CaronBourque2020/grch38300", projDir) 
+outDirBit <- params$outDirBit
+biomartBool <- TRUE # biomaRt sometimes fails, do it once, write to file and use that copy.
+```
+
+```{r geneAnnot_libraries, include=FALSE, cache=FALSE}
+library(DropletUtils)
+library(biomaRt)
+library(dplyr)
+```
+
+```{r}
+dir.create(sprintf("%s/%s/Robjects",
+		   projDir, outDirBit),
+	   showWarnings = FALSE)
+```
+
+## Sample sheet
+
+We will load both the Caron and Hca data sets.
+
+```{r geneAnnot_sampleSheet}
+# CaronBourque2020
+cb_sampleSheetFn <- file.path(projDir, "Data/CaronBourque2020/SraRunTable.txt")
+# Human Cell Atlas
+hca_sampleSheetFn <- file.path(projDir, "Data/Hca/accList_Hca.txt")
+
+# read sample sheet in:
+splShtColToKeep <- c("Run", "Sample.Name", "source_name")
+
+cb_sampleSheet <- read.table(cb_sampleSheetFn, header=T, sep=",")
+hca_sampleSheet <- read.table(hca_sampleSheetFn, header=F, sep=",")
+colnames(hca_sampleSheet) <- "Sample.Name"
+hca_sampleSheet$Run <- hca_sampleSheet$Sample.Name
+hca_sampleSheet$source_name <- "ABMMC" # adult BMMC
+
+sampleSheet <- rbind(cb_sampleSheet[,splShtColToKeep], hca_sampleSheet[,splShtColToKeep])
+
+sampleSheet %>%
+	as.data.frame() %>%
+	DT::datatable(rownames = FALSE)
+```
+
+## SRR9264343
+
+We will load the data for the first sample in the sample sheet: SRR9264343.
+
+```{r example_load}
+i <- 1
+sample.path <- sprintf("%s/%s/%s/outs/raw_feature_bc_matrix/",
+                       wrkDir,
+                       sampleSheet[i,"Run"],
+                       sampleSheet[i,"Run"])
+sce.raw <- read10xCounts(sample.path, col.names=TRUE)
+sce.raw
+```
+
+<!-- Gene annotation -->
+<!-- Should be in separate script to run once only -->
+<!-- SRR9264343 -->
+<!-- raw or filtered: same genes --> 
+
+```{r raw_annot, eval=biomartBool}
+# retrieve the feature information
+gene.info <- rowData(sce.raw)
+
+# setup the biomaRt connection to Ensembl using the correct species genome (hsapiens_gene_ensembl)
+ensembl <- useEnsembl(biomart='ensembl',
+                      dataset='hsapiens_gene_ensembl',
+                      mirror = "www")
+
+#ensembl = useMart(biomart="ensembl",
+#		  dataset='hsapiens_gene_ensembl',
+#		  host = "www.ensembl.org") # ensemblRedirect = FALSE
+
+# retrieve the attributes of interest from biomaRt using the Ensembl gene ID as the key
+# beware that this will only retrieve information for matching IDs
+gene_symbol <- getBM(attributes=c('ensembl_gene_id',
+                                  'external_gene_name',
+                                  'chromosome_name',
+                                  'start_position',
+                                  'end_position',
+                                  'strand'),
+                     filters='ensembl_gene_id',
+                     mart=ensembl,
+                     values=gene.info[, 1])
+
+# create a new data frame of the feature information
+gene.merge <- merge(gene_symbol, gene.info, by.x=c('ensembl_gene_id'), by.y=c('ID'), all.y=TRUE)
+rownames(gene.merge) <- gene.merge$ensembl_gene_id
+
+# set the order for the same as the original gene information
+gene.merge <- gene.merge[gene.info[, 1], ]
+
+# reset the rowdata on the SCE object to contain all of this information
+rowData(sce.raw) <- gene.merge
+```
+
+Top 10 rows of the gene annotation table:
+
+```{r}
+rowData(sce.raw)[1:10,] %>%
+	as.data.frame() %>%
+	DT::datatable(rownames = FALSE)
+```
+
+
+```{r qc_annot_writeRds, eval=biomartBool}
+# slow
+# Write object to file
+tmpFn <- sprintf("%s/%s/Robjects/sceRaw_postBiomart.Rds", projDir, outDirBit)
+saveRDS(sce.raw, tmpFn)
+```
+
+```{r qc_annot_readRds, eval=!biomartBool}
+# Read object in:
+tmpFn <- sprintf("%s/%s/Robjects/sceRaw_postBiomart.Rds", projDir, outDirBit)
+sce.raw <- readRDS(tmpFn)
+```
