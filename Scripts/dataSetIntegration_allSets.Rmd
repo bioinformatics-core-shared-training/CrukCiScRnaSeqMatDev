@@ -143,27 +143,47 @@ splVec <- cb_sampleSheet %>%
 splVec
 ```
 
+<!--
 Subset cells (e.g 500 or 1000 per sample for a faster analysis):
+-->
 
 ```{r}
-# mind
-sceOrig <- sce
-nbCells <- 500
-setSuf <- "_5hCps" # "_5hCellPerSpl"
-#nbCells <- 1000
-#setSuf <- "_1kCps" # "_1kCellPerSpl"
+# mind we now have a downsampled set to use all along
+# so avoid doing it again
+# also, changes setsuf to shorter form eg _5hCps, which we could use from the start TODO
 
 all.sce <- list()
-for(spx in splVec)
+
+if(setSuf == "_allCells" | setSuf == "_5hCellPerSpl")
 {
-	vec.bc <- colData(sce) %>%
-		data.frame() %>%
-		filter(Sample.Name2 == spx) %>%
-		slice_sample(n=nbCells) %>%
-		pull(Barcode)
-	tmpInd <- which(colData(sce)$Barcode %in% vec.bc)
-	all.sce[[spx]] <- sce[,tmpInd]
+  for(spx in splVec)
+  {
+  	vec.bc <- colData(sce) %>%
+  		data.frame() %>%
+  		filter(Sample.Name2 == spx) %>%
+  		pull(Barcode)
+  	tmpInd <- which(colData(sce)$Barcode %in% vec.bc)
+  	all.sce[[spx]] <- sce[,tmpInd]
+  }
+} else {  
+  nbCells <- 500
+  setSuf <- "_5hCps" # "_5hCellPerSpl"
+
+  #nbCells <- 1000
+  #setSuf <- "_1kCps" # "_1kCellPerSpl"
+
+  for(spx in splVec)
+  {
+  	vec.bc <- colData(sce) %>%
+  		data.frame() %>%
+  		filter(Sample.Name2 == spx) %>%
+  		slice_sample(n=nbCells) %>%
+  		pull(Barcode)
+  	tmpInd <- which(colData(sce)$Barcode %in% vec.bc)
+  	all.sce[[spx]] <- sce[,tmpInd]
+  }
 }
+
 # show size of sets:
 lapply(all.sce, dim)
 # sizeFactors(all.sce[[1]])
