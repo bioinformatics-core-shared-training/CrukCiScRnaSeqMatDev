@@ -156,20 +156,20 @@ top.tcell.BM1 <- getTopHVGs(dec.tcell.BM1, n=500)
 We will extract normalized counts for HVG to use in pseudotime alignment
 
 ```{r}
-tcell_BM1_counts<-logcounts(sce.tcell.BM1)
-tcell_BM1_counts<-t(as.matrix(tcell_BM1_counts[top.tcell.BM1,]))
+tcell.BM1_counts<-logcounts(sce.tcell.BM1)
+tcell.BM1_counts<-t(as.matrix(tcell.BM1_counts[top.tcell.BM1,]))
 cellLabels <- sce.tcell.BM1$Barcode
-rownames(tcell_BM1_counts)<-cellLabels
+rownames(tcell.BM1_counts) <- cellLabels
 ```
 
 ```{r}
-tcell_BM1_counts[1:4,1:4]
+tcell.BM1_counts[1:4,1:4]
 ```
 
 And finally, we can run pseudotime alignment with destiny 
 
 ```{r}
-dm_tcell_BM1 <- DiffusionMap(tcell_BM1_counts,n_pcs = 50)
+dm_tcell_BM1 <- DiffusionMap(tcell.BM1_counts,n_pcs = 50)
 ```
 
 Plot diffusion component 1 vs diffusion component 2 (DC1 vs DC2). 
@@ -262,12 +262,12 @@ dec.tcell.BM2 <- modelGeneVar(sce.tcell.BM2)
 top.tcell.BM2 <- getTopHVGs(dec.tcell.BM2, n=500)
 
 # extract normalized count data for HVG 
-tcell_BM2_counts<-logcounts(sce.tcell.BM2)
-tcell_counts_BM2<-t(as.matrix(tcell_BM2_counts[top.tcell.BM2,]))
+tcell.BM2_counts<-logcounts(sce.tcell.BM2)
+tcell.BM2_counts<-t(as.matrix(tcell.BM2_counts[top.tcell.BM2,]))
 cellLabels <- sce.tcell.BM2$Barcode
-rownames(tcell_counts_BM2)<-cellLabels
+rownames(tcell.BM2_counts) <- cellLabels
 
-dm_tcell_BM2 <- DiffusionMap(tcell_counts_BM2,n_pcs = 50)
+dm_tcell_BM2 <- DiffusionMap(tcell.BM2_counts,n_pcs = 50)
 
 tmp <- data.frame(DC1 = eigenvectors(dm_tcell_BM2)[, 1],
                   DC2 = eigenvectors(dm_tcell_BM2)[, 2])
@@ -424,6 +424,31 @@ msigdb_c6 <- msigdbr(species = "Homo sapiens",
 em <- enricher(topgenes,
                TERM2GENE = msigdb_c6)
 head(em)[,"qvalue",drop=F]
+```
+
+
+Let's write to file for future use the normalised counts for the highly variables genes:
+
+```{r}
+setName <- "hca"
+setSuf <- "_5kCellPerSpl"
+
+# BM1
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_%s.Rds",
+                 projDir, outDirBit, setName, setSuf, "MantonBM1")
+saveRDS(tcell.BM1_counts, file=tmpFn)
+
+# BM2
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_%s.Rds",
+                 projDir, outDirBit, setName, setSuf, "MantonBM2")
+saveRDS(tcell.BM2_counts, file=tmpFn)
+
+# PRE-T 1
+setName <- "caron"
+setSuf <- "_allCells"
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_%s.Rds",
+                 projDir, outDirBit, setName, setSuf, spl.x)
+saveRDS(caron.PRET1_counts, file=tmpFn)
 ```
 
 # Ackowledgements
