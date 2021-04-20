@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 4 Gene annotation | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
+  <meta name="description" content="A report for all analyses (bookdown::gitbook)." />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 4 Gene annotation | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="A report for all analyses (bookdown::gitbook)." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 4 Gene annotation | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  
+  <meta name="twitter:description" content="A report for all analyses (bookdown::gitbook)." />
+  
+
+<meta name="author" content="Stephane Ballereau, Zeynep Kalender Atak" />
+
+
+<meta name="date" content="2021-03-29" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="AliFeatCountTop.html"/>
+
+<script src="libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<script src="libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding-0.17/datatables.js"></script>
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.10.20/js/jquery.dataTables.min.js"></script>
+<link href="libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
+
+<script>
+/* ========================================================================
+ * Bootstrap: transition.js v3.3.7
+ * http://getbootstrap.com/javascript/#transitions
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      WebkitTransition : 'webkitTransitionEnd',
+      MozTransition    : 'transitionend',
+      OTransition      : 'oTransitionEnd otransitionend',
+      transition       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+
+    return false // explicit for ie8 (  ._.)
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false
+    var $el = this
+    $(this).one('bsTransitionEnd', function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+
+    if (!$.support.transition) return
+
+    $.event.special.bsTransitionEnd = {
+      bindType: $.support.transition.end,
+      delegateType: $.support.transition.end,
+      handle: function (e) {
+        if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
+      }
+    }
+  })
+
+}(jQuery);
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: collapse.js v3.3.7
+ * http://getbootstrap.com/javascript/#collapse
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+/* jshint latedef: false */
+
++function ($) {
+  'use strict';
+
+  // COLLAPSE PUBLIC CLASS DEFINITION
+  // ================================
+
+  var Collapse = function (element, options) {
+    this.$element      = $(element)
+    this.options       = $.extend({}, Collapse.DEFAULTS, options)
+    this.$trigger      = $('[data-toggle="collapse"][href="#' + element.id + '"],' +
+                           '[data-toggle="collapse"][data-target="#' + element.id + '"]')
+    this.transitioning = null
+
+    if (this.options.parent) {
+      this.$parent = this.getParent()
+    } else {
+      this.addAriaAndCollapsedClass(this.$element, this.$trigger)
+    }
+
+    if (this.options.toggle) this.toggle()
+  }
+
+  Collapse.VERSION  = '3.3.7'
+
+  Collapse.TRANSITION_DURATION = 350
+
+  Collapse.DEFAULTS = {
+    toggle: true
+  }
+
+  Collapse.prototype.dimension = function () {
+    var hasWidth = this.$element.hasClass('width')
+    return hasWidth ? 'width' : 'height'
+  }
+
+  Collapse.prototype.show = function () {
+    if (this.transitioning || this.$element.hasClass('in')) return
+
+    var activesData
+    var actives = this.$parent && this.$parent.children('.panel').children('.in, .collapsing')
+
+    if (actives && actives.length) {
+      activesData = actives.data('bs.collapse')
+      if (activesData && activesData.transitioning) return
+    }
+
+    var startEvent = $.Event('show.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    if (actives && actives.length) {
+      Plugin.call(actives, 'hide')
+      activesData || actives.data('bs.collapse', null)
+    }
+
+    var dimension = this.dimension()
+
+    this.$element
+      .removeClass('collapse')
+      .addClass('collapsing')[dimension](0)
+      .attr('aria-expanded', true)
+
+    this.$trigger
+      .removeClass('collapsed')
+      .attr('aria-expanded', true)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse in')[dimension]('')
+      this.transitioning = 0
+      this.$element
+        .trigger('shown.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    var scrollSize = $.camelCase(['scroll', dimension].join('-'))
+
+    this.$element
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)[dimension](this.$element[0][scrollSize])
+  }
+
+  Collapse.prototype.hide = function () {
+    if (this.transitioning || !this.$element.hasClass('in')) return
+
+    var startEvent = $.Event('hide.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    var dimension = this.dimension()
+
+    this.$element[dimension](this.$element[dimension]())[0].offsetHeight
+
+    this.$element
+      .addClass('collapsing')
+      .removeClass('collapse in')
+      .attr('aria-expanded', false)
+
+    this.$trigger
+      .addClass('collapsed')
+      .attr('aria-expanded', false)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.transitioning = 0
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse')
+        .trigger('hidden.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    this.$element
+      [dimension](0)
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)
+  }
+
+  Collapse.prototype.toggle = function () {
+    this[this.$element.hasClass('in') ? 'hide' : 'show']()
+  }
+
+  Collapse.prototype.getParent = function () {
+    return $(this.options.parent)
+      .find('[data-toggle="collapse"][data-parent="' + this.options.parent + '"]')
+      .each($.proxy(function (i, element) {
+        var $element = $(element)
+        this.addAriaAndCollapsedClass(getTargetFromTrigger($element), $element)
+      }, this))
+      .end()
+  }
+
+  Collapse.prototype.addAriaAndCollapsedClass = function ($element, $trigger) {
+    var isOpen = $element.hasClass('in')
+
+    $element.attr('aria-expanded', isOpen)
+    $trigger
+      .toggleClass('collapsed', !isOpen)
+      .attr('aria-expanded', isOpen)
+  }
+
+  function getTargetFromTrigger($trigger) {
+    var href
+    var target = $trigger.attr('data-target')
+      || (href = $trigger.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+
+    return $(target)
+  }
+
+
+  // COLLAPSE PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('bs.collapse')
+      var options = $.extend({}, Collapse.DEFAULTS, $this.data(), typeof option == 'object' && option)
+
+      if (!data && options.toggle && /show|hide/.test(option)) options.toggle = false
+      if (!data) $this.data('bs.collapse', (data = new Collapse(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  var old = $.fn.collapse
+
+  $.fn.collapse             = Plugin
+  $.fn.collapse.Constructor = Collapse
+
+
+  // COLLAPSE NO CONFLICT
+  // ====================
+
+  $.fn.collapse.noConflict = function () {
+    $.fn.collapse = old
+    return this
+  }
+
+
+  // COLLAPSE DATA-API
+  // =================
+
+  $(document).on('click.bs.collapse.data-api', '[data-toggle="collapse"]', function (e) {
+    var $this   = $(this)
+
+    if (!$this.attr('data-target')) e.preventDefault()
+
+    var $target = getTargetFromTrigger($this)
+    var data    = $target.data('bs.collapse')
+    var option  = data ? 'toggle' : $this.data()
+
+    Plugin.call($target, option)
+  })
+
+}(jQuery);
+</script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.sourceCode, pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan');
+  rCodeBlocks.each(function() {
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    if (show)
+      div.addClass('in');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (show ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs code-folding-btn pull-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-target', '#' + id)
+        .attr('aria-expanded', show)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // update state of button on show/hide
+    div.on('hidden.bs.collapse', function () {
+      showCodeText.text('Code');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+    });
+  });
+
+}
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: dropdown.js v3.3.7
+ * http://getbootstrap.com/javascript/#dropdowns
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // DROPDOWN CLASS DEFINITION
+  // =========================
+
+  var backdrop = '.dropdown-backdrop'
+  var toggle   = '[data-toggle="dropdown"]'
+  var Dropdown = function (element) {
+    $(element).on('click.bs.dropdown', this.toggle)
+  }
+
+  Dropdown.VERSION = '3.3.7'
+
+  function getParent($this) {
+    var selector = $this.attr('data-target')
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && /#[A-Za-z]/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+    }
+
+    var $parent = selector && $(selector)
+
+    return $parent && $parent.length ? $parent : $this.parent()
+  }
+
+  function clearMenus(e) {
+    if (e && e.which === 3) return
+    $(backdrop).remove()
+    $(toggle).each(function () {
+      var $this         = $(this)
+      var $parent       = getParent($this)
+      var relatedTarget = { relatedTarget: this }
+
+      if (!$parent.hasClass('open')) return
+
+      if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return
+
+      $parent.trigger(e = $.Event('hide.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this.attr('aria-expanded', 'false')
+      $parent.removeClass('open').trigger($.Event('hidden.bs.dropdown', relatedTarget))
+    })
+  }
+
+  Dropdown.prototype.toggle = function (e) {
+    var $this = $(this)
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    clearMenus()
+
+    if (!isActive) {
+      if ('ontouchstart' in document.documentElement && !$parent.closest('.navbar-nav').length) {
+        // if mobile we use a backdrop because click events don't delegate
+        $(document.createElement('div'))
+          .addClass('dropdown-backdrop')
+          .insertAfter($(this))
+          .on('click', clearMenus)
+      }
+
+      var relatedTarget = { relatedTarget: this }
+      $parent.trigger(e = $.Event('show.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this
+        .trigger('focus')
+        .attr('aria-expanded', 'true')
+
+      $parent
+        .toggleClass('open')
+        .trigger($.Event('shown.bs.dropdown', relatedTarget))
+    }
+
+    return false
+  }
+
+  Dropdown.prototype.keydown = function (e) {
+    if (!/(38|40|27|32)/.test(e.which) || /input|textarea/i.test(e.target.tagName)) return
+
+    var $this = $(this)
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    if (!isActive && e.which != 27 || isActive && e.which == 27) {
+      if (e.which == 27) $parent.find(toggle).trigger('focus')
+      return $this.trigger('click')
+    }
+
+    var desc = ' li:not(.disabled):visible a'
+    var $items = $parent.find('.dropdown-menu' + desc)
+
+    if (!$items.length) return
+
+    var index = $items.index(e.target)
+
+    if (e.which == 38 && index > 0)                 index--         // up
+    if (e.which == 40 && index < $items.length - 1) index++         // down
+    if (!~index)                                    index = 0
+
+    $items.eq(index).trigger('focus')
+  }
+
+
+  // DROPDOWN PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this = $(this)
+      var data  = $this.data('bs.dropdown')
+
+      if (!data) $this.data('bs.dropdown', (data = new Dropdown(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  var old = $.fn.dropdown
+
+  $.fn.dropdown             = Plugin
+  $.fn.dropdown.Constructor = Dropdown
+
+
+  // DROPDOWN NO CONFLICT
+  // ====================
+
+  $.fn.dropdown.noConflict = function () {
+    $.fn.dropdown = old
+    return this
+  }
+
+
+  // APPLY TO STANDARD DROPDOWN ELEMENTS
+  // ===================================
+
+  $(document)
+    .on('click.bs.dropdown.data-api', clearMenus)
+    .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle)
+    .on('keydown.bs.dropdown.data-api', toggle, Dropdown.prototype.keydown)
+    .on('keydown.bs.dropdown.data-api', '.dropdown-menu', Dropdown.prototype.keydown)
+
+}(jQuery);
+</script>
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+.row { display: flex; }
+.collapse { display: none; }
+.in { display:block }
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+.open > .dropdown-menu {
+    display: block;
+}
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "hide");
+});
+</script>
+
+
+<script>
+document.write('<div class="btn-group pull-right" style="position: absolute; top: 20%; right: 2%; z-index: 200"><button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-_extension-text-contrast=""><span>Code</span> <span class="caret"></span></button><ul class="dropdown-menu" style="min-width: 50px;"><li><a id="rmd-show-all-code" href="#">Show All Code</a></li><li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li></ul></div>')
+</script>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">CRUK Functional Genomics Summer School 2020</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Preamble</a><ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#the-study"><i class="fa fa-check"></i><b>1.1</b> The study</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#the-plan"><i class="fa fa-check"></i><b>1.2</b> The plan</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#the-analyses"><i class="fa fa-check"></i><b>1.3</b> The analyses</a></li>
+<li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#overall-summary"><i class="fa fa-check"></i><b>1.4</b> Overall summary</a></li>
+<li class="chapter" data-level="1.5" data-path="index.html"><a href="index.html#conclusion"><i class="fa fa-check"></i><b>1.5</b> Conclusion</a></li>
+<li class="chapter" data-level="1.6" data-path="index.html"><a href="index.html#abbreviations"><i class="fa fa-check"></i><b>1.6</b> Abbreviations</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="SeqQualTop.html"><a href="SeqQualTop.html"><i class="fa fa-check"></i><b>2</b> Sequence Quality</a><ul>
+<li class="chapter" data-level="2.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#introduction"><i class="fa fa-check"></i><b>2.1</b> Introduction</a></li>
+<li class="chapter" data-level="2.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#caronbourque2020---fastqc"><i class="fa fa-check"></i><b>2.2</b> CaronBourque2020 - fastqc</a></li>
+<li class="chapter" data-level="2.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#caronbourque2020---multiqc"><i class="fa fa-check"></i><b>2.3</b> CaronBourque2020 - MultiQC</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#sample-index-i1"><i class="fa fa-check"></i><b>2.3.1</b> sample index: I1</a></li>
+<li class="chapter" data-level="2.3.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#cell-barcode-umi-r1"><i class="fa fa-check"></i><b>2.3.2</b> cell barcode + UMI: R1</a></li>
+<li class="chapter" data-level="2.3.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#insert-r2"><i class="fa fa-check"></i><b>2.3.3</b> insert: R2</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="SeqQualTop.html"><a href="SeqQualTop.html#hca-adult-bmmc---fastqc"><i class="fa fa-check"></i><b>2.4</b> HCA adult BMMC - fastqc</a></li>
+<li class="chapter" data-level="2.5" data-path="SeqQualTop.html"><a href="SeqQualTop.html#hca-adult-bmmc---multiqc"><i class="fa fa-check"></i><b>2.5</b> HCA adult BMMC - MultiQC</a><ul>
+<li class="chapter" data-level="2.5.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#sample-index-i1-1"><i class="fa fa-check"></i><b>2.5.1</b> sample index: I1</a></li>
+<li class="chapter" data-level="2.5.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#cell-barcode-umi-r1-1"><i class="fa fa-check"></i><b>2.5.2</b> cell barcode + UMI: R1</a></li>
+<li class="chapter" data-level="2.5.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#insert-r2-1"><i class="fa fa-check"></i><b>2.5.3</b> insert: R2</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html"><i class="fa fa-check"></i><b>3</b> Alignment and feature counting</a><ul>
+<li class="chapter" data-level="3.1" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#introduction-1"><i class="fa fa-check"></i><b>3.1</b> Introduction</a></li>
+<li class="chapter" data-level="3.2" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-pipeline-in-brief"><i class="fa fa-check"></i><b>3.2</b> 10X cellranger pipeline in brief</a></li>
+<li class="chapter" data-level="3.3" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#sample-sheet"><i class="fa fa-check"></i><b>3.3</b> sample sheet</a></li>
+<li class="chapter" data-level="3.4" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-reports-for-caronbourque2020"><i class="fa fa-check"></i><b>3.4</b> 10X cellranger reports for CaronBourque2020</a></li>
+<li class="chapter" data-level="3.5" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-reports-for-hcas-adult-bmmcs"><i class="fa fa-check"></i><b>3.5</b> 10X cellranger reports for HCA’s adult BMMCs</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="GeneAnnotTop.html"><a href="GeneAnnotTop.html"><i class="fa fa-check"></i><b>4</b> Gene annotation</a><ul>
+<li class="chapter" data-level="4.1" data-path="GeneAnnotTop.html"><a href="GeneAnnotTop.html#introduction-2"><i class="fa fa-check"></i><b>4.1</b> Introduction</a></li>
+<li class="chapter" data-level="4.2" data-path="GeneAnnotTop.html"><a href="GeneAnnotTop.html#sample-sheet-1"><i class="fa fa-check"></i><b>4.2</b> Sample sheet</a></li>
+<li class="chapter" data-level="4.3" data-path="GeneAnnotTop.html"><a href="GeneAnnotTop.html#srr9264343"><i class="fa fa-check"></i><b>4.3</b> SRR9264343</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="GeneAnnotTop" class="section level1">
+<h1><span class="header-section-number">Chapter 4</span> Gene annotation</h1>
+<div id="introduction-2" class="section level2">
+<h2><span class="header-section-number">4.1</span> Introduction</h2>
+<p>The 10X cellranger pipeline describes gene with Ensembl IDs and gene symbols.
+We will need chromosomal location to identify mitochondrial genes to use in quality control.</p>
+<p>The online resource used to annotate genes is not always available (see biomaRt package).
+We will therefore annotate genes now in a separate chapter that can be run separately.
+The annotation is written to a file that is used in following chapters.</p>
+<p>As cellranger generates count matrices with a fixed gene list,
+we will use the outcome for a single sample, eg SRR9264343.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="GeneAnnotTop.html#cb1-1"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb1-2"><a href="GeneAnnotTop.html#cb1-2"></a>wrkDir &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/CaronBourque2020/grch38300&quot;</span>, projDir) </span>
+<span id="cb1-3"><a href="GeneAnnotTop.html#cb1-3"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span>
+<span id="cb1-4"><a href="GeneAnnotTop.html#cb1-4"></a>biomartBool &lt;-<span class="st"> </span><span class="ot">TRUE</span> <span class="co"># biomaRt sometimes fails, do it once, write to file and use that copy.</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="GeneAnnotTop.html#cb2-1"></a><span class="kw">dir.create</span>(<span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects&quot;</span>,</span>
+<span id="cb2-2"><a href="GeneAnnotTop.html#cb2-2"></a>           projDir, outDirBit),</span>
+<span id="cb2-3"><a href="GeneAnnotTop.html#cb2-3"></a>       <span class="dt">showWarnings =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+</div>
+<div id="sample-sheet-1" class="section level2">
+<h2><span class="header-section-number">4.2</span> Sample sheet</h2>
+<p>We will load both the Caron and Hca data sets.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="GeneAnnotTop.html#cb3-1"></a><span class="co"># CaronBourque2020</span></span>
+<span id="cb3-2"><a href="GeneAnnotTop.html#cb3-2"></a>cb_sampleSheetFn &lt;-<span class="st"> </span><span class="kw">file.path</span>(projDir, <span class="st">&quot;Data/CaronBourque2020/SraRunTable.txt&quot;</span>)</span>
+<span id="cb3-3"><a href="GeneAnnotTop.html#cb3-3"></a><span class="co"># Human Cell Atlas</span></span>
+<span id="cb3-4"><a href="GeneAnnotTop.html#cb3-4"></a>hca_sampleSheetFn &lt;-<span class="st"> </span><span class="kw">file.path</span>(projDir, <span class="st">&quot;Data/Hca/accList_Hca.txt&quot;</span>)</span>
+<span id="cb3-5"><a href="GeneAnnotTop.html#cb3-5"></a></span>
+<span id="cb3-6"><a href="GeneAnnotTop.html#cb3-6"></a><span class="co"># read sample sheet in:</span></span>
+<span id="cb3-7"><a href="GeneAnnotTop.html#cb3-7"></a>splShtColToKeep &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Run&quot;</span>, <span class="st">&quot;Sample.Name&quot;</span>, <span class="st">&quot;source_name&quot;</span>)</span>
+<span id="cb3-8"><a href="GeneAnnotTop.html#cb3-8"></a></span>
+<span id="cb3-9"><a href="GeneAnnotTop.html#cb3-9"></a>cb_sampleSheet &lt;-<span class="st"> </span><span class="kw">read.table</span>(cb_sampleSheetFn, <span class="dt">header=</span>T, <span class="dt">sep=</span><span class="st">&quot;,&quot;</span>)</span>
+<span id="cb3-10"><a href="GeneAnnotTop.html#cb3-10"></a>hca_sampleSheet &lt;-<span class="st"> </span><span class="kw">read.table</span>(hca_sampleSheetFn, <span class="dt">header=</span>F, <span class="dt">sep=</span><span class="st">&quot;,&quot;</span>)</span>
+<span id="cb3-11"><a href="GeneAnnotTop.html#cb3-11"></a><span class="kw">colnames</span>(hca_sampleSheet) &lt;-<span class="st"> &quot;Sample.Name&quot;</span></span>
+<span id="cb3-12"><a href="GeneAnnotTop.html#cb3-12"></a>hca_sampleSheet<span class="op">$</span>Run &lt;-<span class="st"> </span>hca_sampleSheet<span class="op">$</span>Sample.Name</span>
+<span id="cb3-13"><a href="GeneAnnotTop.html#cb3-13"></a>hca_sampleSheet<span class="op">$</span>source_name &lt;-<span class="st"> &quot;ABMMC&quot;</span> <span class="co"># adult BMMC</span></span>
+<span id="cb3-14"><a href="GeneAnnotTop.html#cb3-14"></a></span>
+<span id="cb3-15"><a href="GeneAnnotTop.html#cb3-15"></a>sampleSheet &lt;-<span class="st"> </span><span class="kw">rbind</span>(cb_sampleSheet[,splShtColToKeep], hca_sampleSheet[,splShtColToKeep])</span>
+<span id="cb3-16"><a href="GeneAnnotTop.html#cb3-16"></a></span>
+<span id="cb3-17"><a href="GeneAnnotTop.html#cb3-17"></a>sampleSheet <span class="op">%&gt;%</span></span>
+<span id="cb3-18"><a href="GeneAnnotTop.html#cb3-18"></a><span class="st">    </span><span class="kw">as.data.frame</span>() <span class="op">%&gt;%</span></span>
+<span id="cb3-19"><a href="GeneAnnotTop.html#cb3-19"></a><span class="st">    </span>DT<span class="op">::</span><span class="kw">datatable</span>(<span class="dt">rownames =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<div id="htmlwidget-3a28d8bf898ecf6209e4" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3a28d8bf898ecf6209e4">{"x":{"filter":"none","data":[["SRR9264343","SRR9264344","SRR9264345","SRR9264346","SRR9264347","SRR9264348","SRR9264349","SRR9264350","SRR9264351","SRR9264352","SRR9264353","SRR9264354","MantonBM1","MantonBM2","MantonBM3","MantonBM4","MantonBM5","MantonBM6","MantonBM7","MantonBM8"],["GSM3872434","GSM3872435","GSM3872436","GSM3872437","GSM3872438","GSM3872439","GSM3872440","GSM3872441","GSM3872442","GSM3872442","GSM3872443","GSM3872444","MantonBM1","MantonBM2","MantonBM3","MantonBM4","MantonBM5","MantonBM6","MantonBM7","MantonBM8"],["ETV6-RUNX1","ETV6-RUNX1","ETV6-RUNX1","ETV6-RUNX1","HHD","HHD","PRE-T","PRE-T","PBMMC","PBMMC","PBMMC","PBMMC","ABMMC","ABMMC","ABMMC","ABMMC","ABMMC","ABMMC","ABMMC","ABMMC"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Run<\/th>\n      <th>Sample.Name<\/th>\n      <th>source_name<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="srr9264343" class="section level2">
+<h2><span class="header-section-number">4.3</span> SRR9264343</h2>
+<p>We will load the data for the first sample in the sample sheet: SRR9264343.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="GeneAnnotTop.html#cb4-1"></a>i &lt;-<span class="st"> </span><span class="dv">1</span></span>
+<span id="cb4-2"><a href="GeneAnnotTop.html#cb4-2"></a>sample.path &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/%s/outs/raw_feature_bc_matrix/&quot;</span>,</span>
+<span id="cb4-3"><a href="GeneAnnotTop.html#cb4-3"></a>                       wrkDir,</span>
+<span id="cb4-4"><a href="GeneAnnotTop.html#cb4-4"></a>                       sampleSheet[i,<span class="st">&quot;Run&quot;</span>],</span>
+<span id="cb4-5"><a href="GeneAnnotTop.html#cb4-5"></a>                       sampleSheet[i,<span class="st">&quot;Run&quot;</span>])</span>
+<span id="cb4-6"><a href="GeneAnnotTop.html#cb4-6"></a>sce.raw &lt;-<span class="st"> </span><span class="kw">read10xCounts</span>(sample.path, <span class="dt">col.names=</span><span class="ot">TRUE</span>)</span>
+<span id="cb4-7"><a href="GeneAnnotTop.html#cb4-7"></a>sce.raw</span></code></pre></div>
+<pre><code>## class: SingleCellExperiment 
+## dim: 33538 737280 
+## metadata(1): Samples
+## assays(1): counts
+## rownames(33538): ENSG00000243485 ENSG00000237613 ... ENSG00000277475
+##   ENSG00000268674
+## rowData names(3): ID Symbol Type
+## colnames(737280): AAACCTGAGAAACCAT-1 AAACCTGAGAAACCGC-1 ...
+##   TTTGTCATCTTTAGTC-1 TTTGTCATCTTTCCTC-1
+## colData names(2): Sample Barcode
+## reducedDimNames(0):
+## altExpNames(0):</code></pre>
+<!-- Gene annotation -->
+<!-- Should be in separate script to run once only -->
+<!-- SRR9264343 -->
+<!-- raw or filtered: same genes -->
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="GeneAnnotTop.html#cb6-1"></a><span class="co"># retrieve the feature information</span></span>
+<span id="cb6-2"><a href="GeneAnnotTop.html#cb6-2"></a>gene.info &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce.raw)</span>
+<span id="cb6-3"><a href="GeneAnnotTop.html#cb6-3"></a></span>
+<span id="cb6-4"><a href="GeneAnnotTop.html#cb6-4"></a><span class="co"># setup the biomaRt connection to Ensembl using the correct species genome (hsapiens_gene_ensembl)</span></span>
+<span id="cb6-5"><a href="GeneAnnotTop.html#cb6-5"></a>ensembl &lt;-<span class="st"> </span><span class="kw">useEnsembl</span>(<span class="dt">biomart=</span><span class="st">&#39;ensembl&#39;</span>,</span>
+<span id="cb6-6"><a href="GeneAnnotTop.html#cb6-6"></a>                      <span class="dt">dataset=</span><span class="st">&#39;hsapiens_gene_ensembl&#39;</span>,</span>
+<span id="cb6-7"><a href="GeneAnnotTop.html#cb6-7"></a>                      <span class="dt">mirror =</span> <span class="st">&quot;www&quot;</span>)</span>
+<span id="cb6-8"><a href="GeneAnnotTop.html#cb6-8"></a></span>
+<span id="cb6-9"><a href="GeneAnnotTop.html#cb6-9"></a><span class="co">#ensembl = useMart(biomart=&quot;ensembl&quot;,</span></span>
+<span id="cb6-10"><a href="GeneAnnotTop.html#cb6-10"></a><span class="co">#         dataset=&#39;hsapiens_gene_ensembl&#39;,</span></span>
+<span id="cb6-11"><a href="GeneAnnotTop.html#cb6-11"></a><span class="co">#         host = &quot;www.ensembl.org&quot;) # ensemblRedirect = FALSE</span></span>
+<span id="cb6-12"><a href="GeneAnnotTop.html#cb6-12"></a></span>
+<span id="cb6-13"><a href="GeneAnnotTop.html#cb6-13"></a><span class="co"># retrieve the attributes of interest from biomaRt using the Ensembl gene ID as the key</span></span>
+<span id="cb6-14"><a href="GeneAnnotTop.html#cb6-14"></a><span class="co"># beware that this will only retrieve information for matching IDs</span></span>
+<span id="cb6-15"><a href="GeneAnnotTop.html#cb6-15"></a>gene_symbol &lt;-<span class="st"> </span><span class="kw">getBM</span>(<span class="dt">attributes=</span><span class="kw">c</span>(<span class="st">&#39;ensembl_gene_id&#39;</span>,</span>
+<span id="cb6-16"><a href="GeneAnnotTop.html#cb6-16"></a>                                  <span class="st">&#39;external_gene_name&#39;</span>,</span>
+<span id="cb6-17"><a href="GeneAnnotTop.html#cb6-17"></a>                                  <span class="st">&#39;chromosome_name&#39;</span>,</span>
+<span id="cb6-18"><a href="GeneAnnotTop.html#cb6-18"></a>                                  <span class="st">&#39;start_position&#39;</span>,</span>
+<span id="cb6-19"><a href="GeneAnnotTop.html#cb6-19"></a>                                  <span class="st">&#39;end_position&#39;</span>,</span>
+<span id="cb6-20"><a href="GeneAnnotTop.html#cb6-20"></a>                                  <span class="st">&#39;strand&#39;</span>),</span>
+<span id="cb6-21"><a href="GeneAnnotTop.html#cb6-21"></a>                     <span class="dt">filters=</span><span class="st">&#39;ensembl_gene_id&#39;</span>,</span>
+<span id="cb6-22"><a href="GeneAnnotTop.html#cb6-22"></a>                     <span class="dt">mart=</span>ensembl,</span>
+<span id="cb6-23"><a href="GeneAnnotTop.html#cb6-23"></a>                     <span class="dt">values=</span>gene.info[, <span class="dv">1</span>])</span>
+<span id="cb6-24"><a href="GeneAnnotTop.html#cb6-24"></a></span>
+<span id="cb6-25"><a href="GeneAnnotTop.html#cb6-25"></a><span class="co"># create a new data frame of the feature information</span></span>
+<span id="cb6-26"><a href="GeneAnnotTop.html#cb6-26"></a>gene.merge &lt;-<span class="st"> </span><span class="kw">merge</span>(gene_symbol, gene.info, <span class="dt">by.x=</span><span class="kw">c</span>(<span class="st">&#39;ensembl_gene_id&#39;</span>), <span class="dt">by.y=</span><span class="kw">c</span>(<span class="st">&#39;ID&#39;</span>), <span class="dt">all.y=</span><span class="ot">TRUE</span>)</span>
+<span id="cb6-27"><a href="GeneAnnotTop.html#cb6-27"></a><span class="kw">rownames</span>(gene.merge) &lt;-<span class="st"> </span>gene.merge<span class="op">$</span>ensembl_gene_id</span>
+<span id="cb6-28"><a href="GeneAnnotTop.html#cb6-28"></a></span>
+<span id="cb6-29"><a href="GeneAnnotTop.html#cb6-29"></a><span class="co"># set the order for the same as the original gene information</span></span>
+<span id="cb6-30"><a href="GeneAnnotTop.html#cb6-30"></a>gene.merge &lt;-<span class="st"> </span>gene.merge[gene.info[, <span class="dv">1</span>], ]</span>
+<span id="cb6-31"><a href="GeneAnnotTop.html#cb6-31"></a></span>
+<span id="cb6-32"><a href="GeneAnnotTop.html#cb6-32"></a><span class="co"># reset the rowdata on the SCE object to contain all of this information</span></span>
+<span id="cb6-33"><a href="GeneAnnotTop.html#cb6-33"></a><span class="kw">rowData</span>(sce.raw) &lt;-<span class="st"> </span>gene.merge</span></code></pre></div>
+<p>Top 10 rows of the gene annotation table:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="GeneAnnotTop.html#cb7-1"></a><span class="kw">rowData</span>(sce.raw)[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>,] <span class="op">%&gt;%</span></span>
+<span id="cb7-2"><a href="GeneAnnotTop.html#cb7-2"></a><span class="st">    </span><span class="kw">as.data.frame</span>() <span class="op">%&gt;%</span></span>
+<span id="cb7-3"><a href="GeneAnnotTop.html#cb7-3"></a><span class="st">    </span>DT<span class="op">::</span><span class="kw">datatable</span>(<span class="dt">rownames =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<div id="htmlwidget-12c01f084d89f45946a7" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-12c01f084d89f45946a7">{"x":{"filter":"none","data":[["ENSG00000243485","ENSG00000237613","ENSG00000186092","ENSG00000238009","ENSG00000239945","ENSG00000239906","ENSG00000241599","ENSG00000236601","ENSG00000284733","ENSG00000235146"],["MIR1302-2HG","FAM138A","OR4F5","AL627309.1","AL627309.3","AL627309.2","AL627309.4","AL732372.1","OR4F29","AC114498.1"],["1","1","1","1","1","1","1","1","1","1"],[29554,34554,65419,89295,89551,139790,160446,358857,450740,587629],[31109,36081,71585,133723,91105,140339,161525,366052,451678,594768],[1,-1,1,-1,-1,-1,1,1,-1,1],["MIR1302-2HG","FAM138A","OR4F5","AL627309.1","AL627309.3","AL627309.2","AL627309.4","AL732372.1","OR4F29","AC114498.1"],["Gene Expression","Gene Expression","Gene Expression","Gene Expression","Gene Expression","Gene Expression","Gene Expression","Gene Expression","Gene Expression","Gene Expression"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>ensembl_gene_id<\/th>\n      <th>external_gene_name<\/th>\n      <th>chromosome_name<\/th>\n      <th>start_position<\/th>\n      <th>end_position<\/th>\n      <th>strand<\/th>\n      <th>Symbol<\/th>\n      <th>Type<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[3,4,5]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="GeneAnnotTop.html#cb8-1"></a><span class="co"># slow</span></span>
+<span id="cb8-2"><a href="GeneAnnotTop.html#cb8-2"></a><span class="co"># Write object to file</span></span>
+<span id="cb8-3"><a href="GeneAnnotTop.html#cb8-3"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/sceRaw_postBiomart.Rds&quot;</span>, projDir, outDirBit)</span>
+<span id="cb8-4"><a href="GeneAnnotTop.html#cb8-4"></a><span class="kw">saveRDS</span>(sce.raw, tmpFn)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="GeneAnnotTop.html#cb9-1"></a><span class="co"># Read object in:</span></span>
+<span id="cb9-2"><a href="GeneAnnotTop.html#cb9-2"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/sceRaw_postBiomart.Rds&quot;</span>, projDir, outDirBit)</span>
+<span id="cb9-3"><a href="GeneAnnotTop.html#cb9-3"></a>sce.raw &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span></code></pre></div>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="AliFeatCountTop.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/geneAnnot.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["MkWoC.pdf", "MkWoC.epub"],
+"toc": {
+"collapse": "subsection",
+"scroll_highlight": true
+},
+"code_folding": "hide"
+});
+});
+</script>
+
+</body>
+
+</html>
