@@ -1,6 +1,6 @@
 ---
 title: "CRUK CI Summer School 2020 - introduction to single-cell RNA-seq analysis"
-subtitle: 'Normalisation - 500 cells per sample'
+subtitle: 'Detection of confounding factors'
 
 author: "Stephane Ballereau, Zeynep Kalender Atak, Katarzyna Kania"
 output:
@@ -26,17 +26,23 @@ params:
 
 # Identifying confounding factors - `r "{{setNameUpp}}"` set
 
-```{r {{setNameUpp}}_variables_confound, cache=FALSE}
+```{r {{setNameUpp}}_confound_variables, cache=FALSE}
 normPlotDirBit <- "Plots/Norm" # "ConfoundPlots"
 #setNameUpp <- "Caron"
 #setNameLow <- "caron"
 setName <- tolower("{{setNameUpp}}")
+setSuf <- "_5hCellPerSpl"
+typeNorm <- "scran"
+
+projDir <- params$projDir
+dirRel <- params$dirRel
+outDirBit <- params$outDirBit
 ```
 
 `r setName`
 
 
-```{r, include=FALSE}
+```{r {{setNameUpp}}_confound_libraries, include=FALSE}
 library(scater)
 library(scran)
 library(ggplot2)
@@ -48,25 +54,14 @@ library(BiocSingular)
 Should have Caron and HCA separately
 -->
 
-```{r}
-projDir <- params$projDir
-dirRel <- params$dirRel
-outDirBit <- params$outDirBit
-```
-
 Load object 
 
-```{r confounding_{{setNameUpp}}_readIn, cache=FALSE}
-setSuf <- "_5hCellPerSpl"
+```{r {{setNameUpp}}_confound_readIn, cache=FALSE}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
 tmpFn
-getwd()
-file.exists(tmpFn)
-```
-
-
-```{r, cache=FALSE}
+#getwd()
+#file.exists(tmpFn)
 sce <- readRDS(tmpFn)
 sce
 ```
@@ -74,10 +69,6 @@ sce
 Remember scran PCA:
 
 Normalised counts are stored in 'logcounts' assay
-
-```{r}
-typeNorm <- "scran"
-```
 
 ```{r, eval=FALSE}
 # 
@@ -89,7 +80,7 @@ scranPca <- runPCA(
 
 PCA plot for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r, out.width="80%", eval=FALSE}
+```{r {{setNameUpp}}_confound_postQcPcaPlotShow, out.width="80%", eval=FALSE}
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 #projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 		 dirRel, normPlotDirBit, setName, setSuf, typeNorm)
@@ -97,7 +88,7 @@ tmpFn
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 ```
 
-```{r, eval=FALSE}
+```{r {{setNameUpp}}_confound_postDeconvPcaComp, eval=FALSE}
 #options(BiocSingularParam.default=IrlbaParam())
 options(BiocSingularParam.default=ExactParam())
 
@@ -108,7 +99,7 @@ sce <- logNormCounts(sce)
 
 Perform PCA:
 
-```{r}
+```{r {{setNameUpp}}_confound_postDeconvPcaPlotShow}
 reducedDim(sce, "PCA") <- reducedDim(
   runPCA(sce, exprs_values = "logcounts", ncomponents = 10), "PCA")
 
@@ -124,15 +115,20 @@ plotPCA(
 Correlation with PCs: logcounts_raw:
 -->
 
-```{r, eval=FALSE}
+```{r {{setNameUpp}}_confound_logcounts_raw, eval=FALSE}
 assay(sce, "logcounts_raw") <- log2(counts(sce)+1)
 ```
 
-```{r, eval=FALSE}
+```{r {{setNameUpp}}_confound_raw_getExpPc, eval=FALSE}
 # on norm count https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors
 # on logcounts_raw https://scrnaseq-course.cog.sanger.ac.uk/website/cleaning-the-expression-matrix.html#correlations-with-pcs
 # a bit long
-explanPc <- getExplanatoryPCs(sce,
+
+# issue with scale, trying with explanPc/100
+# see next chunk too
+
+explanPc <- getExplanatoryPCs(
+    sce,
     exprs_values = "logcounts_raw",
     variables = c(
         "sum",
@@ -149,7 +145,7 @@ plotExplanatoryPCs(explanPc/100)
 Explanatory variables: logcounts_raw:
 -->
 
-```{r, eval=FALSE}
+```{r {{setNameUpp}}_confound_raw_getExpVar, eval=FALSE}
 
 # on logcounts_raw
 # https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors
@@ -171,7 +167,7 @@ plotExplanatoryVariables(
 
 Correlation with PCs: logcounts (normalised):
 
-```{r}
+```{r {{setNameUpp}}_confound_norm_getExpPc}
 # on norm count https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors
 # on logcounts_raw https://scrnaseq-course.cog.sanger.ac.uk/website/cleaning-the-expression-matrix.html#correlations-with-pcs
 # a bit long
@@ -189,9 +185,9 @@ explanPc <- getExplanatoryPCs(sce,
 plotExplanatoryPCs(explanPc/100) 
 ```
 
-Explanatory variables: logcounts_raw:
+Explanatory variables: logcounts (normalised):
 
-```{r}
+```{r {{setNameUpp}}_confound_norm_getExpVar}
 
 # on logcounts_raw
 # https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors
