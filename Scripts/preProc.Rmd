@@ -1538,7 +1538,6 @@ sce.x
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
 saveRDS(sce.x, tmpFn)
-rm(sce.x)
 
 # update sce.nz.caron
 sce.nz.caron <- sce.x  # TODO not used
