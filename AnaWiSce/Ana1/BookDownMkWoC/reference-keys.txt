@@ -196,3 +196,5 @@ correction-diagnostics
 preserving-biological-heterogeneity
 comparison-to-within-batch-clusters
 encouraging-consistency-with-marker-genes
+session-information-1
+session-information-2
