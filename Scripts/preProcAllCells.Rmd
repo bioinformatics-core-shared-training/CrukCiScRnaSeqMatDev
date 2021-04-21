@@ -1746,6 +1746,9 @@ We write the R object to `r sprintf("%s_sce_nz_postQc%s.Rds", setName, setSuf)`.
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds",
 		 projDir, outDirBit, setName, setSuf)
 saveRDS(sce.x, tmpFn)
+
+# rename to sce.nz.caron
+sce.nz.caron <- sce.x # TODO sce.nz.caron not used
 rm(sce.x)
 ```
 
@@ -1835,6 +1838,10 @@ We write the R object to `r sprintf("%s_sce_nz_postQc%s.Rds", setName, setSuf)`.
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds", projDir, outDirBit, setName, setSuf)
 saveRDS(sce.x, tmpFn)
+
+# rename to sce.nz.hca
+sce.nz.hca <- sce.x # TODO sce.nz.hca only used for sce.nz.hca.5k
+rm(sce.x)
 ```
 
 ```{r Hca_sparsity_filter_read_allCells, eval=!runAll}
@@ -1871,4 +1878,10 @@ We write the R object to 'hca_sce_nz_postQc_5kCellPerSpl.Rds'.
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc_5kCellPerSpl.Rds", projDir, outDirBit, setName)
 saveRDS(sce.nz.hca.5k, tmpFn)
+```
+
+## Session information
+
+```{r}
+sessionInfo()
 ```
