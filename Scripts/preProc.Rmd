@@ -19,12 +19,16 @@ params:
   projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  cacheBool: FALSE
+  setName: "caron"
+  setSuf: "_allCells"
+  dirRel: "../.."
 ---
 
 ```{r preProc.knitr_options, echo=FALSE, results="hide", message=FALSE}
+cacheBool <- params$cacheBool
 require(knitr)
-opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=TRUE)
-#opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=FALSE)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 opts_chunk$set(fig.width=7, fig.height=7)
 opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
@@ -84,8 +88,8 @@ wrkDir <- sprintf("%s/CaronBourque2020/grch38300", projDir)
 outDirBit <- params$outDirBit # "AnaWiSeurat/Attempt1"
 qcPlotDirBit <- "Plots/Qc"
 poolBool <- TRUE # FALSE # whether to read each sample in and pool them and write object to file, or just load that file.
-biomartBool <- FALSE # TRUE # biomaRt sometimes fails, do it once, write to file and use that copy.
-addQcBool <- TRUE # biomaRt sometimes fails, do it once, write to file and use that copy.
+biomartBool <- FALSE # TRUE # biomaRt sometimes fails, do it once, write to file and use that copy. See geneAnnot.Rmd
+addQcBool <- TRUE
 runAll <- TRUE
 saveRds <- TRUE # overwrite existing Rds files
 dir.create(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit),
@@ -329,7 +333,10 @@ library("mixtools")
 # have library sizes on a log10 scale
 log10_lib_size <- log10(libSizeDf$nUmis)
 # fit mixture
-mix <- normalmixEM(log10_lib_size, maxrestarts=50, epsilon = 1e-03)
+mix <- normalmixEM(log10_lib_size,
+		   mu=c(log10(100), log10(1000)),
+		   maxrestarts=50,
+		   epsilon = 1e-03)
 # plot
 plot(mix, which=2, xlab2="log(mol per cell)")
 # get density for each distribution:
@@ -360,7 +367,7 @@ Given the exponential shape of the curve above, library sizes can be shown on th
 plot(barcode_rank, log10_lib_size, xlim=c(1,10000))
 ```
 
-the plot above shows that the majority of droplets hve fewer than 100 UMIs, e.g. droplets with rank greater than 4000. We will redraw the plot to focus on droplets with lower ranks, by using the log10 scale for the x-axis.
+The plot above shows that the majority of droplets have fewer than 100 UMIs, e.g. droplets with rank greater than 4000. We will redraw the plot to focus on droplets with lower ranks, by using the log10 scale for the x-axis.
 
 ```{r cellCall_barcodeRankPlot_logScale2}
 plot(log10(barcode_rank), log10_lib_size, xlim=log10(c(1,10000)))
@@ -538,7 +545,6 @@ for (i in 1:nrow(sampleSheet))
 {
 	print(sprintf("'Run' %s, 'Sample.Name' %s", sampleSheet[i,"Run"], sampleSheet[i,"Sample.Name"]))
 	sample.path <- sprintf("%s/%s/%s/outs/filtered_feature_bc_matrix/",
-			      #wrkDir,
 			      sprintf("%s/%s/grch38300",
 				      projDir,
 				      ifelse(sampleSheet[i,"source_name"] == "ABMMC",
@@ -570,6 +576,7 @@ A cell barcode comprises the actual sequence and a 'group ID', e.g. AAACCTGAGAAA
 
 ```{r dataSets_cbind, eval=poolBool}
 # subset 2000 cells:
+# mind that is not mentioned in Rds file names ...
 if(ncol(sce.list[[1]]) < 2000)
 {
   sce <- sce.list[[1]]
@@ -714,7 +721,7 @@ Now let's plot for each gene the total number of UMIs and the proportion of cell
 tmpCounts <- counts(sce)[,sample(1000)]
 
 plot(rowSums(tmpCounts),
-     rowMeans(tmpCounts == 0),
+     rowMeans(tmpCounts > 0),
      log = "x",
      xlab="total number of UMIs",
      ylab="proportion of cells expressing the gene"
@@ -757,7 +764,7 @@ We will now exclude lowly expressed features and identify low-quality cells usin
 * number of features detected per cell
 * mitochondrial content, i.e. the proportion of UMIs that map to mitochondrial genes, with higher values consistent with leakage from the cytoplasm of RNA, but not mitochondria
 
-We will first annotate genes, to know which lie in the mitochondrial genome, then use [scater](https://bioconductor.org/packages/3.11/bioc/html/scater.html)'s `addPerCellQC()` to compute various metrics.
+We will first annotate genes, to know which ones are mitochondrial, then use [scater](https://bioconductor.org/packages/3.11/bioc/html/scater.html)'s `addPerCellQC()` to compute various metrics.
 
 Annotate genes with biomaRt.
 
@@ -766,7 +773,13 @@ Annotate genes with biomaRt.
 gene.info <- rowData(sce)
 
 # setup the biomaRt connection to Ensembl using the correct species genome (hsapiens_gene_ensembl)
-ensembl <- useEnsembl(biomart='ensembl', dataset='hsapiens_gene_ensembl')
+ensembl <- useEnsembl(biomart='ensembl',
+                      dataset='hsapiens_gene_ensembl',
+                      mirror = "www")
+
+#ensembl = useMart(biomart="ensembl",
+#		  dataset='hsapiens_gene_ensembl',
+#		  host = "www.ensembl.org") # ensemblRedirect = FALSE
 
 # retrieve the attributes of interest from biomaRt using the Ensembl gene ID as the key
 # beware that this will only retrieve information for matching IDs
@@ -809,9 +822,9 @@ Number of genes per chromosome, inc. 13 on the mitochondrial genome:
 ```{r qc_mitoGenes}
 # number of genes per chromosome
 table(rowData(sce)$chromosome_name) %>%
-	as.data.frame() %>%
-  rename(Chromosome=Var1, NbGenes=Freq) %>%
-	datatable(rownames = FALSE)
+as.data.frame() %>%
+dplyr::rename(Chromosome=Var1, NbGenes=Freq) %>%
+datatable(rownames = FALSE)
 
 # mitochondrial genes
 is.mito <- which(rowData(sce)$chromosome_name=="MT")
@@ -1027,7 +1040,8 @@ We will use the quickPerCellQC() 'batch' option.
 
 ```{r quickPerCellQC_batch_compute}
 batch.reasons <- quickPerCellQC(colData(sce),
-                                percent_subsets=c("subsets_Mito_percent"), batch=sce$setName)
+                                percent_subsets=c("subsets_Mito_percent"),
+				batch=sce$setName)
 colSums(as.matrix(batch.reasons)) %>%
   as.data.frame() %>%
 	datatable(rownames = TRUE)
@@ -1045,8 +1059,10 @@ table(reasons$discard, batch.reasons$discard)
 Library size:
 
 ```{r}
-plotColData(sce, x="block", y="sum", colour_by="discard",
-        other_fields="setName") +
+plotColData(sce,
+	    x="block", y="sum",
+	    colour_by="discard",
+	    other_fields="setName") +
         scale_y_log10() + ggtitle("Total count")
 ```
 
@@ -1222,25 +1238,20 @@ Mitochondrial content against library size:
 plotColData(sce, x="sum", y="subsets_Mito_percent", colour_by="discard")
 ```
 
-Split by sample group:
-
 ```{r}
-sp <- ggplot(data.frame(colData(sce)), aes(x=detected, y=subsets_Mito_percent, col=discard)) +
-  geom_point()
-sp + facet_wrap(~source_name)
+sp <- ggplot(data.frame(colData(sce)), aes(x=sum, y=subsets_Mito_percent, col=discard)) +
+  geom_point(size = 0.05, alpha = 0.7) +
+  geom_density_2d(size = 0.5, colour = "blue") +
+  guides(colour = guide_legend(override.aes = list(size=1, alpha=1))) +
+  theme(legend.position="bottom")
+#sp
+ggExtra::ggMarginal(sp)
 ```
 
 Mind distributions:
 
 ```{r}
-sp <- ggplot(data.frame(colData(sce)), aes(x=detected, y=subsets_Mito_percent)) +
-  geom_point(size = 0.05, alpha = 0.0)
-sp + 
-  geom_density_2d(size = 0.5, colour = "black")
-
-#sp <- ggplot(data.frame(colData(sce)), aes(x=detected, y=subsets_Mito_percent)) +
-#  geom_point()
-#sp + geom_density_2d_filled() + facet_wrap(~source_name)
+sp + facet_wrap(~source_name)
 ```
 
 ### Filter low-quality cells out
@@ -1528,11 +1539,15 @@ sce.x
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
 saveRDS(sce.x, tmpFn)
 rm(sce.x)
+
+# update sce.nz.caron
+sce.nz.caron <- sce.x  # TODO not used
+rm(sce.x)
 ```
 
 ```{r Caron_sparsity_filter_read, eval=!saveRds}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDirRel, outDirBit, setName)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", dirRel, outDirBit, setName)
 sce.nz.caron <- readRDS(tmpFn)
 ```
 
@@ -1609,10 +1624,20 @@ sce.x
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
 saveRDS(sce.x, tmpFn)
+
+# update sce.nz.hca
+sce.nz.hca <- sce.x  # TODO not used
+rm(sce.x)
 ```
 
 ```{r Hca_sparsity_filter_read, eval=!saveRds}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
-sce.nz.hca <- readRDS(tmpFn)
+sce.nz.hca <- readRDS(tmpFn) # TODO not used
+```
+
+## Session information
+
+```{r}
+sessionInfo()
 ```
