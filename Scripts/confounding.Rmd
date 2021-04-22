@@ -70,7 +70,7 @@ Remember scran PCA:
 
 Normalised counts are stored in 'logcounts' assay
 
-```{r, eval=FALSE}
+```{r {{setNameUpp}}_confound_postQcPcaPlotDraw, eval=FALSE}
 # 
 scranPca <- runPCA(
   sce,

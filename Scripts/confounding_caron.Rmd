@@ -31,7 +31,7 @@ outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
 ```
 
-```{r}
+```{r library_confounding}
 library(knitr)
 ```
 
@@ -47,12 +47,16 @@ options(bitmapType='cairo')
 set.seed(123) # for reproducibility
 ```
 
-```{r, include=FALSE, cache=FALSE}
-##src <- lapply(c("Caron", "Hca"), function(setNameUpp) knit_expand(file = "test.Rmd"))
-src <- lapply(c("Caron"), function(setNameUpp) knit_expand(file = "confounding.Rmd"))
+```{r expand_confounding, include=FALSE, cache=FALSE}
+src <- lapply(c("Caron"),
+	      function(setNameUpp) knit_expand(file = "confounding.Rmd"))
 ```
 
 `r knit(text = unlist(src))`
 
+## Session information
 
+```{r}
+sessionInfo()
+```
 
