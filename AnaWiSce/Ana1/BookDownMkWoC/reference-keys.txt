@@ -221,3 +221,4 @@ sctransform-4
 session-information-4
 sctransform-5
 session-information-5
+session-information-6
