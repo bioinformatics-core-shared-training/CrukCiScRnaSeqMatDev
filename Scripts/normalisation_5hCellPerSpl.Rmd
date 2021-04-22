@@ -22,6 +22,7 @@ params:
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE
+  bookType: "mk"
 ---
 
 ```{r norm_{{setNameUpp}}.knitr_options, echo=FALSE, results="hide", message=FALSE}
@@ -44,16 +45,16 @@ Normalisation removes such differences so that differences between cells are not
 
 
 ```{r {{setNameUpp}}_variables_norm}
-#qcPlotDirBit <- "NormPlots"
 qcPlotDirBit <- "Plots/Norm"
 setName <- tolower("{{setNameUpp}}")
 projDir <- params$projDir
 dirRel <- params$dirRel
+if(params$bookType == "mk"){dirRel <- ".."}
 outDirBit <- params$outDirBit
 writeRds <- FALSE
 ```
 
-```{r, include=FALSE, results='hide', message=FALSE, warning=FALSE}
+```{r {{setNameUpp}}_libraries_norm, include=FALSE, results='hide', message=FALSE, warning=FALSE}
 library(scater)
 library(scran)
 library(ggplot2)
@@ -69,9 +70,9 @@ projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiS
 outDirBit <- "AnaWiSce/Attempt1"
 -->
 
-Load object 
+Load object.
 
-```{r normalisation_5hCellPerSpl_{{setNameUpp}}_readIn, cache.lazy = FALSE}
+```{r {{setNameUpp}}_norm_readIn_5hCellPerSpl, cache.lazy = FALSE}
 setSuf <- ""
 if(setName == "hca") {setSuf <- "_5kCellPerSpl"}
 
@@ -125,13 +126,15 @@ We write the R object to '`r sprintf("%s_sce_nz_postQc%s.Rds", setName, setSuf)`
 
 ```{r {{setNameUpp}}_downsample_write, eval=writeRds}
 # Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 saveRDS(sce, tmpFn)
 ```
 
 ```{r {{setNameUpp}}_downsample_read, eval=TRUE, cache.lazy = FALSE}
 # Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 sce <- readRDS(tmpFn)
 ```
 
@@ -178,9 +181,11 @@ calc_sf <- function (expr_mat, spikes = NULL)
 
 To compute weighted Trimmed mean of M-values (TMM), a given cell is chosen as a reference to use in computation for other cells. The M-values are gene-wise log2-fold changes between cells. Trimming entails the removal of the top and bottom 30% of values. The size factor is computed as the average for the remaining cells with a weight according to inverse variances. This method assumes that most genes are not differentially expressed, and the 40% lof genes left after trimming may include many zero counts.
 
-```
+```{r calcNormFactors_comp_norm_{{setNameUpp}}_5hCellPerSpl}
 sizeFactors(sce) <- edgeR::calcNormFactors(counts(sce), method = "TMM")
 ```
+
+### Library size normalization
 
 For each cell, the library size factor is proportional to the library size such that the average size factor across cell is one.
 
@@ -188,14 +193,14 @@ Advantage: normalised counts are on the same scale as the initial counts.
 
 Compute size factors:
 
-```{r}
+```{r librarySizeFactors_comp_norm_{{setNameUpp}}_5hCellPerSpl}
 lib.sf <- librarySizeFactors(sce)
 summary(lib.sf)
 ```
 
 Size factor distribution: wide range, typical of scRNA-seq data.
 
-```{r}
+```{r librarySizeFactors_hist_norm_{{setNameUpp}}_5hCellPerSpl}
 hist(log10(lib.sf), xlab="Log10[Size factor]", col='grey80')
 ```
 
@@ -222,25 +227,27 @@ Cluster cells then normalise.
 
 #### Cluster cells
 
-```{r, eval=writeRds}
+```{r comp_quickClus_norm_{{setNameUpp}}_5hCellPerSpl, eval=writeRds}
 set.seed(100) # clusters with PCA from irlba with approximation
 clust <- quickCluster(sce) # slow with all cells.
 
 # write to file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 saveRDS(clust, tmpFn)
 ```
 
-```{r, cache.lazy = FALSE}
+```{r load_quickClus_norm_{{setNameUpp}}_5hCellPerSpl, cache.lazy = FALSE}
 # read from file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 clust <- readRDS(tmpFn)
 table(clust)
 ```
 
 #### Compute size factors
 
-```{r, eval=writeRds}
+```{r calculateSumFactors_norm_{{setNameUpp}}_5hCellPerSpl, eval=writeRds}
 #deconv.sf <- calculateSumFactors(sce, cluster=clust)
 sce <- computeSumFactors(sce, cluster=clust, min.mean=0.1)
 deconv.sf <- sizeFactors(sce)
@@ -250,7 +257,7 @@ tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds", projDir, outDirBit, 
 saveRDS(deconv.sf, tmpFn)
 ```
 
-```{r, cache.lazy = FALSE}
+```{r load_deconvSf_norm_{{setNameUpp}}_5hCellPerSpl, cache.lazy = FALSE}
 # read from file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds", projDir, outDirBit, setName, setSuf)
 deconv.sf <- readRDS(tmpFn)
@@ -258,34 +265,38 @@ deconv.sf <- readRDS(tmpFn)
 summary(deconv.sf)
 ```
 
-Plot
+Plot size factors:
 
-```{r}
+```{r scatter_deconvSf_libSf_plot_norm_{{setNameUpp}}_5hCellPerSpl}
 plot(lib.sf, deconv.sf, xlab="Library size factor",
     ylab="Deconvolution size factor", log='xy', pch=16,
     col=as.integer(factor(sce$source_name)))
 abline(a=0, b=1, col="red")
 ```
 
-```{r}
+```{r scatter_deconvSf_libSf_colBy_plot_norm_{{setNameUpp}}_5hCellPerSpl}
 deconvDf <- data.frame(lib.sf, deconv.sf,
 			"source_name" = sce$source_name,
 			"sum" = sce$sum,
 			"mito_content" = sce$subsets_Mito_percent,
 			"cell_sparsity" = sce$cell_sparsity)
 
+# colour by sample type
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=source_name)) +
   geom_point()
 sp + facet_wrap(~source_name)
 
+# colour by library size
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=sum)) +
   geom_point()
 sp
 
+# colour by mito. content
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=mito_content)) +
   geom_point()
 sp
 
+# colour by cell sparsity
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=cell_sparsity)) +
   geom_point()
 sp
@@ -295,21 +306,21 @@ sp
 
 For each cell, raw counts for genes are divided by the size factor for that cell and log-transformed so downstream analyses focus on genes with strong relative differences. We use `scater::logNormCounts()`.
 
-```{r}
+```{r logNormCounts_norm_{{setNameUpp}}_5hCellPerSpl}
 sce <- logNormCounts(sce) # adds logcounts
 print(assayNames(sce))
 ```
 
 #### Save object
 
-```{r, eval=writeRds}
-# write to file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
-saveRDS(sce, tmpFn)
+```{r sce_copy_norm_{{setNameUpp}}_5hCellPerSpl}
+sceDeconv <- sce
 ```
 
-```{r}
-sceDeconv <- sce
+```{r sce_write_norm_{{setNameUpp}}_5hCellPerSpl, eval=writeRds}
+# write to file
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
+saveRDS(sceDeconv, tmpFn)
 ```
 
 ## SCTransform
@@ -323,7 +334,7 @@ vars.to.regress = c("percentMito","Sex")
 
 With scaling normalisation a correlation remains between the mean and variation of expression (heteroskedasticity). This affects downstream dimensionality reduction as the few main new dimensions are usually correlated with library size. SCTransform addresses the issue by regressing library size out of raw counts and providing residuals to use as normalized and variance-stabilized expression values in downstream analysis.
 
-```{r}
+```{r counts_sct_{{setNameUpp}}_5hCellPerSpl}
 counts <- counts(sce)
 print(class(counts))
 print(dim(counts))
@@ -336,7 +347,7 @@ We will now calculate some properties and visually inspect the data. Our main in
 
 Derive gene and cell attributes from the UMI matrix.
 
-```{r}
+```{r attr_comp_sct_{{setNameUpp}}_5hCellPerSpl}
 gene_attr <- data.frame(mean = rowMeans(counts), 
                         detection_rate = rowMeans(counts > 0),
                         var = apply(counts, 1, var))
@@ -348,28 +359,32 @@ cell_attr <- data.frame(n_umi = colSums(counts),
 rownames(cell_attr) <- colnames(counts)
 ```
 
-```{r}
+```{r gene_attr_sct_{{setNameUpp}}_5hCellPerSpl}
 dim(gene_attr)
 head(gene_attr)
 ```
 
-```{r}
+```{r cell_attr_sct_{{setNameUpp}}_5hCellPerSpl}
 dim(cell_attr)
 head(cell_attr)
-```
-
-```{r}
-ggplot(gene_attr, aes(log_mean, log_var)) + 
-  geom_point(alpha=0.3, shape=16) + 
-  geom_density_2d(size = 0.3) +
-  geom_abline(intercept = 0, slope = 1, color='red')
 ```
 
 Mean-variance relationship
 
 For the genes, we can see that up to a mean UMI count of ca. 0.1 the variance follows the line through the origin with slop one, i.e. variance and mean are roughly equal as expected under a Poisson model. However, genes with a higher average UMI count show overdispersion compared to Poisson.
 
-```{r}
+```{r attr_plot_sct_{{setNameUpp}}_5hCellPerSpl}
+ggplot(gene_attr, aes(log_mean, log_var)) + 
+  geom_point(alpha=0.3, shape=16) + 
+  geom_density_2d(size = 0.3) +
+  geom_abline(intercept = 0, slope = 1, color='red')
+```
+
+Mean-detection-rate relationship
+
+In line with the previous plot, we see a lower than expected detection rate in the medium expression range. However, for the highly expressed genes, the rate is at or very close to 1.0 suggesting that there is no zero-inflation in the counts for those genes and that zero-inflation is a result of overdispersion, rather than an independent systematic bias.
+
+```{r scatter_detecRate_logMean_sct_{{setNameUpp}}_5hCellPerSpl}
 # add the expected detection rate under Poisson model
 x = seq(from = -3, to = 2, length.out = 1000)
 poisson_model <- data.frame(log_mean = x, detection_rate = 1 - dpois(0, lambda = 10^x))
@@ -379,11 +394,8 @@ ggplot(gene_attr, aes(log_mean, detection_rate)) +
   theme_gray(base_size = 8)
 ```
 
-Mean-detection-rate relationship
 
-In line with the previous plot, we see a lower than expected detection rate in the medium expression range. However, for the highly expressed genes, the rate is at or very close to 1.0 suggesting that there is no zero-inflation in the counts for those genes and that zero-inflation is a result of overdispersion, rather than an independent systematic bias.
-
-```{r}
+```{r scatter_nGene_nUmi_sct_{{setNameUpp}}_5hCellPerSpl}
 ggplot(cell_attr, aes(n_umi, n_gene)) + 
   geom_point(alpha=0.3, shape=16) + 
   geom_density_2d(size = 0.3)
@@ -396,40 +408,68 @@ Estimate model parameters and transform data
 
 The vst function estimates model parameters and performs the variance stabilizing transformation. Here we use the log10 of the total UMI counts of a cell as variable for sequencing depth for each cell. After data transformation we plot the model parameters as a function of gene mean (geometric mean).
 
-```{r, warning=FALSE}
+```{r comp_sct_{{setNameUpp}}_5hCellPerSpl, warning=FALSE}
 print(dim(counts))
 # We use the Future API for parallel processing; set parameters here
 future::plan(strategy = 'multicore', workers = 4)
 options(future.globals.maxSize = 10 * 1024 ^ 3)
 
 set.seed(44)
-vst_out <- sctransform::vst(counts, latent_var = c('log_umi'), return_gene_attr = TRUE, return_cell_attr = TRUE, show_progress = FALSE)
+vst_out <- sctransform::vst(counts,
+			    latent_var = c('log_umi'),
+			    return_gene_attr = TRUE,
+			    return_cell_attr = TRUE,
+			    show_progress = FALSE)
 sctransform::plot_model_pars(vst_out)
-```
-
-Model:
-
-```{r}
-print(vst_out$model_str)
 ```
 
 Inspect model
 
+```{r model_show_sct_{{setNameUpp}}_5hCellPerSpl}
+print(vst_out$model_str)
+```
+
 We will look at several genes in more detail.
 
-```{r}
-#sctransform::plot_model(vst_out, counts, c('MALAT1', 'RPL10', 'FTL'), plot_residual = TRUE)
-rowData(sce) %>% as.data.frame %>% filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
-sctransform::plot_model(vst_out, counts, c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'), plot_residual = TRUE)
+```{r plot_model_1_sct_{{setNameUpp}}_5hCellPerSpl}
+rowData(sce) %>%
+	as.data.frame %>%
+	filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
+
+sctransform::plot_model(vst_out,
+			counts,
+			c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'),
+			plot_residual = TRUE)
 ```
 
-```{r}
-sctransform::plot_model(vst_out, counts, c('ENSG00000087086'), plot_residual = TRUE, show_nr = TRUE, arrange_vertical = FALSE)
+```{r plot_model_2_sct_{{setNameUpp}}_5hCellPerSpl}
+sctransform::plot_model(vst_out,
+			counts,
+			c('ENSG00000087086'),
+			plot_residual = TRUE,
+			show_nr = TRUE,
+			arrange_vertical = FALSE)
 ```
 
-```{r}
-ggplot(vst_out$gene_attr, aes(residual_mean)) + geom_histogram(binwidth=0.01)
-ggplot(vst_out$gene_attr, aes(residual_variance)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept=1, color='red') + xlim(0, 10)
+Distribution of residual mean:
+
+```{r plot_model_resMean_sct_{{setNameUpp}}_5hCellPerSpl}
+ggplot(vst_out$gene_attr, aes(residual_mean)) +
+	geom_histogram(binwidth=0.01)
+```
+
+Distribution of residual variance:
+
+```{r plot_model_resVar_sct_{{setNameUpp}}_5hCellPerSpl}
+ggplot(vst_out$gene_attr, aes(residual_variance)) +
+	geom_histogram(binwidth=0.1) +
+	geom_vline(xintercept=1, color='red') +
+	xlim(0, 10)
+```
+
+Variance against mean (residuals):
+
+```{r plot_model_resVar_resMean_sct_{{setNameUpp}}_5hCellPerSpl}
 ggplot(vst_out$gene_attr, aes(x=residual_mean, y=residual_variance)) +
 	geom_point(alpha=0.3, shape=16) + 
 	xlim(0, 2.5) +
@@ -437,24 +477,41 @@ ggplot(vst_out$gene_attr, aes(x=residual_mean, y=residual_variance)) +
 	geom_density_2d()
 ```
 
-```{r}
-ggplot(vst_out$gene_attr, aes(log10(gmean), residual_variance)) + geom_point(alpha=0.3, shape=16) +
-  geom_density_2d(size = 0.3)
+Variance against mean (genes):
+
+```{r plot_model_resVar_gMean_sct_{{setNameUpp}}_5hCellPerSpl}
+ggplot(vst_out$gene_attr,
+       aes(log10(gmean), residual_variance)) +
+       geom_point(alpha=0.3, shape=16) +
+       geom_density_2d(size = 0.3)
 ```
 
-```{r}
-dd <- head(round(vst_out$gene_attr[order(-vst_out$gene_attr$residual_variance), ], 2), 22)
+Variance against mean (residuals):
+
+```{r table_show_sct_{{setNameUpp}}_5hCellPerSpl}
+dd <- vst_out$gene_attr %>%
+	arrange(-residual_variance) %>%
+	slice_head(n = 22) %>%
+	mutate(across(where(is.numeric), round, 2))
+
 dd %>% tibble::rownames_to_column("ensembl_gene_id") %>%
-	left_join(as.data.frame(rowData(sce))[,c("ensembl_gene_id", "Symbol")], "ensembl_gene_id")
+	left_join(as.data.frame(rowData(sce))[,c("ensembl_gene_id", "Symbol")],
+		  "ensembl_gene_id") %>%
+	DT::datatable(rownames = FALSE)
 ```
 
-```{r, eval=writeRds}
+Write outcome to file.
+
+```{r table_write_sct_{{setNameUpp}}_5hCellPerSpl, eval=writeRds}
 # write to file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_vst_out%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_vst_out%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 saveRDS(vst_out, tmpFn)
 ```
 
-```{r}
+Check transformed values:
+
+```{r check_trans_sct_{{setNameUpp}}_5hCellPerSpl}
 print(dim(vst_out$y))
 vst_out$y[1:10,1:5]
 
@@ -464,7 +521,10 @@ print(assayNames(sce))
 # assay(sce, "sctrans_norm") <- vst_out$y
 ```
 
-```{r}
+Genes that are expressed in fewer than 5 cells are not used and not returned,
+so to add vst_out$y as an assay we need to remove the missing genes.
+
+```{r subsetGenes_{{setNameUpp}}_5hCellPerSpl}
 # genes that are expressed in fewer than 5 cells are not used and not returned
 # so to add vst_out$y as an assay we need to ditch the missing genes completely.
 # https://github.com/ChristophH/sctransform/issues/27
@@ -504,7 +564,7 @@ rm(assayX, tmpAssay)
 assayNames(sce)
 ```
 
-```{r}
+```{r copyVstMat_sct_{{setNameUpp}}_5hCellPerSpl}
 sce
 vstMat <- as(vst_out$y[rownames(sce),], "dgCMatrix")
 all(colnames(vstMat) == sce$Barcode)
@@ -513,11 +573,12 @@ assay(sce, "sctrans_norm") <- vstMat # as(vst_out$y[rownames(sce),], "dgCMatrix"
 assayNames(sce)
 ```
 
-### Save object
+### Save SCE object
 
-```{r, eval=writeRds}
+```{r sce_write_sct_{{setNameUpp}}_5hCellPerSpl, eval=writeRds}
 # write to file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postSct%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postSct%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 saveRDS(sce, tmpFn)
 ```
 
@@ -525,7 +586,7 @@ saveRDS(sce, tmpFn)
 
 ### log raw counts
 
-```{r}
+```{r comp_pca_logRaw_{{setNameUpp}}_5hCellPerSpl}
 typeNorm <- "logRaw"
 
 #setSuf <- "_5kCellPerSpl"
@@ -541,7 +602,7 @@ tmp <- runPCA(
 
 PCA plot for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r}
+```{r plot_pca_logRaw_{{setNameUpp}}_5hCellPerSpl}
 p <- plotPCA(
     tmp,
     colour_by = "Sample.Name",
@@ -555,7 +616,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_pca_logRaw_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -565,7 +626,7 @@ rm(tmpFn)
 Cell-wise RLE for the '`r typeNorm`' counts in the `r setName` set. Each cell is represented by a box plot showing the inter-quartile range in grey, wiskers colour-coded by Sample.Name and the median as a black circle. 
 
 
-```{r, cache.lazy = FALSE}
+```{r plot_rle_logRaw_{{setNameUpp}}_5hCellPerSpl, cache.lazy = FALSE}
 p <- plotRLE(
     #tmp[,1:10],
     tmp,
@@ -579,7 +640,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_rle_logRaw_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -588,7 +649,7 @@ rm(tmpFn)
 
 ### log CPM
 
-```{r, cache.lazy = FALSE}
+```{r comp_pca_logCpm_{{setNameUpp}}_5hCellPerSpl, cache.lazy = FALSE}
 typeNorm <- "logCpm"
 
 assay(sce, "logCpm") <- log2(calculateCPM(sce, size_factors = NULL) + 1)
@@ -601,7 +662,7 @@ logCpmPca <- runPCA(
 
 PCA plot for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r}
+```{r plot_pca_logCpm_{{setNameUpp}}_5hCellPerSpl}
 p <- plotPCA(
     logCpmPca,
     colour_by = "Sample.Name",
@@ -615,7 +676,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_pca_logCpm_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -624,7 +685,7 @@ rm(tmpFn)
 
 Cell-wise RLE for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r, cache.lazy = FALSE}
+```{r plot_rle_logCpm_{{setNameUpp}}_5hCellPerSpl, cache.lazy = FALSE}
 p <- plotRLE(
     sce,
     exprs_values = "logCpm",
@@ -637,7 +698,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_rle_logCpm_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -648,7 +709,7 @@ rm(tmpFn)
 
 Normalised counts are stored in 'logcounts' assay
 
-```{r}
+```{r comp_pca_deconv_{{setNameUpp}}_5hCellPerSpl}
 typeNorm <- "scran"
 
 # assay(sce, "logcounts")
@@ -661,7 +722,7 @@ scranPca <- runPCA(
 
 PCA plot for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r}
+```{r plot_pca_deconv_{{setNameUpp}}_5hCellPerSpl}
 p <- plotPCA(
     scranPca,
     colour_by = "Sample.Name",
@@ -675,7 +736,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_pca_deconv_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -684,7 +745,7 @@ rm(tmpFn)
 
 TSNE plot for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r}
+```{r comp_tsne_deconv_{{setNameUpp}}_5hCellPerSpl}
 typeNorm <- "scran"
 
 reducedDim(sceDeconv, "TSNE_scran") <- reducedDim(
@@ -693,7 +754,7 @@ reducedDim(sceDeconv, "TSNE_scran") <- reducedDim(
 )
 ```
 
-```{r}
+```{r plot_tsne_deconv_{{setNameUpp}}_5hCellPerSpl}
 p <- plotReducedDim(
   sceDeconv,
   dimred = "TSNE_scran",
@@ -708,7 +769,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_tsne_deconv_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -717,7 +778,7 @@ rm(tmpFn)
 
 UMAP plot for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r}
+```{r comp_umap_deconv_{{setNameUpp}}_5hCellPerSpl}
 typeNorm <- "scran"
 
 reducedDim(sceDeconv, "UMAP_scran") <- reducedDim(
@@ -726,7 +787,7 @@ reducedDim(sceDeconv, "UMAP_scran") <- reducedDim(
 )
 ```
 
-```{r}
+```{r plot_umap_deconv_{{setNameUpp}}_5hCellPerSpl}
 p <- plotReducedDim(
   sceDeconv,
   dimred = "UMAP_scran",
@@ -741,7 +802,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_umap_deconv_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -750,13 +811,12 @@ rm(tmpFn)
 
 Cell-wise RLE for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r}
+```{r plot_rle_deconv_{{setNameUpp}}_5hCellPerSpl}
 p <- plotRLE(
     scranPca,
     exprs_values = "logcounts",
     colour_by = "Sample.Name"
 ) + ggtitle(sprintf("RLE plot: %s", typeNorm))
-
 
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
@@ -764,7 +824,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_rle_deconv_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -773,7 +833,7 @@ rm(tmpFn)
 
 ### SCTransform
 
-```{r, cache.lazy = FALSE}
+```{r comp_pca_sct_{{setNameUpp}}_5hCellPerSpl, cache.lazy = FALSE}
 typeNorm <- "sctrans"
 
 reducedDim(sce, "PCA_sctrans_norm") <- reducedDim(
@@ -784,7 +844,7 @@ reducedDim(sce, "PCA_sctrans_norm") <- reducedDim(
 
 PCA plot for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r}
+```{r plot_pca_sct_{{setNameUpp}}_5hCellPerSpl}
 p <- plotReducedDim(
   sce,
   dimred = "PCA_sctrans_norm",
@@ -799,7 +859,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_pca_sct_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -808,7 +868,7 @@ rm(tmpFn)
 
 TSNE plot for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r, cache.lazy = FALSE}
+```{r comp_tsne_sct_{{setNameUpp}}_5hCellPerSpl, cache.lazy = FALSE}
 typeNorm <- "sctrans"
 
 reducedDim(sce, "TSNE_sctrans_norm") <- reducedDim(
@@ -817,7 +877,7 @@ reducedDim(sce, "TSNE_sctrans_norm") <- reducedDim(
 )
 ```
 
-```{r}
+```{r plot_tsne_sct_{{setNameUpp}}_5hCellPerSpl}
 p <- plotReducedDim(
   sce,
   dimred = "TSNE_sctrans_norm",
@@ -832,7 +892,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_tsne_sct_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -841,7 +901,7 @@ rm(tmpFn)
 
 UMAP plot for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r, cache.lazy = FALSE}
+```{r comp_umap_sct_{{setNameUpp}}_5hCellPerSpl, cache.lazy = FALSE}
 typeNorm <- "sctrans"
 
 reducedDim(sce, "UMAP_sctrans_norm") <- reducedDim(
@@ -850,7 +910,7 @@ reducedDim(sce, "UMAP_sctrans_norm") <- reducedDim(
 )
 ```
 
-```{r}
+```{r plot_umap_sct_{{setNameUpp}}_5hCellPerSpl}
 p <- plotReducedDim(
   sce,
   dimred = "UMAP_sctrans_norm",
@@ -865,7 +925,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_umap_sct_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
@@ -874,7 +934,7 @@ rm(tmpFn)
 
 Cell-wise RLE for the '`r typeNorm`' counts in the `r setName` set.
 
-```{r, cache.lazy = FALSE}
+```{r plot_rle_sct_{{setNameUpp}}_5hCellPerSpl, cache.lazy = FALSE}
 p <- plotRLE(
     sce,
     exprs_values = "sctrans_norm",
@@ -887,7 +947,7 @@ tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r}
+```{r show_rle_sct_{{setNameUpp}}_5hCellPerSpl}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 dirRel, qcPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)

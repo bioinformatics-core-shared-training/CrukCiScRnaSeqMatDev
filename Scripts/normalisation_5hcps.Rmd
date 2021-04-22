@@ -24,7 +24,7 @@ params:
   cacheBool: FALSE
 ---
 
-```{r variables_norm}
+```{r variables_norm_5hcps}
 #qcPlotDirBit <- "NormPlots"
 #setNameUpp <- "Caron"
 projDir <- params$projDir
@@ -33,11 +33,11 @@ outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
 ```
 
-```{r}
+```{r libraries_norm_5hcps}
 library(knitr)
 ```
 
-```{r, include=TRUE}
+```{r knit_expand_norm_5hcps, include=TRUE}
 #src <- lapply(c("Caron", "Hca"), function(setNameUpp) knit_expand(file = "test.Rmd"))
 src <- lapply(c("Caron"), function(setNameUpp) knit_expand(file = "normalisation_5hCellPerSpl.Rmd"))
 ## src <- lapply(c("Caron"), function(setNameUpp) knit_expand(file = "normalisation_GSM3872434.Rmd"))
@@ -46,5 +46,4 @@ src <- lapply(c("Caron"), function(setNameUpp) knit_expand(file = "normalisation
 `r print(src)`
 
 `r knit(text = unlist(src))`
-
 

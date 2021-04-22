@@ -22,6 +22,10 @@ params:
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE
+  splSetToGet: "dummy"
+  setName: "dummy"
+  setSuf: "dummy"
+  dsiSuf: 'dummy'
 ---
 
 ```{r norm.knitr_options, echo=FALSE, results="hide", message=FALSE}
@@ -48,7 +52,7 @@ steps: compute a cell-specific 'scaling' or 'size' factor that represents the re
 
 Scaling methods typically generate normalised counts-per-million (CPM) or transcripts-per-million (TPM_ values.
 
-```{r variables_norm}
+```{r whole_variables_norm}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
@@ -56,7 +60,7 @@ compuBool <- TRUE # whether to run computation again (dev)
 #qcPlotDirBit <- "Plots/Norm"
 ```
 
-```{r}
+```{r libraries_norm_caron_whole}
 library(scuttle)
 library(scran)
 library(ggplot2)
@@ -71,13 +75,14 @@ projDir <- "/mnt/scratchb/bioinformatics/baller01/20200511_FernandesM_ME_crukBiS
 outDirBit <- "AnaWiSce/Attempt1"
 -->
 
-Load object 
+Load object.
 
-```{r Caron_readIn}
+```{r Caron_norm_readIn_whole}
 setName <- "caron"
 setSuf = "_allCells" # suffix to add to file name to say all cells are used, with no downsampling
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds",
+                 projDir, outDirBit, setName, setSuf)
 sce <- readRDS(tmpFn)
 ```
 
@@ -89,14 +94,14 @@ Advantage: normalised counts are on the same scale as the initial counts.
 
 Compute size factors:
 
-```{r}
+```{r librarySizeFactors_comp_norm_caron_whole}
 lib.sf <- librarySizeFactors(sce)
 summary(lib.sf)
 ```
 
 Size factor distribution: wide range, typical of scRNA-seq data.
 
-```{r}
+```{r librarySizeFactors_hist_norm_caron_whole}
 hist(log10(lib.sf), xlab="Log10[Size factor]", col='grey80')
 ```
 
@@ -121,7 +126,7 @@ see edgeR calcNormFactors
 
 Cluster cells, normalise :
 
-```{r, eval=!FALSE}
+```{r comp_quickClus_norm_caron_whole, eval=!FALSE}
 set.seed(100) # clusters with PCA from irlba with approximation
 clust <- quickCluster(sce) # slow with all cells.
 
@@ -131,7 +136,7 @@ tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
 saveRDS(clust, tmpFn)
 ```
 
-```{r}
+```{r load_quickClus_norm_caron_whole}
 # read from file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
 		 projDir, outDirBit, setName, setSuf)
@@ -141,7 +146,7 @@ table(clust)
 
 ### Compute size factors
 
-```{r, eval=!FALSE}
+```{r calculateSumFactors_norm_caron_whole, eval=!FALSE}
 deconv.sf <- calculateSumFactors(sce, cluster=clust)
 
 # write to file
@@ -150,7 +155,7 @@ tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
 saveRDS(deconv.sf, tmpFn)
 ```
 
-```{r}
+```{r load_deconvSf_norm_caron_whole}
 # read from file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
 		 projDir, outDirBit, setName, setSuf)
@@ -159,34 +164,43 @@ deconv.sf <- readRDS(tmpFn)
 summary(deconv.sf)
 ```
 
-Plot
+Plot size factors:
 
-```{r}
-plot(lib.sf, deconv.sf, xlab="Library size factor",
-    ylab="Deconvolution size factor", log='xy', pch=16,
-    col=as.integer(factor(sce$source_name)))
+```{r scatter_deconvSf_libSf_plot_norm_caron_whole}
+plot(lib.sf,
+     deconv.sf,
+     xlab="Library size factor",
+     ylab="Deconvolution size factor",
+     log='xy',
+     pch=16,
+     col=as.integer(factor(sce$source_name)))
 abline(a=0, b=1, col="red")
 ```
 
-```{r}
-deconvDf <- data.frame(lib.sf, deconv.sf,
-			"source_name" = sce$source_name,
-			"sum" = sce$sum,
-			"mito_content" = sce$subsets_Mito_percent,
-			"cell_sparsity" = sce$cell_sparsity)
+```{r scatter_deconvSf_libSf_plot_norm_caron_whole}
+deconvDf <- data.frame(lib.sf,
+		       deconv.sf,
+		       "source_name" = sce$source_name,
+		       "sum" = sce$sum,
+		       "mito_content" = sce$subsets_Mito_percent,
+		       "cell_sparsity" = sce$cell_sparsity)
 
+# colour by sample type
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=source_name)) +
   geom_point()
 sp + facet_wrap(~source_name)
 
+# colour by library size
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=sum)) +
   geom_point()
 sp
 
+# colour by mito. content
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=mito_content)) +
   geom_point()
 sp
 
+# colour by cell sparsity
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=cell_sparsity)) +
   geom_point()
 sp
@@ -198,18 +212,18 @@ sp
 
 For each cell, raw counts for genes are divided by the size factor for that cell and log-transformed so downstream analyses focus on genes with strong relative differences. We use `scater::logNormCounts()`.
 
-```{r}
+```{r logNormCounts_norm_caron_whole}
 sce <- logNormCounts(sce)
 assayNames(sce)
 ```
 
 #### Save object
 
-```{r}
+```{r sce_copy_norm_caron_whole}
 sce_caron <- sce
 ```
 
-```{r, eval=!FALSE}
+```{r sce_write_norm_caron_whole, eval=!FALSE}
 # write to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
 		 projDir, outDirBit, setName, setSuf)
@@ -218,7 +232,7 @@ saveRDS(sce_caron, tmpFn)
 
 ## Hca
 
-Load object 
+Load object. 
 
 ```{r Hca_readIn}
 # the 5kCellPerSpl subset
@@ -238,14 +252,14 @@ Advantage: normalised counts are on the same scale as the initial counts.
 
 Compute size factors:
 
-```{r}
+```{r librarySizeFactors_comp_norm_abmmc_whole}
 lib.sf <- librarySizeFactors(sce)
 summary(lib.sf)
 ```
 
 Size factor distribution: wide range, typical of scRNA-seq data.
 
-```{r}
+```{r librarySizeFactors_hist_norm_abmmc_whole}
 hist(log10(lib.sf), xlab="Log10[Size factor]", col='grey80')
 ```
 
@@ -268,9 +282,9 @@ see DESeq2 estimateSizeFactorsFromMatrix
 see edgeR calcNormFactors
 -->
 
-Cluster cells, normalise :
+Cluster cells then normalise :
 
-```{r, eval=!FALSE}
+```{r comp_quickClus_norm_abmmc_whole, eval=!FALSE}
 #library(scran)
 set.seed(100) # clusters with PCA from irlba with approximation
 clust <- quickCluster(sce) # slow with all cells.
@@ -281,7 +295,7 @@ tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
 saveRDS(clust, tmpFn)
 ```
 
-```{r}
+```{r load_quickClus_norm_abmmc_whole}
 # read from file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
 		 projDir, outDirBit, setName, setSuf)
@@ -291,7 +305,7 @@ table(clust)
 
 ### Compute size factors
 
-```{r, eval=!FALSE}
+```{r calculateSumFactors_norm_abmmc_whole, eval=!FALSE}
 deconv.sf <- calculateSumFactors(sce, cluster=clust)
 
 # write to file
@@ -300,7 +314,7 @@ tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
 saveRDS(deconv.sf, tmpFn)
 ```
 
-```{r}
+```{r load_deconvSf_norm_abmmc_whole}
 # read from file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
 		 projDir, outDirBit, setName, setSuf)
@@ -309,34 +323,42 @@ deconv.sf <- readRDS(tmpFn)
 summary(deconv.sf)
 ```
 
-Plot
+Plot size factors:
 
-```{r}
-plot(lib.sf, deconv.sf, xlab="Library size factor",
-    ylab="Deconvolution size factor", log='xy', pch=16,
-    col=as.integer(factor(sce$source_name)))
+```{r scatter_deconvSf_libSf_plot_norm_abmmc_whole}
+plot(lib.sf,
+     deconv.sf,
+     xlab="Library size factor",
+     ylab="Deconvolution size factor",
+     log='xy',
+     pch=16,
+     col=as.integer(factor(sce$source_name)))
 abline(a=0, b=1, col="red")
 ```
 
-```{r}
+```{r scatter_deconvSf_libSf_plot_norm_abmmc_whole}
 deconvDf <- data.frame(lib.sf, deconv.sf,
 			"source_name" = sce$source_name,
 			"sum" = sce$sum,
 			"mito_content" = sce$subsets_Mito_percent,
 			"cell_sparsity" = sce$cell_sparsity)
 
+# colour by sample type
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=source_name)) +
   geom_point()
 sp + facet_wrap(~source_name)
 
+# colour by library size
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=sum)) +
   geom_point()
 sp
 
+# colour by mito. content
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=mito_content)) +
   geom_point()
 sp
 
+# colour by cell sparsity
 sp <- ggplot(deconvDf, aes(x=lib.sf, y=deconv.sf, col=cell_sparsity)) +
   geom_point()
 sp
@@ -348,18 +370,18 @@ sp
 
 For each cell, raw counts for genes are divided by the size factor for that cell and log-transformed so downstream analyses focus on genes with strong relative differences. We use `scater::logNormCounts()`.
 
-```{r}
+```{r logNormCounts_norm_abmmc_whole}
 sce <- logNormCounts(sce)
 assayNames(sce)
 ```
 
 #### Save object
 
-```{r}
+```{r sce_copy_norm_abmmc_whole}
 sce_hca <- sce
 ```
 
-```{r, eval=!FALSE}
+```{r sce_write_norm_abmmc_whole, eval=!FALSE}
 # write to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
 		 projDir, outDirBit, setName, setSuf)
@@ -376,7 +398,7 @@ With scaling normalisation a correlation remains between the mean and variation 
 
 ### Caron
 
-```{r}
+```{r counts_sct_caron_whole}
 setName <- "caron"
 setSuf = "_allCells" # suffix to add to file name to say which cells are used, eg downsampling
 
@@ -393,7 +415,7 @@ We will now calculate some properties and visually inspect the data. Our main in
 
 Derive gene and cell attributes from the UMI matrix.
 
-```{r}
+```{r attr_comp_sct_caron_whole}
 gene_attr <- data.frame(mean = rowMeans(counts), 
                         detection_rate = rowMeans(counts > 0),
                         var = apply(counts, 1, var))
@@ -405,7 +427,7 @@ cell_attr <- data.frame(n_umi = colSums(counts),
 rownames(cell_attr) <- colnames(counts)
 ```
 
-```{r}
+```{r attr_plot_sct_caron_whole}
 ggplot(gene_attr, aes(log_mean, log_var)) + 
   geom_point(alpha=0.3, shape=16) + 
   geom_density_2d(size = 0.3) +
@@ -416,10 +438,11 @@ Mean-variance relationship
 
 For the genes, we can see that up to a mean UMI count of ca. 0.1 the variance follows the line through the origin with slop one, i.e. variance and mean are roughly equal as expected under a Poisson model. However, genes with a higher average UMI count show overdispersion compared to Poisson.
 
-```{r}
+```{r scatter_detecRate_logMean_sct_caron_whole}
 # add the expected detection rate under Poisson model
 x = seq(from = -3, to = 2, length.out = 1000)
-poisson_model <- data.frame(log_mean = x, detection_rate = 1 - dpois(0, lambda = 10^x))
+poisson_model <- data.frame(log_mean = x,
+			    detection_rate = 1 - dpois(0, lambda = 10^x))
 ggplot(gene_attr, aes(log_mean, detection_rate)) + 
   geom_point(alpha=0.3, shape=16) + 
   geom_line(data=poisson_model, color='red') +
@@ -430,12 +453,11 @@ Mean-detection-rate relationship
 
 In line with the previous plot, we see a lower than expected detection rate in the medium expression range. However, for the highly expressed genes, the rate is at or very close to 1.0 suggesting that there is no zero-inflation in the counts for those genes and that zero-inflation is a result of overdispersion, rather than an independent systematic bias.
 
-```{r}
+```{r scatter_nGene_nUmi_sct_caron_whole}
 ggplot(cell_attr, aes(n_umi, n_gene)) + 
   geom_point(alpha=0.3, shape=16) + 
   geom_density_2d(size = 0.3)
 ```
-
 
 General idea of transformation
 
@@ -444,7 +466,7 @@ Estimate model parameters and transform data
 
 The vst function estimates model parameters and performs the variance stabilizing transformation. Here we use the log10 of the total UMI counts of a cell as variable for sequencing depth for each cell. After data transformation we plot the model parameters as a function of gene mean (geometric mean).
 
-```{r}
+```{r comp_sct_caron_whole}
 # We use the Future API for parallel processing; set parameters here
 future::plan(strategy = 'multicore', workers = 4)
 options(future.globals.maxSize = 10 * 1024 ^ 3)
@@ -462,17 +484,27 @@ Inspect model
 
 We will look at several genes in more detail.
 
-```{r}
-#sctransform::plot_model(vst_out, counts, c('MALAT1', 'RPL10', 'FTL'), plot_residual = TRUE)
-rowData(sce) %>% as.data.frame %>% filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
-sctransform::plot_model(vst_out, counts, c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'), plot_residual = TRUE)
+```{r plot_model_1_sct_caron_whole}
+rowData(sce) %>%
+	as.data.frame %>%
+	filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
+
+sctransform::plot_model(vst_out,
+			counts,
+			c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'),
+			plot_residual = TRUE)
 ```
 
-```{r}
-sctransform::plot_model(vst_out, counts, c('ENSG00000087086'), plot_residual = TRUE, show_nr = TRUE, arrange_vertical = FALSE)
+```{r plot_model_2_sct_caron_whole}
+sctransform::plot_model(vst_out,
+			counts,
+			c('ENSG00000087086'),
+			plot_residual = TRUE,
+			show_nr = TRUE,
+			arrange_vertical = FALSE)
 ```
 
-```{r, eval=FALSE}
+```{r plot_model_3_sct_caron_whole, eval=FALSE}
 # Error in seq_len(n) : argument must be coercible to non-negative integer
 rowData(sce) %>% as.data.frame %>% filter(Symbol %in% c('GNLY', 'S100A9'))
 #sctransform::plot_model(vst_out, counts, c('ENSG00000115523', 'ENSG00000163220'), plot_residual = TRUE, show_nr = TRUE)
@@ -480,9 +512,10 @@ sctransform::plot_model(vst_out, counts, c('ENSG00000115523'), plot_residual = T
 # ok # sctransform::plot_model(vst_out, counts, c('ENSG00000087086'), plot_residual = TRUE, show_nr = TRUE)
 ```
 
-```{r}
+```{r plot_model_4_sct_caron_whole}
 ggplot(vst_out$gene_attr, aes(residual_mean)) + geom_histogram(binwidth=0.01)
-ggplot(vst_out$gene_attr, aes(residual_variance)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept=1, color='red') + xlim(0, 10)
+ggplot(vst_out$gene_attr, aes(residual_variance)) + geom_histogram(binwidth=0.1) +
+	geom_vline(xintercept=1, color='red') + xlim(0, 10)
 ggplot(vst_out$gene_attr, aes(x=residual_mean, y=residual_variance)) +
 	geom_point(alpha=0.3, shape=16) + 
 	xlim(0, 2.5) +
@@ -490,18 +523,25 @@ ggplot(vst_out$gene_attr, aes(x=residual_mean, y=residual_variance)) +
 	geom_density_2d()
 ```
 
-```{r}
-ggplot(vst_out$gene_attr, aes(log10(gmean), residual_variance)) + geom_point(alpha=0.3, shape=16) +
-  geom_density_2d(size = 0.3)
+```{r plot_model_5_sct_caron_whole}
+ggplot(vst_out$gene_attr,
+       aes(log10(gmean), residual_variance)) +
+       geom_point(alpha=0.3, shape=16) +
+       geom_density_2d(size = 0.3)
 ```
 
-```{r}
-dd <- head(round(vst_out$gene_attr[order(-vst_out$gene_attr$residual_variance), ], 2), 22)
+```{r table_show_sct_caron_whole}
+dd <- vst_out$gene_attr %>%
+	arrange(-residual_variance) %>%
+	slice_head(n = 22) %>%
+	mutate(across(where(is.numeric), round, 2))
 dd %>% tibble::rownames_to_column("ensembl_gene_id") %>%
-	left_join(as.data.frame(rowData(sce))[,c("ensembl_gene_id", "Symbol")], "ensembl_gene_id")
+	left_join(as.data.frame(rowData(sce))[,c("ensembl_gene_id", "Symbol")],
+		  by = "ensembl_gene_id") %>%
+	DT::datatable(rownames = FALSE)
 ```
 
-```{r, eval=!FALSE}
+```{r table_write_sct_caron_whole, eval=!FALSE}
 # write to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_vst_out%s.Rds",
 		 projDir, outDirBit, setName, setSuf)
@@ -510,9 +550,9 @@ saveRDS(vst_out, tmpFn)
 
 ### Hca
 
-Load object 
+Load object.
 
-```{r}
+```{r readIn_sct_abmmc_whole}
 setName <- "hca"
 setSuf <- "_5kCellPerSpl"
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
@@ -526,7 +566,7 @@ colnames(counts) <- colData(sce)$Barcode
 
 Inspect data
 
-```{r}
+```{r attr_comp_sct_abmmc_whole}
 gene_attr <- data.frame(mean = rowMeans(counts), 
                         detection_rate = rowMeans(counts > 0),
                         var = apply(counts, 1, var))
@@ -540,10 +580,11 @@ rownames(cell_attr) <- colnames(counts)
 
 Mean-variance relationship
 
-```{r}
+```{r scatter_detecRate_logMean_sct_abmmc_whole}
 # add the expected detection rate under Poisson model
 x = seq(from = -3, to = 2, length.out = 1000)
-poisson_model <- data.frame(log_mean = x, detection_rate = 1 - dpois(0, lambda = 10^x))
+poisson_model <- data.frame(log_mean = x,
+			    detection_rate = 1 - dpois(0, lambda = 10^x))
 ggplot(gene_attr, aes(log_mean, detection_rate)) + 
   geom_point(alpha=0.3, shape=16) + 
   geom_line(data=poisson_model, color='red') +
@@ -552,20 +593,23 @@ ggplot(gene_attr, aes(log_mean, detection_rate)) +
 
 Mean-detection-rate relationship
 
-```{r}
+```{r scatter_nGene_nUmi_sct_abmmc_whole}
 ggplot(cell_attr, aes(n_umi, n_gene)) + 
   geom_point(alpha=0.3, shape=16) + 
   geom_density_2d(size = 0.3)
 ```
 
-
-```{r}
+```{r comp_sct_abmmc_whole}
 # We use the Future API for parallel processing; set parameters here
 future::plan(strategy = 'multicore', workers = 4)
 options(future.globals.maxSize = 10 * 1024 ^ 3)
 
 set.seed(44)
-vst_out <- sctransform::vst(counts, latent_var = c('log_umi'), return_gene_attr = TRUE, return_cell_attr = TRUE, show_progress = FALSE)
+vst_out <- sctransform::vst(counts,
+			    latent_var = c('log_umi'),
+			    return_gene_attr = TRUE,
+			    return_cell_attr = TRUE,
+			    show_progress = FALSE)
 sctransform::plot_model_pars(vst_out)
 ```
 
@@ -573,19 +617,30 @@ Inspect model
 
 We will look at several genes in more detail.
 
-```{r}
-#sctransform::plot_model(vst_out, counts, c('MALAT1', 'RPL10', 'FTL'), plot_residual = TRUE)
-rowData(sce) %>% as.data.frame %>% filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
-sctransform::plot_model(vst_out, counts, c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'), plot_residual = TRUE)
+```{r plot_model_1_sct_abmmc_whole}
+rowData(sce) %>%
+	as.data.frame %>%
+	filter(Symbol %in% c('MALAT1', 'RPL10', 'FTL'))
+
+sctransform::plot_model(vst_out,
+			counts,
+			c('ENSG00000251562', 'ENSG00000147403', 'ENSG00000087086'),
+			plot_residual = TRUE)
 ```
 
-```{r}
-sctransform::plot_model(vst_out, counts, c('ENSG00000087086'), plot_residual = TRUE, show_nr = TRUE, arrange_vertical = FALSE)
+```{r plot_model_2_sct_abmmc_whole}
+sctransform::plot_model(vst_out,
+			counts,
+			c('ENSG00000087086'),
+			plot_residual = TRUE,
+			show_nr = TRUE,
+			arrange_vertical = FALSE)
 ```
 
-```{r}
+```{r plot_model_4_sct_abmmc_whole}
 ggplot(vst_out$gene_attr, aes(residual_mean)) + geom_histogram(binwidth=0.01)
-ggplot(vst_out$gene_attr, aes(residual_variance)) + geom_histogram(binwidth=0.1) + geom_vline(xintercept=1, color='red') + xlim(0, 10)
+ggplot(vst_out$gene_attr, aes(residual_variance)) + geom_histogram(binwidth=0.1) +
+	geom_vline(xintercept=1, color='red') + xlim(0, 10)
 
 ggplot(vst_out$gene_attr, aes(x=residual_mean, y=residual_variance)) +
 	geom_point(alpha=0.3, shape=16) + 
@@ -594,20 +649,33 @@ ggplot(vst_out$gene_attr, aes(x=residual_mean, y=residual_variance)) +
 	geom_density_2d()
 ```
 
-```{r}
-ggplot(vst_out$gene_attr, aes(log10(gmean), residual_variance)) + geom_point(alpha=0.3, shape=16) +
-  geom_density_2d(size = 0.3)
+```{r plot_model_5_sct_abmmc_whole}
+ggplot(vst_out$gene_attr, aes(log10(gmean), residual_variance)) +
+	geom_point(alpha=0.3, shape=16) +
+	geom_density_2d(size = 0.3)
 ```
 
-```{r}
-dd <- head(round(vst_out$gene_attr[order(-vst_out$gene_attr$residual_variance), ], 2), 22)
+```{r table_show_sct_abmmc_whole}
+#dd <- head(round(vst_out$gene_attr[order(-vst_out$gene_attr$residual_variance), ], 2), 22)
+dd <- vst_out$gene_attr %>%
+	arrange(-residual_variance) %>%
+	slice_head(n = 22) %>%
+	mutate(across(where(is.numeric), round, 2))
 dd %>% tibble::rownames_to_column("ensembl_gene_id") %>%
-	left_join(as.data.frame(rowData(sce))[,c("ensembl_gene_id", "Symbol")], "ensembl_gene_id")
+	left_join(as.data.frame(rowData(sce))[,c("ensembl_gene_id", "Symbol")],
+		  "ensembl_gene_id") %>%
+	DT::datatable(rownames = FALSE)
 ```
 
-```{r, eval=!FALSE}
+```{r table_write_sct_abmmc_whole, eval=!FALSE}
 # write to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_vst_out%s.Rds",
 		 projDir, outDirBit, setName, setSuf)
 saveRDS(vst_out, tmpFn)
+```
+
+## Session information
+
+```{r}
+sessionInfo()
 ```
