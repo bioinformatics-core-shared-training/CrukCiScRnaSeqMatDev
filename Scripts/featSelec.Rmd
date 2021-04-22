@@ -22,21 +22,34 @@ params:
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE
+  bookType: "mk"
+  setName: "caron"
+  setSuf: "_5hCellPerSpl"
+  splSetToGet: "dummy"
+  dsiSuf: '_dummy'
 ---
 
 # Feature selection
 
-```{r, warning=FALSE}
-suppressMessages(library(ggplot2))
-suppressMessages(library(scater))
-suppressMessages(library(scran))
+```{r libraries_featSelec, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(scater)
+library(scran)
 ```
 
-```{r}
+```{r params_featSelec}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
+setName <- params$setName
+setSuf <- params$setSuf
+if(params$bookType == "mk"){
+	dirRel <- ".."
+	setName <- "caron"
+	setSuf <- "_5hCellPerSpl"
+}
+
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
@@ -57,12 +70,10 @@ set.seed(123) # for reproducibility
 
 We will load the R file keeping the SCE object with the normalised counts for 500 cells per sample.
 
-```{r, cache=FALSE}
-setName <- "caron"
-setSuf <- "_5hCellPerSpl"
-
+```{r featSelec_readIn, cache=FALSE}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds",
+		 projDir, outDirBit, setName, setSuf)
 print(tmpFn)
 if(!file.exists(tmpFn))
 {
@@ -113,7 +124,7 @@ curve(var.fit$trend(x), col="dodgerblue", add=TRUE, lwd=2)
 In the absence of spike-in data, one can attempt to create a trend by making some distributional assumptions about the noise. For example, UMI counts typically exhibit near-Poisson variation if we only consider technical noise from library preparation and sequencing. This can be used to construct a mean-variance trend in the log-counts with the modelGeneVarByPoisson() function. Note the increased residuals of the high-abundance genes, which can be interpreted as the amount of biological variation that was assumed to be “uninteresting” when fitting the gene-based trend above.
 
 
-```{r}
+```{r modelGeneVarByPoisson_comp}
 set.seed(0010101)
 dec.pois.sce <- modelGeneVarByPoisson(sce)
 dec.pois.sce <- dec.pois.sce[order(dec.pois.sce$bio, decreasing=TRUE),]
@@ -122,9 +133,12 @@ head(dec.pois.sce)
 
 Plot:
 
-```{r}
-plot(dec.pois.sce$mean, dec.pois.sce$total, pch=16, xlab="Mean of log-expression",
-    ylab="Variance of log-expression")
+```{r modelGeneVarByPoisson_plot}
+plot(dec.pois.sce$mean,
+     dec.pois.sce$total,
+     pch=16,
+     xlab="Mean of log-expression",
+     ylab="Variance of log-expression")
 curve(metadata(dec.pois.sce)$trend(x), col="dodgerblue", add=TRUE)
 ```
 
@@ -167,8 +181,9 @@ points(var.fit$mean[hvg.index], var.fit$var[hvg.index], col="orange")
 
 Save objects to file
 
-```{r}
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_featSel.Rds", projDir, outDirBit, setName, setSuf)
+```{r featSel_write}
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_featSel.Rds",
+		 projDir, outDirBit, setName, setSuf)
 saveRDS(list("dec.sce"=dec.sce,"hvg.index"=hvg.index), tmpFn)
 ```
 
@@ -202,7 +217,7 @@ g
 
 Another few genes:
 
-```{r}
+```{r plot_count_HVGtop20_2}
 chosen.genes.index <- o[21:40]
 
 tmpInd <- which(rowData(sce)$ensembl_gene_id %in% rownames(dec.sce)[chosen.genes.index])
@@ -241,4 +256,10 @@ g <- g + scale_x_discrete(breaks=rownames(dec.sce)[chosen.genes.index.tmp],
         labels=tmpName)
 g
 rm(chosen.genes.index.tmp)
+```
+
+## Session information
+
+```{r}
+sessionInfo()
 ```
