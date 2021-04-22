@@ -471,3 +471,10 @@ Save SCE object:
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds", projDir, outDirBit, setName, setSuf)
 saveRDS(sce, tmpFn)
 ```
+
+## Session information
+
+```{r}
+sessionInfo()
+```
+
