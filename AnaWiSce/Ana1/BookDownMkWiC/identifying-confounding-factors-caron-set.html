@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
+  <title>Chapter 10 Identifying confounding factors - Caron set | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
   <meta name="description" content="A report for all analyses (bookdown::gitbook)." />
   <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta property="og:title" content="Chapter 10 Identifying confounding factors - Caron set | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   <meta name="github-repo" content="rstudio/bookdown-demo" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta name="twitter:title" content="Chapter 10 Identifying confounding factors - Caron set | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
   
   <meta name="twitter:description" content="A report for all analyses (bookdown::gitbook)." />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
+<link rel="prev" href="dimensionality-reduction-for-visualisation.html"/>
 
-<link rel="next" href="SeqQualTop.html"/>
 <script src="libs/jquery-3.5.1/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -942,110 +942,241 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="header">
-<h1 class="title">CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</h1>
-<h2 class="subtitle"><em>Heterogeneity in childhood acute lymphoblastic leukemia with droplet-based 10X Chromium assay.</em></h2>
-<p class="author"><em>Stephane Ballereau, Zeynep Kalender Atak</em></p>
-<p class="date"><em>2021-04-27</em></p>
-</div>
-<div id="Preamble" class="section level1">
-<h1><span class="header-section-number">Chapter 1</span> Preamble</h1>
-<div id="the-study" class="section level2">
-<h2><span class="header-section-number">1.1</span> The study</h2>
-<p>“Childhood acute lymphoblastic leukemia (cALL) is the most common pediatric cancer. It is characterized by bone marrow lymphoid precursors that acquire genetic alterations, resulting in disrupted maturation and uncontrollable proliferation.” <a href="https://www.nature.com/articles/s41598-020-64929-x">Caron et al. 2020</a>. Nowaways, up to 85–90% of patients are cured, but others do not respond to treatment or relapse and die. The aim of the study is to characterise the heterogeneity of gene expression at the cell level, within and between patients.</p>
+<div id="identifying-confounding-factors---caron-set" class="section level1">
+<h1><span class="header-section-number">Chapter 10</span> Identifying confounding factors - Caron set</h1>
+<div class="sourceCode" id="cb844"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb844-1"><a href="identifying-confounding-factors-caron-set.html#cb844-1"></a>normPlotDirBit &lt;-<span class="st"> &quot;Plots/Norm&quot;</span> <span class="co"># &quot;ConfoundPlots&quot;</span></span>
+<span id="cb844-2"><a href="identifying-confounding-factors-caron-set.html#cb844-2"></a><span class="co">#setNameUpp &lt;- &quot;Caron&quot;</span></span>
+<span id="cb844-3"><a href="identifying-confounding-factors-caron-set.html#cb844-3"></a><span class="co">#setNameLow &lt;- &quot;caron&quot;</span></span>
+<span id="cb844-4"><a href="identifying-confounding-factors-caron-set.html#cb844-4"></a>setName &lt;-<span class="st"> </span><span class="kw">tolower</span>(<span class="st">&quot;Caron&quot;</span>)</span>
+<span id="cb844-5"><a href="identifying-confounding-factors-caron-set.html#cb844-5"></a>setSuf &lt;-<span class="st"> &quot;_5hCellPerSpl&quot;</span></span>
+<span id="cb844-6"><a href="identifying-confounding-factors-caron-set.html#cb844-6"></a>typeNorm &lt;-<span class="st"> &quot;scran&quot;</span></span>
+<span id="cb844-7"><a href="identifying-confounding-factors-caron-set.html#cb844-7"></a></span>
+<span id="cb844-8"><a href="identifying-confounding-factors-caron-set.html#cb844-8"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb844-9"><a href="identifying-confounding-factors-caron-set.html#cb844-9"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
+<span id="cb844-10"><a href="identifying-confounding-factors-caron-set.html#cb844-10"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span></code></pre></div>
+<p>caron</p>
 <!--
-See similar findings in CRC
-https://www.cell.com/cell-stem-cell/fulltext/S1934-5909(20)30151-X?rss=yes
-
-https://www.nature.com/articles/s41568-020-0276-8
-https://www.sciencedirect.com/science/article/pii/S1934590920302034
-
-https://scinapse.io/papers/2955045010
-(https://www.nature.com/articles/nm.4505)
-https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4273416/
-https://www.nature.com/articles/s41375-018-0127-8
+Should have Caron and HCA separately
 -->
-<p>Four type of samples are considered:</p>
-<ul>
-<li>eight patients:
-<ul>
-<li>six B-ALL</li>
-<li>two T-ALL</li>
-</ul></li>
-<li>three healthy pediatric controls</li>
-<li>eight healthy adult controls, publicly available</li>
-</ul>
-<p>As the study aims at identifying cell populations, large numbers of cells were sequenced with the droplet-based 10X Chromium assay.</p>
-</div>
-<div id="the-plan" class="section level2">
-<h2><span class="header-section-number">1.2</span> The plan</h2>
-<p>We will follow several steps:</p>
-<ul>
-<li>sequencing quality check</li>
-<li>alignment of reads to the human genome (GRCh38) with 10X software cellranger</li>
-<li>quality control (cell calls, cells and genes filtering) <!-- mention doublet detection --></li>
-<li>count normalisation</li>
-<li>data set integration</li>
-<li>feature selection</li>
-<li>dimensionality reduction</li>
-<li>clustering</li>
-<li>marker gene identification</li>
-<li>cell type annotation</li>
-<li>cell cycle assignment</li>
-<li>trajectory analysis</li>
-</ul>
+<p>Load object</p>
+<div class="sourceCode" id="cb845"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb845-1"><a href="identifying-confounding-factors-caron-set.html#cb845-1"></a><span class="co"># Read object in:</span></span>
+<span id="cb845-2"><a href="identifying-confounding-factors-caron-set.html#cb845-2"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds&quot;</span>,</span>
+<span id="cb845-3"><a href="identifying-confounding-factors-caron-set.html#cb845-3"></a>         projDir, outDirBit, setName, setSuf)</span>
+<span id="cb845-4"><a href="identifying-confounding-factors-caron-set.html#cb845-4"></a>tmpFn</span></code></pre></div>
+<pre><code>## [1] &quot;/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/AnaWiSce/Ana1/Robjects/caron_sce_nz_postDeconv_5hCellPerSpl.Rds&quot;</code></pre>
+<div class="sourceCode" id="cb847"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb847-1"><a href="identifying-confounding-factors-caron-set.html#cb847-1"></a><span class="co">#getwd()</span></span>
+<span id="cb847-2"><a href="identifying-confounding-factors-caron-set.html#cb847-2"></a><span class="co">#file.exists(tmpFn)</span></span>
+<span id="cb847-3"><a href="identifying-confounding-factors-caron-set.html#cb847-3"></a>sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
+<span id="cb847-4"><a href="identifying-confounding-factors-caron-set.html#cb847-4"></a>sce</span></code></pre></div>
+<pre><code>## class: SingleCellExperiment 
+## dim: 16629 5500 
+## metadata(0):
+## assays(2): counts logcounts
+## rownames(16629): ENSG00000237491 ENSG00000225880 ... ENSG00000275063
+##   ENSG00000271254
+## rowData names(11): ensembl_gene_id external_gene_name ... detected
+##   gene_sparsity
+## colnames: NULL
+## colData names(16): Barcode Run ... cell_sparsity sizeFactor
+## reducedDimNames(0):
+## altExpNames(0):</code></pre>
+<p>Remember scran PCA:</p>
+<p>Normalised counts are stored in ‘logcounts’ assay</p>
+<div class="sourceCode" id="cb849"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb849-1"><a href="identifying-confounding-factors-caron-set.html#cb849-1"></a><span class="co"># </span></span>
+<span id="cb849-2"><a href="identifying-confounding-factors-caron-set.html#cb849-2"></a>scranPca &lt;-<span class="st"> </span><span class="kw">runPCA</span>(</span>
+<span id="cb849-3"><a href="identifying-confounding-factors-caron-set.html#cb849-3"></a>  sce,</span>
+<span id="cb849-4"><a href="identifying-confounding-factors-caron-set.html#cb849-4"></a>  <span class="dt">exprs_values =</span> <span class="st">&quot;logcounts&quot;</span></span>
+<span id="cb849-5"><a href="identifying-confounding-factors-caron-set.html#cb849-5"></a>)</span></code></pre></div>
+<p>PCA plot for the ‘scran’ counts in the caron set.</p>
+<div class="sourceCode" id="cb850"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb850-1"><a href="identifying-confounding-factors-caron-set.html#cb850-1"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png&quot;</span>,</span>
+<span id="cb850-2"><a href="identifying-confounding-factors-caron-set.html#cb850-2"></a>         <span class="co">#projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)</span></span>
+<span id="cb850-3"><a href="identifying-confounding-factors-caron-set.html#cb850-3"></a>         dirRel, normPlotDirBit, setName, setSuf, typeNorm)</span>
+<span id="cb850-4"><a href="identifying-confounding-factors-caron-set.html#cb850-4"></a>tmpFn</span>
+<span id="cb850-5"><a href="identifying-confounding-factors-caron-set.html#cb850-5"></a>knitr<span class="op">::</span><span class="kw">include_graphics</span>(tmpFn, <span class="dt">auto_pdf =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb851"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb851-1"><a href="identifying-confounding-factors-caron-set.html#cb851-1"></a><span class="co">#options(BiocSingularParam.default=IrlbaParam())</span></span>
+<span id="cb851-2"><a href="identifying-confounding-factors-caron-set.html#cb851-2"></a><span class="kw">options</span>(<span class="dt">BiocSingularParam.default=</span><span class="kw">ExactParam</span>())</span>
+<span id="cb851-3"><a href="identifying-confounding-factors-caron-set.html#cb851-3"></a></span>
+<span id="cb851-4"><a href="identifying-confounding-factors-caron-set.html#cb851-4"></a>qclust &lt;-<span class="st"> </span><span class="kw">quickCluster</span>(sce, <span class="dt">min.size =</span> <span class="dv">30</span>, <span class="dt">use.ranks =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb851-5"><a href="identifying-confounding-factors-caron-set.html#cb851-5"></a>sce &lt;-<span class="st"> </span><span class="kw">computeSumFactors</span>(sce, <span class="dt">sizes =</span> <span class="dv">15</span>, <span class="dt">clusters =</span> qclust)</span>
+<span id="cb851-6"><a href="identifying-confounding-factors-caron-set.html#cb851-6"></a>sce &lt;-<span class="st"> </span><span class="kw">logNormCounts</span>(sce)</span></code></pre></div>
+<p>Perform PCA:</p>
+<div class="sourceCode" id="cb852"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb852-1"><a href="identifying-confounding-factors-caron-set.html#cb852-1"></a><span class="kw">reducedDim</span>(sce, <span class="st">&quot;PCA&quot;</span>) &lt;-<span class="st"> </span><span class="kw">reducedDim</span>(</span>
+<span id="cb852-2"><a href="identifying-confounding-factors-caron-set.html#cb852-2"></a>  <span class="kw">runPCA</span>(sce, <span class="dt">exprs_values =</span> <span class="st">&quot;logcounts&quot;</span>, <span class="dt">ncomponents =</span> <span class="dv">10</span>), <span class="st">&quot;PCA&quot;</span>)</span>
+<span id="cb852-3"><a href="identifying-confounding-factors-caron-set.html#cb852-3"></a></span>
+<span id="cb852-4"><a href="identifying-confounding-factors-caron-set.html#cb852-4"></a><span class="kw">plotPCA</span>(</span>
+<span id="cb852-5"><a href="identifying-confounding-factors-caron-set.html#cb852-5"></a>    sce,</span>
+<span id="cb852-6"><a href="identifying-confounding-factors-caron-set.html#cb852-6"></a>    <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb852-7"><a href="identifying-confounding-factors-caron-set.html#cb852-7"></a>    <span class="dt">size_by =</span> <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb852-8"><a href="identifying-confounding-factors-caron-set.html#cb852-8"></a>    <span class="dt">shape_by =</span> <span class="st">&quot;source_name&quot;</span></span>
+<span id="cb852-9"><a href="identifying-confounding-factors-caron-set.html#cb852-9"></a>)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/Caron_confound_postDeconvPcaPlotShow-1.png" width="672" /></p>
 <!--
-TODO: add analysis flowchart?
+Correlation with PCs: logcounts_raw:
 -->
-</div>
-<div id="the-analyses" class="section level2">
-<h2><span class="header-section-number">1.3</span> The analyses</h2>
-<p>This report includes:</p>
-<ul>
-<li><strong>Sequence Quality</strong> is good (see <a href="SeqQualTop.html#SeqQualTop">2</a>) <!-- seqQual.Rmd --></li>
-<li><strong>cellranger</strong> output suggests the data sets are good quality (see <a href="AliFeatCountTop.html#AliFeatCountTop">3</a>) <!-- cellRanger.Rmd --></li>
-<li><strong>Quality control</strong> - a first glance at the RNA data set comprising all droplets deemed to contain at leat one cell, to check the data quality and biological signal (eg. do we observe cell types we expect?) (see <a href="PreProcAllCellsTop.html#PreProcAllCellsTop">4</a> for the ‘all-cells’ analysis and <a href="PreProcTop.html#PreProcTop">5</a> for the analysis of the downsampled data set to use in the course) <!-- preProcAllCells.Rmd and preProc.Rmd --></li>
-<li>an annotation of RNA clusters using known PBMC marker genes (see <a href="#AllDropletsCellTypeAnnotTop"><strong>??</strong></a>) <!-- .Rmd --></li>
-</ul>
-</div>
-<div id="overall-summary" class="section level2">
-<h2><span class="header-section-number">1.4</span> Overall summary</h2>
-<!-- seurat3Adt_glanceAtGex.Rmd -->
-<ul>
-<li></li>
-</ul>
-<!-- seurat3Adt_10x3kPbmcMarkers.Rmd -->
-<ul>
-<li></li>
-</ul>
-<!-- seurat3Hto.Rmd -->
-<ul>
-<li></li>
-</ul>
-</div>
-<div id="conclusion" class="section level2">
-<h2><span class="header-section-number">1.5</span> Conclusion</h2>
-</div>
-<div id="abbreviations" class="section level2">
-<h2><span class="header-section-number">1.6</span> Abbreviations</h2>
-<ul>
-<li>BMMC: Bone Marrow Mononuclear Cell</li>
-<li>HCA: Human Cell Atlas</li>
-<li>PCA: Principal Component Analysis</li>
-<li>UMI: Unique Molecular Identifier</li>
-</ul>
-
+<div class="sourceCode" id="cb853"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb853-1"><a href="identifying-confounding-factors-caron-set.html#cb853-1"></a><span class="kw">assay</span>(sce, <span class="st">&quot;logcounts_raw&quot;</span>) &lt;-<span class="st"> </span><span class="kw">log2</span>(<span class="kw">counts</span>(sce)<span class="op">+</span><span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb854"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb854-1"><a href="identifying-confounding-factors-caron-set.html#cb854-1"></a><span class="co"># on norm count https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors</span></span>
+<span id="cb854-2"><a href="identifying-confounding-factors-caron-set.html#cb854-2"></a><span class="co"># on logcounts_raw https://scrnaseq-course.cog.sanger.ac.uk/website/cleaning-the-expression-matrix.html#correlations-with-pcs</span></span>
+<span id="cb854-3"><a href="identifying-confounding-factors-caron-set.html#cb854-3"></a><span class="co"># a bit long</span></span>
+<span id="cb854-4"><a href="identifying-confounding-factors-caron-set.html#cb854-4"></a></span>
+<span id="cb854-5"><a href="identifying-confounding-factors-caron-set.html#cb854-5"></a><span class="co"># issue with scale, trying with explanPc/100</span></span>
+<span id="cb854-6"><a href="identifying-confounding-factors-caron-set.html#cb854-6"></a><span class="co"># see next chunk too</span></span>
+<span id="cb854-7"><a href="identifying-confounding-factors-caron-set.html#cb854-7"></a></span>
+<span id="cb854-8"><a href="identifying-confounding-factors-caron-set.html#cb854-8"></a>explanPc &lt;-<span class="st"> </span><span class="kw">getExplanatoryPCs</span>(</span>
+<span id="cb854-9"><a href="identifying-confounding-factors-caron-set.html#cb854-9"></a>    sce,</span>
+<span id="cb854-10"><a href="identifying-confounding-factors-caron-set.html#cb854-10"></a>    <span class="dt">exprs_values =</span> <span class="st">&quot;logcounts_raw&quot;</span>,</span>
+<span id="cb854-11"><a href="identifying-confounding-factors-caron-set.html#cb854-11"></a>    <span class="dt">variables =</span> <span class="kw">c</span>(</span>
+<span id="cb854-12"><a href="identifying-confounding-factors-caron-set.html#cb854-12"></a>        <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb854-13"><a href="identifying-confounding-factors-caron-set.html#cb854-13"></a>    <span class="st">&quot;detected&quot;</span>,</span>
+<span id="cb854-14"><a href="identifying-confounding-factors-caron-set.html#cb854-14"></a>        <span class="st">&quot;source_name&quot;</span>,</span>
+<span id="cb854-15"><a href="identifying-confounding-factors-caron-set.html#cb854-15"></a>        <span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb854-16"><a href="identifying-confounding-factors-caron-set.html#cb854-16"></a>    <span class="st">&quot;subsets_Mito_percent&quot;</span></span>
+<span id="cb854-17"><a href="identifying-confounding-factors-caron-set.html#cb854-17"></a>    )</span>
+<span id="cb854-18"><a href="identifying-confounding-factors-caron-set.html#cb854-18"></a>)</span>
+<span id="cb854-19"><a href="identifying-confounding-factors-caron-set.html#cb854-19"></a><span class="kw">plotExplanatoryPCs</span>(explanPc<span class="op">/</span><span class="dv">100</span>) </span></code></pre></div>
 <!--
-TODO:
+Explanatory variables: logcounts_raw:
 -->
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="index.html#cb2-1"></a><span class="co">#projDirOsx &lt;- &quot;/Users/baller01/MyMount/clust1a/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
-<span id="cb2-2"><a href="index.html#cb2-2"></a><span class="co">#projDir &lt;- &quot;/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
-<span id="cb2-3"><a href="index.html#cb2-3"></a><span class="co">#projDir &lt;- &quot;/home/ubuntu/Course_Materials/scRNAseq&quot;</span></span>
-<span id="cb2-4"><a href="index.html#cb2-4"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
-<span id="cb2-5"><a href="index.html#cb2-5"></a>projDirLink &lt;-<span class="st"> &quot;/Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
-<span id="cb2-6"><a href="index.html#cb2-6"></a>inpDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>inpDirBit</span>
-<span id="cb2-7"><a href="index.html#cb2-7"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="index.html#cb3-1"></a><span class="kw">library</span>(DT)</span></code></pre></div>
+<div class="sourceCode" id="cb855"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb855-1"><a href="identifying-confounding-factors-caron-set.html#cb855-1"></a><span class="co"># on logcounts_raw</span></span>
+<span id="cb855-2"><a href="identifying-confounding-factors-caron-set.html#cb855-2"></a><span class="co"># https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors</span></span>
+<span id="cb855-3"><a href="identifying-confounding-factors-caron-set.html#cb855-3"></a></span>
+<span id="cb855-4"><a href="identifying-confounding-factors-caron-set.html#cb855-4"></a><span class="kw">plotExplanatoryVariables</span>(</span>
+<span id="cb855-5"><a href="identifying-confounding-factors-caron-set.html#cb855-5"></a>    sce,</span>
+<span id="cb855-6"><a href="identifying-confounding-factors-caron-set.html#cb855-6"></a>    <span class="dt">exprs_values =</span> <span class="st">&quot;logcounts_raw&quot;</span>,</span>
+<span id="cb855-7"><a href="identifying-confounding-factors-caron-set.html#cb855-7"></a>    <span class="co">#exprs_values = &quot;counts&quot;,</span></span>
+<span id="cb855-8"><a href="identifying-confounding-factors-caron-set.html#cb855-8"></a>    <span class="co">#exprs_values = &quot;logcounts&quot;,</span></span>
+<span id="cb855-9"><a href="identifying-confounding-factors-caron-set.html#cb855-9"></a>    <span class="dt">variables =</span> <span class="kw">c</span>(</span>
+<span id="cb855-10"><a href="identifying-confounding-factors-caron-set.html#cb855-10"></a>        <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb855-11"><a href="identifying-confounding-factors-caron-set.html#cb855-11"></a>    <span class="st">&quot;detected&quot;</span>,</span>
+<span id="cb855-12"><a href="identifying-confounding-factors-caron-set.html#cb855-12"></a>        <span class="st">&quot;source_name&quot;</span>,</span>
+<span id="cb855-13"><a href="identifying-confounding-factors-caron-set.html#cb855-13"></a>        <span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb855-14"><a href="identifying-confounding-factors-caron-set.html#cb855-14"></a>    <span class="st">&quot;subsets_Mito_percent&quot;</span></span>
+<span id="cb855-15"><a href="identifying-confounding-factors-caron-set.html#cb855-15"></a>    )</span>
+<span id="cb855-16"><a href="identifying-confounding-factors-caron-set.html#cb855-16"></a>)</span></code></pre></div>
+<p>Correlation with PCs: logcounts (normalised):</p>
+<div class="sourceCode" id="cb856"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb856-1"><a href="identifying-confounding-factors-caron-set.html#cb856-1"></a><span class="co"># on norm count https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors</span></span>
+<span id="cb856-2"><a href="identifying-confounding-factors-caron-set.html#cb856-2"></a><span class="co"># on logcounts_raw https://scrnaseq-course.cog.sanger.ac.uk/website/cleaning-the-expression-matrix.html#correlations-with-pcs</span></span>
+<span id="cb856-3"><a href="identifying-confounding-factors-caron-set.html#cb856-3"></a><span class="co"># a bit long</span></span>
+<span id="cb856-4"><a href="identifying-confounding-factors-caron-set.html#cb856-4"></a><span class="kw">colData</span>(sce)<span class="op">$</span>source_name &lt;-<span class="st"> </span><span class="kw">factor</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>source_name)</span>
+<span id="cb856-5"><a href="identifying-confounding-factors-caron-set.html#cb856-5"></a>explanPc &lt;-<span class="st"> </span><span class="kw">getExplanatoryPCs</span>(sce,</span>
+<span id="cb856-6"><a href="identifying-confounding-factors-caron-set.html#cb856-6"></a>    <span class="co">#exprs_values = &quot;logcounts&quot;, # default</span></span>
+<span id="cb856-7"><a href="identifying-confounding-factors-caron-set.html#cb856-7"></a>    <span class="dt">variables =</span> <span class="kw">c</span>(</span>
+<span id="cb856-8"><a href="identifying-confounding-factors-caron-set.html#cb856-8"></a>        <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb856-9"><a href="identifying-confounding-factors-caron-set.html#cb856-9"></a>        <span class="st">&quot;detected&quot;</span>,</span>
+<span id="cb856-10"><a href="identifying-confounding-factors-caron-set.html#cb856-10"></a>        <span class="st">&quot;source_name&quot;</span>,</span>
+<span id="cb856-11"><a href="identifying-confounding-factors-caron-set.html#cb856-11"></a>        <span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb856-12"><a href="identifying-confounding-factors-caron-set.html#cb856-12"></a>        <span class="st">&quot;subsets_Mito_percent&quot;</span></span>
+<span id="cb856-13"><a href="identifying-confounding-factors-caron-set.html#cb856-13"></a>    )</span>
+<span id="cb856-14"><a href="identifying-confounding-factors-caron-set.html#cb856-14"></a>)</span>
+<span id="cb856-15"><a href="identifying-confounding-factors-caron-set.html#cb856-15"></a><span class="kw">plotExplanatoryPCs</span>(explanPc<span class="op">/</span><span class="dv">100</span>) </span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/Caron_confound_norm_getExpPc-1.png" width="672" /></p>
+<p>Explanatory variables: logcounts (normalised):</p>
+<div class="sourceCode" id="cb857"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb857-1"><a href="identifying-confounding-factors-caron-set.html#cb857-1"></a><span class="co"># on logcounts_raw</span></span>
+<span id="cb857-2"><a href="identifying-confounding-factors-caron-set.html#cb857-2"></a><span class="co"># https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors</span></span>
+<span id="cb857-3"><a href="identifying-confounding-factors-caron-set.html#cb857-3"></a></span>
+<span id="cb857-4"><a href="identifying-confounding-factors-caron-set.html#cb857-4"></a><span class="kw">plotExplanatoryVariables</span>(</span>
+<span id="cb857-5"><a href="identifying-confounding-factors-caron-set.html#cb857-5"></a>    sce,</span>
+<span id="cb857-6"><a href="identifying-confounding-factors-caron-set.html#cb857-6"></a>    <span class="co"># exprs_values = &quot;logcounts&quot;, # default</span></span>
+<span id="cb857-7"><a href="identifying-confounding-factors-caron-set.html#cb857-7"></a>    <span class="dt">variables =</span> <span class="kw">c</span>(</span>
+<span id="cb857-8"><a href="identifying-confounding-factors-caron-set.html#cb857-8"></a>        <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb857-9"><a href="identifying-confounding-factors-caron-set.html#cb857-9"></a>        <span class="st">&quot;detected&quot;</span>,</span>
+<span id="cb857-10"><a href="identifying-confounding-factors-caron-set.html#cb857-10"></a>        <span class="st">&quot;source_name&quot;</span>,</span>
+<span id="cb857-11"><a href="identifying-confounding-factors-caron-set.html#cb857-11"></a>        <span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb857-12"><a href="identifying-confounding-factors-caron-set.html#cb857-12"></a>        <span class="st">&quot;subsets_Mito_percent&quot;</span></span>
+<span id="cb857-13"><a href="identifying-confounding-factors-caron-set.html#cb857-13"></a>    )</span>
+<span id="cb857-14"><a href="identifying-confounding-factors-caron-set.html#cb857-14"></a>)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/Caron_confound_norm_getExpVar-1.png" width="672" /></p>
+<div class="sourceCode" id="cb858"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb858-1"><a href="identifying-confounding-factors-caron-set.html#cb858-1"></a><span class="kw">rm</span>(sce)</span></code></pre></div>
+<div id="session-information-6" class="section level2">
+<h2><span class="header-section-number">10.1</span> Session information</h2>
+<div class="sourceCode" id="cb859"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb859-1"><a href="identifying-confounding-factors-caron-set.html#cb859-1"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
+<pre><code>## R version 4.0.3 (2020-10-10)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: CentOS Linux 8
+## 
+## Matrix products: default
+## BLAS:   /opt/R/R-4.0.3/lib64/R/lib/libRblas.so
+## LAPACK: /opt/R/R-4.0.3/lib64/R/lib/libRlapack.so
+## 
+## locale:
+##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [8] methods   base     
+## 
+## other attached packages:
+##  [1] BiocSingular_1.6.0          scuttle_1.0.4              
+##  [3] robustbase_0.93-7           mixtools_1.2.0             
+##  [5] dplyr_1.0.5                 DT_0.18                    
+##  [7] irlba_2.3.3                 biomaRt_2.46.3             
+##  [9] Matrix_1.2-18               igraph_1.2.6               
+## [11] DropletUtils_1.10.3         scater_1.18.6              
+## [13] ggplot2_3.3.3               scran_1.18.7               
+## [15] SingleCellExperiment_1.12.0 SummarizedExperiment_1.20.0
+## [17] Biobase_2.50.0              GenomicRanges_1.42.0       
+## [19] GenomeInfoDb_1.26.7         IRanges_2.24.1             
+## [21] S4Vectors_0.28.1            BiocGenerics_0.36.1        
+## [23] MatrixGenerics_1.2.1        matrixStats_0.58.0         
+## [25] knitr_1.32                 
+## 
+## loaded via a namespace (and not attached):
+##   [1] ggbeeswarm_0.6.0          colorspace_2.0-0         
+##   [3] ellipsis_0.3.1            bluster_1.0.0            
+##   [5] XVector_0.30.0            BiocNeighbors_1.8.2      
+##   [7] rstudioapi_0.13           bit64_4.0.5              
+##   [9] AnnotationDbi_1.52.0      fansi_0.4.2              
+##  [11] xml2_1.3.2                splines_4.0.3            
+##  [13] R.methodsS3_1.8.1         sparseMatrixStats_1.2.1  
+##  [15] cachem_1.0.4              jsonlite_1.7.2           
+##  [17] kernlab_0.9-29            dbplyr_2.0.0             
+##  [19] R.oo_1.24.0               HDF5Array_1.18.1         
+##  [21] readr_1.4.0               compiler_4.0.3           
+##  [23] httr_1.4.2                dqrng_0.2.1              
+##  [25] assertthat_0.2.1          fastmap_1.1.0            
+##  [27] limma_3.46.0              htmltools_0.5.1.1        
+##  [29] prettyunits_1.1.1         tools_4.0.3              
+##  [31] rsvd_1.0.3                gtable_0.3.0             
+##  [33] glue_1.4.2                GenomeInfoDbData_1.2.4   
+##  [35] rappdirs_0.3.1            Rcpp_1.0.6               
+##  [37] jquerylib_0.1.3           vctrs_0.3.7              
+##  [39] rhdf5filters_1.2.0        DelayedMatrixStats_1.12.3
+##  [41] xfun_0.22                 stringr_1.4.0            
+##  [43] beachmat_2.6.4            lifecycle_1.0.0          
+##  [45] statmod_1.4.35            XML_3.99-0.5             
+##  [47] DEoptimR_1.0-8            edgeR_3.32.1             
+##  [49] MASS_7.3-53               zlibbioc_1.36.0          
+##  [51] scales_1.1.1              hms_1.0.0                
+##  [53] rhdf5_2.34.0              curl_4.3                 
+##  [55] yaml_2.2.1                memoise_2.0.0            
+##  [57] gridExtra_2.3             sass_0.3.1               
+##  [59] segmented_1.3-3           stringi_1.5.3            
+##  [61] RSQLite_2.2.6             BiocParallel_1.24.1      
+##  [63] rlang_0.4.10              pkgconfig_2.0.3          
+##  [65] bitops_1.0-6              evaluate_0.14            
+##  [67] lattice_0.20-41           purrr_0.3.4              
+##  [69] Rhdf5lib_1.12.1           htmlwidgets_1.5.3        
+##  [71] bit_4.0.4                 tidyselect_1.1.0         
+##  [73] magrittr_2.0.1            bookdown_0.21            
+##  [75] R6_2.5.0                  generics_0.1.0           
+##  [77] DelayedArray_0.16.3       DBI_1.1.1                
+##  [79] pillar_1.6.0              withr_2.4.2              
+##  [81] survival_3.2-7            RCurl_1.98-1.3           
+##  [83] tibble_3.1.1              crayon_1.4.1             
+##  [85] utf8_1.2.1                BiocFileCache_1.14.0     
+##  [87] rmarkdown_2.7             viridis_0.5.1            
+##  [89] progress_1.2.2            locfit_1.5-9.4           
+##  [91] grid_4.0.3                blob_1.2.1               
+##  [93] digest_0.6.27             R.utils_2.10.1           
+##  [95] openssl_1.4.3             munsell_0.5.0            
+##  [97] beeswarm_0.2.3            viridisLite_0.3.0        
+##  [99] vipor_0.4.5               bslib_0.2.4              
+## [101] askpass_1.1</code></pre>
+
 </div>
 </div>
             </section>
@@ -1053,8 +1184,8 @@ TODO:
           </div>
         </div>
       </div>
+<a href="dimensionality-reduction-for-visualisation.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 
-<a href="SeqQualTop.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -1085,7 +1216,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/rstudio/bookdown-demo/edit/master/index.Rmd",
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/confounding_caron.Rmd",
 "text": "Edit"
 },
 "history": {

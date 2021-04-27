@@ -23,7 +23,7 @@ x-cellranger-pipeline-in-brief
 sample-sheet
 x-cellranger-reports-for-caronbourque2020
 x-cellranger-reports-for-hcas-adult-bmmcs
-QcTopAllCells
+PreProcAllCellsTop
 introduction-2
 load-packages
 sample-sheet-1
@@ -68,7 +68,7 @@ caron-only
 hca-only
 subsample-hca-set
 session-information
-QcTop
+PreProcTop
 introduction-3
 load-packages-1
 sample-sheet-2
@@ -171,3 +171,18 @@ log-cpm-1
 scran-1
 sctransform-4
 session-information-4
+dimensionality-reduction-for-visualisation
+principal-component-analysis
+description
+example-2
+load-packages-2
+load-data
+pca
+correlation-between-pcs-and-the-total-number-of-features-detected
+t-sne-t-distributed-stochastic-neighbor-embedding
+perplexity
+stochasticity
+umap
+session-information-5
+identifying-confounding-factors---caron-set
+session-information-6
