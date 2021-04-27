@@ -28,9 +28,16 @@ projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 nbPcToComp <- 50
+
+if(params$bookType == "mk"){
+	setName <- "caron"
+	splSetToGet <- "PBMMC"
+	setSuf <- "_allCells"
+}
+
 ```
 
-```{r setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_PBMMC_setup, include=FALSE, echo=FALSE}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -51,7 +58,7 @@ library(dplyr)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-# Data integration {#DataIntegrationPbmmc}
+# Data integration {#DataIntegrationPbmmcTop}
 
 Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. Its text is reproduced below with few modifications to adapt it to the data set under scrutiny here.
 
@@ -73,9 +80,6 @@ Computational correction of these effects is critical for eliminating batch-to-b
 We will load the R file keeping the SCE object with the normalised counts, and subset 1000 cells per sample.
 
 ```{r}
-setName <- "caron"
-#setSuf <- ""
-setSuf <- "_allCells"
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
 
 print(tmpFn)
@@ -89,18 +93,18 @@ sce
 colnames(rowData(sce))[colnames(rowData(sce)) == "strand"] <- "strandNum"
 ```
 
-We next subset the data for the PBMMC sample group: 
+We next subset the data for the `r splSetToGet` sample group: 
 
 ```{r}
 # CaronBourque2020
 cb_sampleSheetFn <- file.path(projDir, "Data/CaronBourque2020/SraRunTable.txt")
 cb_sampleSheet <- read.table(cb_sampleSheetFn, header=T, sep=",")
-splVec <- cb_sampleSheet %>% filter(source_name == "PBMMC") %>%
+splVec <- cb_sampleSheet %>% filter(source_name == splSetToGet) %>%
 	pull(Sample.Name) %>% unique()
 
 sourceNames <- unique(colData(sce)$source_name)
 sceOrig <- sce
-sce <- sceOrig[,sce$source_name == "PBMMC" ]
+sce <- sceOrig[,sce$source_name == splSetToGet ]
 nbCells <- 1000
 all.sce <- list()
 for(spx in splVec)
@@ -918,4 +922,8 @@ plotExpression(uncorrected, x=I(factor(clusters.mnn)),
     features=geneEnsId, colour_by="batch") + facet_wrap(~colour_by)
 ```
 
+## Session information
 
+```{r}
+sessionInfo()
+```

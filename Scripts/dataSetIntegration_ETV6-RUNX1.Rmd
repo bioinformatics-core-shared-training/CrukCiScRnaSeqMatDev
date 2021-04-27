@@ -24,17 +24,6 @@ params:
   splSetToGet: "ETV6-RUNX1"
 ---
 
-```{r, eval=FALSE}
-# OLD
-
-#projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
-projDir <- "/data/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
-outDirBit <- "AnaWiSce/Attempt3"
-nbPcToComp <- 50
-#splSetToGet <- params$splSetToGet # params may not be read in if knitting book.
-splSetToGet <- "ETV6-RUNX1" # params may not be read in if knitting book.
-```
-
 ```{r}
 projDir <- params$projDir
 dirRel <- params$dirRel
@@ -42,9 +31,13 @@ outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
 splSetToGet <- params$splSetToGet
 nbPcToComp <- 50
+
+if(params$bookType == "mk"){
+	splSetToGet <- "ETV6-RUNX1"
+}
 ```
 
-```{r setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_ETV6-RUNX1_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -69,7 +62,7 @@ library(clustree)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-# Data integration
+# Data integration {#dataSetIntegration_ETV6-RUNX1Top}
 
 Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. Its text is reproduced below with few modifications to adapt it to the data set under scrutiny here.
 

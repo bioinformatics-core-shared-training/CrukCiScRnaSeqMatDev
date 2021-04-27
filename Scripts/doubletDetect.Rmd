@@ -2,7 +2,7 @@
 title: "CRUK CI Summer School 2020 - introduction to single-cell RNA-seq analysis"
 subtitle: 'Doublet detection'
 
-author: "Stephane Ballereau"
+author: "Stephane Ballereau, Zeynep Kalender Atak, Katarzyna Kania"
 output:
   html_notebook:
     code_folding: hide
@@ -38,7 +38,7 @@ In this section we will learn how to identify droplets that may include more tha
 
 ## Set up analysis
 
-Let's set some variables (eg path to files) and load R pcakages.
+Let's set some variables (eg path to files) and load R packages.
 
 ```{r}
 projDir <- params$projDir
@@ -49,13 +49,20 @@ splSetToGet <- params$splSetToGet
 setName <- params$setName
 setSuf <- params$setSuf
 dsiSuf <- params$dsiSuf # 'dsi' for data set integration
+
+if(params$bookType == "mk"){
+	setName <- "caron"
+	splSetToGet <- "dummy"
+	setSuf <- "_allCells"
+}
+
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r traj1_setup, include=FALSE, echo=FALSE}
+```{r doubletDetect_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -81,7 +88,7 @@ library(ggplot2)
 library(scater) # for logNormCounts
 library(scran)
 library(dplyr)
-library(BiocSingular) # for faster PCA
+#library(BiocSingular) # for faster PCA
 library(scDblFinder) # for doublet detection
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
@@ -91,11 +98,11 @@ fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=
 We will load the R file keeping the SCE object with the normalised counts (no cell subsampling).
 
 ```{r}
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", # or Qc
                  projDir, outDirBit, setName, setSuf)
 ```
 
-Input file: `r sprintf("%s/Robjects/%s_sce_nz_postDeconv%s.Rds", outDirBit, setName, setSuf)`.
+Input file: `r tmpFn`.
 
 ```{r}
 if(!file.exists(tmpFn))
@@ -169,7 +176,7 @@ colLabels(sce) <- sce$clusterStg
 plotTSNE(sce, colour_by="clusterStg")
 ```
 
-Let's run `computeDoubletDensity()` and display moments of the distribution of the doublet scores returned:
+Let us run `computeDoubletDensity()` and display moments of the distribution of the doublet scores returned:
 
 ```{r}
 set.seed(100)

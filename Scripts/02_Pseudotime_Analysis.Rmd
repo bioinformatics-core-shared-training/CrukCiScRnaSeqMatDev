@@ -48,7 +48,7 @@ nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r traj1_setup, include=FALSE, echo=FALSE}
+```{r traj2_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -63,7 +63,7 @@ set.seed(123) # for reproducibility
 ```
 
 
-# Setting up the data 
+# Setting up the data {#pseudoTime2Top}
 
 ```{r}
 library(SingleCellExperiment)

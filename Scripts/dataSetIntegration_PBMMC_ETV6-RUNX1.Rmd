@@ -48,13 +48,18 @@ cacheBool <- params$cacheBool
 splSetToGet <- params$splSetToGet
 setName <- params$setName
 setSuf <- params$setSuf
+if(params$bookType == "mk"){
+	splSetToGet <- "PBMMC,ETV6-RUNX1"
+	setName <- "caron"
+	setSuf <- "_5hCellPerSpl"
+}
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_PBMMC_ETV6-RUNX1_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -79,7 +84,7 @@ library(clustree)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-# Data integration
+# Data integration {#dataSetIntegration_PBMMC_ETV6-RUNX1Top}
 
 Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. Its text is reproduced below with few modifications to adapt it to the data set under scrutiny here.
 

@@ -28,7 +28,7 @@ params:
   dsiSuf: '_dummy'
 ---
 
-# Doublet detection
+# Doublet detection - Challenge
 
 Source: [Doublet detection](https://osca.bioconductor.org/doublet-detection.html) chapter of the OSCA book (with only few edits of its text).
 
@@ -57,9 +57,15 @@ splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if k
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
+
+if(params$bookType == "mk"){
+	setName <- "hca"
+	splSetToGet <- "dummy"
+	setSuf <- "_allCells"
+}
 ```
 
-```{r traj1_setup, include=FALSE, echo=FALSE}
+```{r doubletDetect_chal1_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)

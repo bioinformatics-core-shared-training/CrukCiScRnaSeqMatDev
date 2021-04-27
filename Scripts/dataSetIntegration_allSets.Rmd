@@ -24,10 +24,14 @@ params:
   cacheBool: FALSE  
   splSetToGet: "PBMMC,ETV6-RUNX1"
   setName: "caron"
-  setSuf: "_5hCellPerSpl"
+  setSuf: "_allCells"
   dsiSuf: '_dsi'
 ---
 
+<!--
+  setSuf: "_5hCellPerSpl"
+-->
+  
 ```{r, eval=FALSE}
 projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
 outDirBit <- "AnaWiSce/Attempt1"
@@ -43,13 +47,20 @@ splSetToGet <- params$splSetToGet
 setName <- params$setName
 setSuf <- params$setSuf
 dsiSuf <- params$dsiSuf # 'dsi' for data set integration
+
+if(params$bookType == "mk"){
+	setName <- "caron"
+	splSetToGet <- "dummy"
+	setSuf <- "_allCells"
+}
+
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_allSets_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -70,7 +81,7 @@ library(dplyr)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-# Data integration
+# Data integration {#dataSetIntegration_allSetsTop}
 
 **CODE NEEDS UPDATING**
 **as were other daya set integration chapters with fewr sample types** 
@@ -304,12 +315,15 @@ uncorrected <- runPCA(
 We use graph-based clustering on the components to obtain a summary of the population structure. As our each sample group is represented by at least two replicates, each cluster should ideally consist of cells from several batches. This is the case for some but not all clusters. Some clusters comprise of cells from a single sample. This may indicate that cells of the same type are artificially separated due to technical differences between batches. They may also be cancer cell population private to samples. 
 
 ```{r}
+nSteps <- 4 # waltrap default
+if(ncol(uncorrected)>10000){nSteps <- 20} # or else get 63 clusters with caron allCells
 library(scran)
 snn.gr <- buildSNNGraph(uncorrected, use.dimred="PCA")
-clusters <- igraph::cluster_walktrap(snn.gr)$membership
+clusters <- igraph::cluster_walktrap(snn.gr, steps=nSteps)$membership
 tab <- table(Cluster=clusters, Batch=uncorrected$batch)
 tab
 ```
+
 ```{r}
 pheatmap::pheatmap(tab,
            border_color      = NA,
@@ -318,7 +332,7 @@ pheatmap::pheatmap(tab,
            )
 ```
 
-We can also visualize the corrected coordinates using a t-SNE plot (Figure 13.1). The strong separation between cells from different batches is consistent with the clustering results.
+We can also visualize the corrected coordinates using a t-SNE plot. The strong separation between cells from different batches is consistent with the clustering results.
 
 ```{r}
 set.seed(1111001)
@@ -371,7 +385,7 @@ pheatmap::pheatmap(tab.resc,
 
 <!-- and/or barplots -->
 
-```{r, fig.height=0.5*figSize, fig.width=figSize}
+```{r, fig.height=0.5*figSize, fig.width=1.2*figSize}
 rescaled.rb <- runTSNE(rescaled.rb, dimred="PCA")
 rescaled.rb$batch <- factor(rescaled.rb$batch)
 p.batch <- plotTSNE(rescaled.rb, colour_by="batch")
@@ -449,16 +463,25 @@ tab.mnn <- table(Cluster=clusters.mnn, Batch=mnn.out$batch)
 tab.mnn
 ```
 
+```{r}
+pheatmap::pheatmap(tab.mnn,
+           border_color      = NA,
+           drop_levels       = TRUE,
+           cluster_cols      = FALSE
+           )
+```
+
 We can also visualize the corrected coordinates using a t-SNE plot. The presence of visual clusters containing cells from both batches provides a comforting illusion that the correction was successful.
 
-```{r}
+```{r, fig.height=0.5*figSize, fig.width=1.2*figSize}
 library(scater)
 set.seed(0010101010)
 mnn.out <- runTSNE(mnn.out, dimred="corrected")
 plotTSNE(mnn.out, colour_by="batch")
 p.batch <- plotTSNE(mnn.out, colour_by="batch")
 p.clu <- plotTSNE(mnn.out, colour_by="clusters.mnn")
-gridExtra::grid.arrange(p.clu, p.batch, ncol=2)
+#gridExtra::grid.arrange(p.clu, p.batch, ncol=2)
+gridExtra::grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$type), ncol=2)
 ```
 
 For fastMNN(), one useful diagnostic is the proportion of variance within each batch that is lost during MNN correction. Specifically, this refers to the within-batch variance that is removed during orthogonalization with respect to the average correction vector at each merge step. This is returned via the lost.var field in the metadata of mnn.out, which contains a matrix of the variance lost in each batch (column) at each merge step (row).
@@ -610,7 +633,7 @@ it is preferable to perform DE analyses using the uncorrected expression values 
 m.out <- findMarkers(
   uncorrected,
   clusters.mnn,
-  block=uncorrected$batch,
+  block=uncorrected$batch, # TODO batch or type?
   direction="up",
   lfc=1,
   row.data=rowData(uncorrected)[,
@@ -674,12 +697,23 @@ tab.mnn
 ```
 
 ```{r}
+pheatmap::pheatmap(tab.mnn,
+           border_color      = NA,
+           drop_levels       = TRUE,
+           #cluster_rows      = FALSE,
+           cluster_cols      = FALSE
+           )
+```
+
+```{r, fig.height=0.5*figSize, fig.width=1.2*figSize}
 library(scater)
 set.seed(0010101010)
 mnn.out <- runTSNE(mnn.out, dimred="corrected")
 
-p <- plotTSNE(mnn.out, colour_by="batch")
-p + facet_wrap(~mnn.out$type)
+p.batch <- plotTSNE(mnn.out, colour_by="batch")
+p.clu <- plotTSNE(mnn.out, colour_by="clusters.mnn")
+#gridExtra::grid.arrange(p.clu, p.batch, ncol=2)
+gridExtra::grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$type), ncol=2)
 ```
 
 Write mnn.out object to file
@@ -707,6 +741,8 @@ tmpData <- metadata(mnn.out)$merge.info$lost.var
 pheatmap::pheatmap(tmpData,
            border_color      = NA,
            drop_levels       = TRUE,
+           cluster_rows      = FALSE,
+           cluster_cols      = FALSE
            )
 ```
 
@@ -727,7 +763,7 @@ rescaled.mbn[[batchPlace]]
 rescaled.mbn[[batchPlace]] %>% colData %>% head
 
 length(paste("before", colLabels(rescaled.mbn[[batchPlace]])))
-save.image("dataSetIntegrationWhole.debug.Rdata")
+#save.image("dataSetIntegrationWhole.debug.Rdata")
 
 table(paste("after", clusters.mnn[tmpInd]))
 table(paste("before", colLabels(rescaled.mbn[[batchPlace]])))
@@ -739,16 +775,24 @@ table(paste("before", colLabels(rescaled.mbn[[batchPlace]])))
 ```{r}
 tab <- table(paste("after", clusters.mnn[tmpInd]),
              paste("before", colLabels(rescaled.mbn[[batchPlace]])))
-heat1 <- pheatmap(log10(tab+10), cluster_row=FALSE, cluster_col=FALSE,
-    main=sprintf("%s comparison", splVec[batchPlace]), silent=TRUE)
+heat1 <- pheatmap(
+  log10(tab+10),
+  cluster_row=FALSE,
+  cluster_col=FALSE,
+  main=sprintf("%s comparison", splVec[batchPlace]),
+  silent=TRUE)
 
 # For the second batch.
 batchPlace <- 2
 tmpInd <- mnn.out$batch==levels(mnn.out$batch)[batchPlace]
 tab <- table(paste("after", clusters.mnn[tmpInd]),
     paste("before", colLabels(rescaled.mbn[[batchPlace]])))
-heat2 <- pheatmap(log10(tab+10), cluster_row=FALSE, cluster_col=FALSE,
-    main=sprintf("%s comparison", splVec[batchPlace]), silent=TRUE)
+heat2 <- pheatmap(
+  log10(tab+10),
+  cluster_row=FALSE,
+  cluster_col=FALSE,
+  main=sprintf("%s comparison", splVec[batchPlace]),
+  silent=TRUE)
 
 gridExtra::grid.arrange(heat1[[4]], heat2[[4]])
 ```
@@ -760,15 +804,25 @@ Co-assignment probabilities
 batchPlace <- 1
 tmpInd <- mnn.out$batch==levels(mnn.out$batch)[batchPlace]
 tab <- coassignProb(colLabels(rescaled.mbn[[batchPlace]]), clusters.mnn[tmpInd])
-heat1 <- pheatmap(tab, cluster_row=FALSE, cluster_col=FALSE,
-    col=rev(viridis::magma(100)), main=sprintf("%s probabilities", splVec[batchPlace]), silent=TRUE)
+heat1 <- pheatmap(
+  tab,
+  cluster_row=FALSE,
+  cluster_col=FALSE,
+  col=rev(viridis::magma(100)),
+  main=sprintf("%s probabilities", splVec[batchPlace]),
+  silent=TRUE)
 
 # For the second batch.
 batchPlace <- 2
 tmpInd <- mnn.out$batch==levels(mnn.out$batch)[batchPlace]
 tab <- coassignProb(colLabels(rescaled.mbn[[batchPlace]]), clusters.mnn[tmpInd])
-heat2 <- pheatmap(tab, cluster_row=FALSE, cluster_col=FALSE,
-    col=rev(viridis::magma(100)), main=sprintf("%s probabilities", splVec[batchPlace]), silent=TRUE)
+heat2 <- pheatmap(
+  tab,
+  cluster_row=FALSE,
+  cluster_col=FALSE,
+  col=rev(viridis::magma(100)),
+  main=sprintf("%s probabilities", splVec[batchPlace]),
+  silent=TRUE)
 
 gridExtra::grid.arrange(heat1[[4]], heat2[[4]])
 ```
@@ -793,8 +847,15 @@ ri2
 Cluster markers:
 
 ```{r}
-m.out <- findMarkers(uncorrected, clusters.mnn, block=uncorrected$batch,
-    direction="up", lfc=1, row.data=rowData(uncorrected)[,c("ensembl_gene_id","Symbol"),drop=FALSE])
+m.out <- findMarkers(
+  uncorrected,
+  clusters.mnn,
+  block=uncorrected$batch,
+  direction="up",
+  lfc=1,
+  row.data=rowData(uncorrected)[,
+                                c("ensembl_gene_id","Symbol"),
+                                drop=FALSE])
 ```
 
 ```{r}
@@ -807,8 +868,12 @@ Expression level fot the top gene, `r demo$Symbol[1]`, (`r rownames(demo)[1]`):
 ```{r}
 geneEnsId <- rownames(demo)[1]
 
-plotExpression(uncorrected, x=I(factor(clusters.mnn)), 
-    features=geneEnsId, colour_by="batch") + facet_wrap(~colour_by)
+plotExpression(
+  uncorrected,
+  x=I(factor(clusters.mnn)),
+  features=geneEnsId,
+  colour_by="batch") +
+  facet_wrap(~colour_by)
 ```
 
 ## Session information

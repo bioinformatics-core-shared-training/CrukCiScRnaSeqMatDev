@@ -49,7 +49,7 @@ nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r setup, include=FALSE, echo=FALSE}
+```{r cellCyclePhases_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -70,7 +70,7 @@ suppressMessages(library(dplyr))
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-# Cell cycle assignment
+# Cell cycle assignment {#cellCyclePhasesTop}
 
 Source: [Cell cycle assignment](https://osca.bioconductor.org/cell-cycle-assignment.html) of the OSCA book.
 
@@ -98,6 +98,7 @@ if(!file.exists(tmpFn))
 	knitr::knit_exit()
 }
 mnn.out <- readRDS(tmpFn)
+mnn.out <- runUMAP(mnn.out, dimred="corrected")
 mnn.out
 
 # copy clustering output to uncorrected SCE
@@ -181,14 +182,14 @@ rownames(mat_col) <- tmpCellNames # colData(sce)$Barcode
 
 # Prepare colours for clusters:
 colourCount = length(unique(sce$cluster))
-getPalette = colorRampPalette(brewer.pal(9, "Set1"))
+getPalette = colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
 
 mat_colors <- list(group = getPalette(colourCount))
 names(mat_colors$group) <- unique(sce$cluster)
 
 # plot heatmap:
 #pheatmap(tmpData3,
-pheatmap(tmpData3[,order(colData(sce)$clusterStg)],
+pheatmap::pheatmap(tmpData3[,order(colData(sce)$clusterStg)],
            border_color      = NA,
            show_colnames     = FALSE,
            #show_rownames     = FALSE,
@@ -241,13 +242,15 @@ assignments <- cyclone(sce,
 Write assignments to file.
 
 ```{r, eval=FALSE}
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_cyclone.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_cyclone.Rds",
+                 projDir, outDirBit, setName, setSuf, dsiSuf, splSetToGet2)
 print(tmpFn)
 saveRDS(assignments, file=tmpFn)
 ```
 
 ```{r, eval=TRUE}
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_cyclone.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_cyclone.Rds",
+                 projDir, outDirBit, setName, setSuf, dsiSuf, splSetToGet2)
 print(tmpFn)
 assignments <- readRDS(file=tmpFn)
 ```
@@ -292,6 +295,16 @@ umap1 <- plotUMAP(sce, colour_by="phases") + fontsize
 umap1 + facet_wrap(. ~ sce$source_name)
 umap1 + facet_wrap(. ~ sce$phases)
 ```
+```{r}
+tmpPhases <- colData(sce)$phases
+names(tmpPhases) <- colData(sce)$Barcode
+colData(mnn.out)$phases <- tmpPhases[colData(mnn.out)$Barcode]
+tsne1b <- plotTSNE(mnn.out, colour_by="phases", by_exprs_values = "reconstructed") + fontsize
+umap1b <- plotUMAP(mnn.out, colour_by="phases", by_exprs_values = "reconstructed") + fontsize
+
+tsne1b + facet_wrap(. ~ mnn.out$phases)
+umap1b + facet_wrap(. ~ mnn.out$phases)
+```
 
 Compare to assignments made in each sample separately
 
@@ -302,7 +315,7 @@ Compare to assignments made in each sample separately
 #splVec <- cb_sampleSheet %>% filter(source_name == splSetToGet) %>%
 #        pull(Sample.Name) %>% unique
 
-splVec <- unique(colData(sce$Sample.Name))
+splVec <- unique(colData(sce)$Sample.Name)
 
 all.sce <- list()
 for(spx in splVec)
@@ -310,7 +323,6 @@ for(spx in splVec)
         vec.bc <- colData(sce) %>%
                 data.frame() %>%
                 filter(Sample.Name == spx) %>%
-                sample_n(nbCells) %>%
                 pull(Barcode)
         tmpInd <- which(colData(sce)$Barcode %in% vec.bc)
 
@@ -351,15 +363,32 @@ for (n in names(all.sce)) {
 }
 
 #--- cyclone ---#
+hs.pairs <- readRDS(system.file("exdata", "human_cycle_markers.rds", 
+    package="scran"))
 for (n in names(all.sce)) {
     assignments <- cyclone(all.sce[[n]],
                        hs.pairs,
-                       gene.names=rowData(sce)$ensembl_gene_id)
+                       gene.names=rowData(all.sce[[n]])$ensembl_gene_id)
     all.sce[[n]]$phases  <- assignments$phases
 }
+#lapply(all.sce, function(x){table(colData(x)$phases)})
+tmpList <- lapply(all.sce,
+       function(x){
+         #colData(x)[,c("Barcode", "phases")]
+         data.frame(
+           "Barcode" = colData(x)$Barcode,
+           "phasesBySpl" = colData(x)$phases
+         )
+         }
+       )
+phaseBySpl <- do.call(rbind, tmpList)
+colData(sce) <- colData(sce) %>%
+  data.frame() %>%
+  left_join(phaseBySpl, by="Barcode") %>%
+  DataFrame
+table(colData(sce)$phases,
+      colData(sce)$phasesBySpl)
 ```
-
-
 
 ## Regressing out cell cycle phase
 
@@ -369,7 +398,7 @@ For some time, it was popular to regress out the cell cycle phase prior to downs
 library(batchelor)
 sce.nocycle <- regressBatches(sce, batch=sce$phases)
 
-# PCA
+# PCA
 #plotPCA(sce, colour_by = "Sample.Name")
 sce.nocycle <- runPCA(
   sce.nocycle,
@@ -381,8 +410,10 @@ p <- plotPCA(
 )
 p
 
-# TSNE
-sce.nocycle <- runTSNE(sce.nocycle, exprs_values = "corrected")
+# TSNE
+sce.nocycle <- runTSNE(
+  sce.nocycle,
+  exprs_values = "corrected")
 p <- plotTSNE(
     sce.nocycle,
     colour_by = "batch"
@@ -394,13 +425,14 @@ That said, we do not consider adjusting for cell cycle to be a necessary step in
 
 __Challenge__ Remove the cell cycle genes listed in the 'cell cycle' GO term, perform PCA and plot t-SNE.
 
-```{r}
+```{r, eval=FALSE}
+# 2021-04-14: issue with org.Hs.eg.db, see https://support.bioconductor.org/p/9136239/
 library(org.Hs.eg.db)
 cc.genes <- select(org.Hs.eg.db, keys="GO:0007049", keytype="GOALL", column="ENSEMBL")
 length(cc.genes)
 sce.uncycle <- sce[!rowData(sce)$ensembl_gene_id %in% cc.genes$ENSEMBL,]
 
-# PCA
+# PCA
 sce.uncycle <- runPCA(
   sce.uncycle,
   exprs_values = "logcounts"
@@ -413,7 +445,7 @@ p <- plotPCA(
 ) 
 p
 
-# TSNE
+# TSNE
 sce.uncycle <- runTSNE(sce.uncycle, exprs_values = "logcounts")
 p <- plotTSNE(
     sce.uncycle,
@@ -423,7 +455,7 @@ p <- plotTSNE(
 )
 p
 
-# UMAP
+# UMAP
 sce.uncycle <- runUMAP(sce.uncycle, exprs_values = "logcounts")
 p <- plotUMAP(
     sce.uncycle,
@@ -437,7 +469,8 @@ p
 Write SCE object to file.
 
 ```{r, eval=FALSE}
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_cellCycle.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_cellCycle.Rds",
+                 projDir, outDirBit, setName, setSuf, dsiSuf, splSetToGet2)
 print(tmpFn)
 saveRDS(sce, file=tmpFn)
 ```

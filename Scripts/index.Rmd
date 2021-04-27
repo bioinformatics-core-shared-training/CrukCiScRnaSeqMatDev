@@ -19,11 +19,24 @@ params:
   projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
+  splSetToGet: "dummy"
+  setName: "dummy"
+  setSuf: "dummy"
+  dsiSuf: 'dummy'
+  dirRel: '../..'
 ---
 
 **WORKING DOCUMENT - IN PROGRESS**
 
+<!--
+  splSetToGet: "PBMMC,ETV6-RUNX1"
+  setName: "caron"
+  setSuf: "_5hCps"
+  dsiSuf: '_dsi'
+-->
+  
 <!--
 Useful links: https://bioinformatics-core-shared-training.github.io/cruk-summer-school-2018/SingleCell/practical/QC_and_normalization.html
 -->
@@ -32,6 +45,7 @@ Useful links: https://bioinformatics-core-shared-training.github.io/cruk-summer-
 # Add a common class name for every chunks
 knitr::opts_chunk$set(
   echo = TRUE)
+gcinfo(TRUE)
 ```
 
 ```{r htmlTemp3, echo=FALSE, eval=TRUE}

@@ -245,13 +245,15 @@ set.seed(100) # clusters with PCA from irlba with approximation
 clust <- quickCluster(sce) # slow with all cells.
 
 # write to file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 saveRDS(clust, tmpFn)
 ```
 
 ```{r load_quickClus_norm_GSM3872434_allCells}
 # read from file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_quickClus%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 clust <- readRDS(tmpFn)
 table(clust)
 ```
@@ -264,13 +266,15 @@ sce <- computeSumFactors(sce, cluster=clust, min.mean=0.1)
 deconv.sf <- sizeFactors(sce)
 
 # write to file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 saveRDS(deconv.sf, tmpFn)
 ```
 
 ```{r load_deconvSf_norm_GSM3872434_allCells}
 # read from file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_deconvSf%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 deconv.sf <- readRDS(tmpFn)
 
 summary(deconv.sf)
@@ -939,10 +943,11 @@ p <- plotRLE(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+print("DEV"); print(getwd()); print(tmpFn)
+##ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r show_rle_sct_GSM3872434_allCells}
+```{r show_rle_sct_GSM3872434_allCells, cache.lazy = FALSE}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sRle.png",
                  dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)

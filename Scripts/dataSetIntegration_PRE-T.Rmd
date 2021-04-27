@@ -21,32 +21,29 @@ params:
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE  
+  setName: "caron"
   splSetToGet: "PRE-T"
+  setSuf: "_allCells"
 ---
-
-```{r}
-```
-
-```{r, eval=FALSE}
-# OLD
-#projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
-projDir <- "/data/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
-outDirBit <- "AnaWiSce/Attempt3"
-nbPcToComp <- 50
-#splSetToGet <- params$splSetToGet # params may not be read in if knitting book.
-splSetToGet <- "PRE-T" # params may not be read in if knitting book.
-```
 
 ```{r}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
+setName <- params$setName
+setSuf <- params$setSuf
 splSetToGet <- params$splSetToGet
 nbPcToComp <- 50
+
+if(params$bookType == "mk"){
+	setName <- "caron"
+	splSetToGet <- "PRE-T"
+	setSuf <- "_allCells"
+}
 ```
 
-```{r setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_PRE-T_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -114,7 +111,7 @@ colnames(rowData(sce))[colnames(rowData(sce)) == "strand"] <- "strandNum"
 We next subset the data for the `r splSetToGet` sample group:
 
 ```{r}
-# CaronBourque2020
+# CaronBourque2020
 cb_sampleSheetFn <- file.path(projDir, "Data/CaronBourque2020/SraRunTable.txt")
 cb_sampleSheet <- read.table(cb_sampleSheetFn, header=T, sep=",")
 splVec <- cb_sampleSheet %>% filter(source_name == splSetToGet) %>%

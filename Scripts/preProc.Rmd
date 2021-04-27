@@ -354,7 +354,8 @@ abline(v=split, lwd=2)
 
 ### Barcode rank plot
 
-The barcode rank plot shows the library sizes against their rank in decreasing order, for the first 10000 droplets only.
+The barcode rank plot shows the library sizes against their rank in decreasing order,
+for the first 10000 droplets only.
 
 ```{r cellCall_barcodeRankPlot_initScale}
 barcode_rank <- rank(-libSizeDf$nUmis)
@@ -425,8 +426,7 @@ The `DropletUtils` package offers utilities to analyse droplet-based data, inclu
 Let's first check the knee and inflection methods.
 
 ```{r cellCall_dropletUtils}
-my.counts <- counts(sce.raw)
-br.out <- barcodeRanks(my.counts)
+br.out <- barcodeRanks(counts(sce.raw))
 plot(br.out$rank, br.out$total, log="xy", xlab="Rank", ylab="Total UMI count")
 o <- order(br.out$rank)
 lines(br.out$rank[o], br.out$fitted[o], col="red")
@@ -520,12 +520,15 @@ Let's filter out empty droplets.
 
 ```{r cellCall_emptyDrops_ditch}
 sce.ed <- sce.raw[,which(e.out$FDR <= 0.001)] # 'ed' for empty droplet
+rm(sce.raw);
+gc();
 ```
 
 And check the new SCE object:
 
 ```{r cellCall_emptyDrops_show}
 sce.ed
+rm(sce.ed)
 ```
 
 Cell calling in cellranger v3 uses a method similar to emptyDrops() and a 'filtered matrix' is generated that only keeps droplets deemed to contain a cell (or more). We will load these filtered matrices now.
@@ -599,6 +602,7 @@ for (i in 2:nrow(sampleSheet))
 	sce <- cbind(sce, sce.tmp)
 	print(tail(colData(sce)$Barcode, 2))
 }
+rm(sce.list)
 ```
 
 We now add the sample sheet information to the object metadata.
@@ -619,20 +623,21 @@ colData(sce) <- colData(sce) %>%
   left_join(sampleSheet[,splShtColToKeep], "Run") %>%
   relocate() %>%
   DataFrame
-colData(sce) %>% head()
 ```
 
 Let's save the object for future reference.
 
 ```{r dataSets_writeRds, eval=poolBool}
 # Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds",
+		 projDir, outDirBit)
 saveRDS(sce, tmpFn)
 ```
 
 ```{r dataSets_readRds, eval=!poolBool}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds",
+		 projDir, outDirBit)
 sce <- readRDS(tmpFn)
 ```
 
@@ -679,7 +684,7 @@ sp <- ggplot(ampDf, aes(x=nUmis, y=totReads)) +
   geom_point() +
   scale_x_continuous(trans='log2') +
   scale_y_continuous(trans='log2')
-ggMarginal(sp)
+ggExtra::ggMarginal(sp)
 ```
 
 ```{r ampDf_bin2d_2, eval=FALSE, include=FALSE}
@@ -743,7 +748,12 @@ rel_expression <- t( t(counts(sce)) / Matrix::colSums(counts(sce))) * 100
 rownames(rel_expression) <- rowData(sce)$Symbol
 most_expressed <- sort(Matrix::rowSums( rel_expression ),T)[20:1] / ncol(sce)
 
-boxplot( as.matrix(t(rel_expression[names(most_expressed),])),cex=.1, las=1, xlab="% total count per cell",col=scales::hue_pal()(20)[20:1],horizontal=TRUE)
+boxplot( as.matrix(t(rel_expression[names(most_expressed),])),
+	cex=.1,
+	las=1,
+	xlab="% total count per cell",
+	col=scales::hue_pal()(20)[20:1],
+	horizontal=TRUE)
 ```
 
 Mind that we have combined two data sets here. It may be interesting to count non-expressed genes in each set separately.
@@ -807,13 +817,15 @@ rowData(sce) <- gene.merge
 ```{r qc_annot_writeRds, eval=biomartBool}
 # slow
 # Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_postBiomart.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_postBiomart.Rds",
+		 projDir, outDirBit)
 saveRDS(sce, tmpFn)
 ```
 
 ```{r qc_annot_readRds, eval=!biomartBool}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/sce_postBiomart.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_postBiomart.Rds",
+		 projDir, outDirBit)
 sce <- readRDS(tmpFn)
 ```
 
@@ -857,13 +869,15 @@ head(colData(sce)) %>%
 
 ```{r qc_addQc_writeRds, eval=addQcBool}
 # Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_postAddQc.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_postAddQc.Rds",
+		 projDir, outDirBit)
 saveRDS(sce, tmpFn)
 ```
 
 ```{r qc_addQc_readRds, eval=!addQcBool}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/sce_postAddQc.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_postAddQc.Rds",
+		 projDir, outDirBit)
 sce <- readRDS(tmpFn)
 ```
 
@@ -1066,7 +1080,6 @@ plotColData(sce,
         scale_y_log10() + ggtitle("Total count")
 ```
 
-
 Number of genes detected:
 
 ```{r}
@@ -1106,7 +1119,6 @@ We will now consider the 'sample' batch to illustrate how to identify batches wi
 ```{r qc_poorBatch_detected_compute, eval=TRUE}
 # compute
 discard.nexprs <- isOutlier(sce$detected, log=TRUE, type="lower", batch=sce$Sample.Name)
-
 nexprs.thresholds <- attr(discard.nexprs, "thresholds")["lower",]
 nexprs.thresholds %>%
   round(0) %>%
@@ -1239,7 +1251,8 @@ plotColData(sce, x="sum", y="subsets_Mito_percent", colour_by="discard")
 ```
 
 ```{r}
-sp <- ggplot(data.frame(colData(sce)), aes(x=sum, y=subsets_Mito_percent, col=discard)) +
+sp <- ggplot(data.frame(colData(sce)),
+	     aes(x=sum, y=subsets_Mito_percent, col=discard)) +
   geom_point(size = 0.05, alpha = 0.7) +
   geom_density_2d(size = 0.5, colour = "blue") +
   guides(colour = guide_legend(override.aes = list(size=1, alpha=1))) +
@@ -1274,7 +1287,8 @@ saveRDS(sce, tmpFn)
 
 ```{r sce_qc_read, eval=!saveRds}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/sce_postQc.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_postQc.Rds",
+		 projDir, outDirBit)
 sce <- readRDS(tmpFn)
 ```
 
@@ -1298,7 +1312,8 @@ p
 
 # write plot to file
 
-tmpFn <- sprintf("%s/%s/%s/novelty_scat.png", projDir, outDirBit, qcPlotDirBit)
+tmpFn <- sprintf("%s/%s/%s/novelty_scat.png",
+		 projDir, outDirBit, qcPlotDirBit)
 ggsave(plot=p, file=tmpFn)
 
 # Novelty
@@ -1317,8 +1332,13 @@ p <- colData(sce) %>%
         geom_density()
 p
 
-tmpFn <- sprintf("%s/%s/%s/novelty_dens.png", projDir, outDirBit, qcPlotDirBit)
+tmpFn <- sprintf("%s/%s/%s/novelty_dens.png",
+		 projDir, outDirBit, qcPlotDirBit)
 ggsave(plot=p, file=tmpFn)
+```
+
+```{r rm_sce_preProc}
+rm(sce)
 ```
 
 ## QC based on sparsity
@@ -1346,13 +1366,15 @@ rowData(sce.nz) <- rows.meta[!not.expressed, ]
 sce.nz
 
 # Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_nz.Rds",
+		 projDir, outDirBit)
 saveRDS(sce.nz, tmpFn)
 ```
 
 ```{r sce_nz_read, eval=!saveRds}
 # Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_nz.Rds",
+		 projDir, outDirBit)
 sce.nz <- readRDS(tmpFn)
 ```
 
@@ -1372,7 +1394,8 @@ colData(sce.nz)$cell_sparsity <- cell_sparsity
 rowData(sce.nz)$gene_sparsity <- gene_sparsity
 
 # write outcome to file for later use
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz_sparsityCellGene.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_nz_sparsityCellGene.Rds",
+		 projDir, outDirBit)
 saveRDS(list("colData" = colData(sce.nz),
 	     "rowData" = rowData(sce.nz)),
 	tmpFn)
@@ -1380,7 +1403,8 @@ saveRDS(list("colData" = colData(sce.nz),
 
 ```{r sparsity_readRds, eval=!saveRds}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz_sparsityCellGene.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_nz_sparsityCellGene.Rds",
+		 projDir, outDirBit)
 tmpList <- readRDS(tmpFn)
 cell_sparsity <- tmpList$colData$cell_sparsity
 gene_sparsity <- tmpList$rowData$gene_sparsity
@@ -1440,13 +1464,15 @@ rowData(sce.nz) <- rows.meta[!sparse.genes, ]
 sce.nz
 
 # Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz_postQc.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_nz_postQc.Rds",
+		 projDir, outDirBit)
 saveRDS(sce.nz, tmpFn)
 ```
 
 ```{r sparsity_filter_read, eval=!saveRds}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz_postQc.Rds", projDir, outDirBit)
+tmpFn <- sprintf("%s/%s/Robjects/sce_nz_postQc.Rds",
+		 projDir, outDirBit)
 sce.nz <- readRDS(tmpFn)
 ```
 
@@ -1454,6 +1480,10 @@ Compare with filter above (mind that the comparison is not fair because we used 
 
 ```{r compare_filters_1}
 table(scePreQc$discard, (sparse.cells | mito.cells))
+```
+
+```{r rm_scePreQc}
+rm(scePreQc)
 ```
 
 ### Separate Caron and Hca batches
@@ -1470,6 +1500,7 @@ sce.nz.hca <- sce.nz[,sce.nz$setName=="Hca"]
 ```{r Caron_sparsity_copy}
 setName <- "caron"
 sce.x <- sce.nz.caron
+rm(sce.nz.caron)
 ```
 
 ```{r Caron_sparsity_compute, eval=saveRds}
@@ -1481,7 +1512,8 @@ colData(sce.x)$cell_sparsity <- cell_sparsity
 rowData(sce.x)$gene_sparsity <- gene_sparsity
 
 # write outcome to file for later use
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds", projDir, outDirBit, setName)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds",
+		 projDir, outDirBit, setName)
 saveRDS(list("colData" = colData(sce.x),
 	     "rowData" = rowData(sce.x)),
 	tmpFn)
@@ -1489,7 +1521,8 @@ saveRDS(list("colData" = colData(sce.x),
 
 ```{r Caron_sparsity_readRds, eval=!saveRds}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds", projDir, outDirBit, setName)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds",
+		 projDir, outDirBit, setName)
 tmpList <- readRDS(tmpFn)
 cell_sparsity <- tmpList$colData$cell_sparsity
 gene_sparsity <- tmpList$rowData$gene_sparsity
@@ -1497,7 +1530,8 @@ gene_sparsity <- tmpList$rowData$gene_sparsity
 
 ```{r Caron_sparsity_plot, eval=runAll}
 # plot
-tmpFn <- sprintf("%s/%s/%s/%s_sparsity.png", projDir, outDirBit, qcPlotDirBit, setName)
+tmpFn <- sprintf("%s/%s/%s/%s_sparsity.png",
+		 projDir, outDirBit, qcPlotDirBit, setName)
 png(tmpFn)
 par(mfrow=c(1, 2))
 hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
@@ -1507,7 +1541,8 @@ dev.off()
 ```
 
 ```{r Caron_sparsity_show, out.width="80%"}
-tmpFn <- sprintf("../%s/%s_sparsity.png", qcPlotDirBit, setName)
+tmpFn <- sprintf("../%s/%s_sparsity.png",
+		 qcPlotDirBit, setName)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -1546,7 +1581,8 @@ rm(sce.x)
 
 ```{r Caron_sparsity_filter_read, eval=!saveRds}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", dirRel, outDirBit, setName)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds",
+		 dirRel, outDirBit, setName)
 sce.nz.caron <- readRDS(tmpFn)
 ```
 
@@ -1555,6 +1591,7 @@ sce.nz.caron <- readRDS(tmpFn)
 ```{r Hca_sparsity_copy}
 setName <- "hca"
 sce.x <- sce.nz.hca
+rm(sce.nz.hca)
 ```
 
 ```{r Hca_sparsity_compute, eval=saveRds}
@@ -1566,7 +1603,8 @@ colData(sce.x)$cell_sparsity <- cell_sparsity
 rowData(sce.x)$gene_sparsity <- gene_sparsity
 
 # write outcome to file for later use
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds", projDir, outDirBit, setName)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds",
+		 projDir, outDirBit, setName)
 saveRDS(list("colData" = colData(sce.x),
 	     "rowData" = rowData(sce.x)),
 	tmpFn)
@@ -1574,7 +1612,8 @@ saveRDS(list("colData" = colData(sce.x),
 
 ```{r Hca_sparsity_readRds, eval=!saveRds}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds", projDir, outDirBit, setName)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_sparsityCellGene.Rds",
+		 projDir, outDirBit, setName)
 tmpList <- readRDS(tmpFn)
 cell_sparsity <- tmpList$colData$cell_sparsity
 gene_sparsity <- tmpList$rowData$gene_sparsity
@@ -1582,7 +1621,8 @@ gene_sparsity <- tmpList$rowData$gene_sparsity
 
 ```{r Hca_sparsity_plot, eval=runAll}
 # plot
-tmpFn <- sprintf("%s/%s/%s/%s_sparsity.png", projDir, outDirBit, qcPlotDirBit, setName)
+tmpFn <- sprintf("%s/%s/%s/%s_sparsity.png",
+		 projDir, outDirBit, qcPlotDirBit, setName)
 png(tmpFn)
 par(mfrow=c(1, 2))
 hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
@@ -1592,7 +1632,8 @@ dev.off()
 ```
 
 ```{r Hca_sparsity_show, out.width="80%"}
-tmpFn <- sprintf("../%s/%s_sparsity.png", qcPlotDirBit, setName)
+tmpFn <- sprintf("../%s/%s_sparsity.png",
+		 qcPlotDirBit, setName)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
@@ -1621,7 +1662,8 @@ rowData(sce.x) <- rows.meta[!sparse.genes, ]
 sce.x
 
 # Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds",
+		 projDir, outDirBit, setName)
 saveRDS(sce.x, tmpFn)
 
 # update sce.nz.hca
@@ -1631,7 +1673,8 @@ rm(sce.x)
 
 ```{r Hca_sparsity_filter_read, eval=!saveRds}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds", projDir, outDirBit, setName)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc.Rds",
+		 projDir, outDirBit, setName)
 sce.nz.hca <- readRDS(tmpFn) # TODO not used
 ```
 

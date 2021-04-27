@@ -59,9 +59,15 @@ splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if k
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
+
+anaStg <- sprintf("'%s_%s'", splSetToGet2, setSuf)
 ```
 
-```{r setup, include=FALSE, echo=FALSE}
+```{r, include=FALSE, echo=FALSE}
+#```{r setup, include=FALSE, echo=FALSE}
+	# removing chunk name for now because would need to make it dynamic, eg {{anaStg}} and expand
+	# TODO do that later
+
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -87,7 +93,7 @@ library(leiden) # for community detection
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-# Clustering with `r sprintf("'%s'", splSetToGet)` and '`r setSuf`'
+# Clustering with '`r sprintf("'%s'", splSetToGet)`' and '`r setSuf`' {#clustering`r anaStg`Top}
 
 <!-- TODO: get image file
 <img src="../../Images/Andrews2017_Fig1.png" style="margin:auto; display:block" />

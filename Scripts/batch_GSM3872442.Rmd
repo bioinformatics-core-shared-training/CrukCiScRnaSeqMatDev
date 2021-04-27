@@ -22,6 +22,11 @@ params:
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE
+  bookType: "mk"
+  setName: "GSM3872442"
+  setSuf: "_allCells"
+  splSetToGet: "dummy"
+  dsiSuf: '_dummy'
 ---
 
 ```{r batch_GSM3872442.knitr_options, include=FALSE, echo=FALSE}
@@ -39,25 +44,35 @@ set.seed(123) # for reproducibility
 
 # batch correction - GSM3872442 set
 
-GSM3872442 is a single PBMMC sample sequenced as a pool of two libraries: SRR9264351 and SRR9264352.
+**TODO** remove libSize+batch section and keep batch regress only.
+
+GSM3872442 is a single PBMMC sample sequenced as a pool of two libraries:
+SRR9264351 and SRR9264352.
 
 We will use this sample to illustrate batch correction.
 
 ```{r GSM3872442_variables_norm, cache=FALSE}
-qcPlotDirBit <- "NormPlots"
-setName <- "GSM3872442"
-
+qcPlotDirBit <- "Plots/Norm" # not used TODO
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
+cacheBool <- params$cacheBool
+setName <- params$setName
+setSuf <- params$setSuf
+
+if(params$bookType == "mk") {
+	setName <- "GSM3872442"
+	setSuf <- "_allCells"
+	dirRel <- ".."
+}
 ```
 
-```{r, include=FALSE}
-suppressMessages(library(scater))
-suppressMessages(library(scran))
-suppressMessages(library(ggplot2))
-suppressMessages(library(dplyr))
-suppressMessages(library(BiocSingular))
+```{r libraries_batch_GSM3872442, message=FALSE, include=FALSE}
+library(scater)
+library(scran)
+library(ggplot2)
+library(dplyr)
+library(BiocSingular)
 ```
 
 ## Prepare data
@@ -74,7 +89,7 @@ sce <- readRDS(tmpFn)
 
 Select the GSM3872442 cells:
 
-```{r}
+```{r subset_cells_batch_GSM3872442}
 sample1.nz.sce <- SingleCellExperiment(list(counts=counts(sce[, sce$Run %in% c("SRR9264351")])),
                                        colData=colData(sce[, sce$Run %in% c("SRR9264351")]))
 
@@ -84,7 +99,7 @@ sample2.nz.sce <- SingleCellExperiment(list(counts=counts(sce[, sce$Run %in% c("
 
 ## Normalise each separately and re-pool
 
-```{r}
+```{r sep_norm_batch_GSM3872442}
 sample1.clusters <- quickCluster(sample1.nz.sce, method="igraph")
 sample1.nz.sce <- computeSumFactors(sample1.nz.sce, min.mean=0.1, cluster=sample1.clusters)
 sample1.nz.sce <- logNormCounts(sample1.nz.sce)
@@ -96,7 +111,7 @@ sample2.nz.sce <- logNormCounts(sample2.nz.sce)
 
 Re-pool:
 
-```{r}
+```{r repool_batch_GSM3872442}
 # recombine the normalized samples together
 all.samp.exprs <- do.call(cbind,
                           list("SRR9264351"=exprs(sample1.nz.sce),
@@ -107,7 +122,7 @@ colnames(all.samp.exprs) <- c(as.character(colData(sample1.nz.sce)$Barcode),
 
 For the PCA we want to quickly select the genes that are most informative. We will use the top 2000 genes with the highest variance.
 
-```{r}
+```{r sep_hvg_batch_GSM3872442}
 gene.variances <- apply(all.samp.exprs, 1, var)
 names(gene.variances) <- rownames(all.samp.exprs)
 highly.variable.genes <- names(gene.variances[order(gene.variances, decreasing=TRUE)])[1:2000]
@@ -115,9 +130,10 @@ highly.variable.genes <- names(gene.variances[order(gene.variances, decreasing=T
 
 Perform PCA:
 
-```{r}
+```{r sep_comp_pca_batch_GSM3872442}
 # we need to use a fast approximate algorithm for PCA on large data sets
-# this algorithm has a stochastic component, so we need to fix the seed number to get the same result each time
+# this algorithm has a stochastic component,
+# so we need to fix the seed number to get the same result each time
 set.seed(42)
 separate.hvg.pca <- irlba::prcomp_irlba(t(all.samp.exprs[highly.variable.genes, ]), n=5) # we only need a few components
 separate.hvg.pcs <- as.data.frame(separate.hvg.pca$x) # extract the principal components
@@ -132,7 +148,7 @@ samples.info <- data.frame("Cell"=colnames(all.samp.exprs),
 separate.pca.merge <- merge(separate.hvg.pcs, samples.info, by='Cell')
 ```
 
-```{r, eval=FALSE, include=FALSE}
+```{r sep_plot_pca_batch_GSM3872442, eval=FALSE, include=FALSE}
 ggplot(separate.pca.merge, aes(x=PC1, y=PC2, fill=Run)) +
   geom_point(shape=21, size=3) +
   theme_minimal()
@@ -140,25 +156,25 @@ ggplot(separate.pca.merge, aes(x=PC1, y=PC2, fill=Run)) +
 
 Plot PC1-PC2 plane, with cells colored by 'Run' (and sized according to library size):
 
-```{r}
+```{r sep_cbind_batch_GSM3872442}
 sce.sep <- cbind(sample1.nz.sce, sample2.nz.sce)
 sce.sep <- runPCA(sce.sep)
 plotPCA(sce.sep, colour_by="Run", size_by = "sum")
 ```
 
-```{r}
+```{r sep_tsne_batch_GSM3872442}
 sce.sep <- runTSNE(sce.sep, dimred="PCA")
 plotTSNE(sce.sep, colour_by="Run", size_by = "sum")
 ```
 
-```{r}
+```{r sep_umap_batch_GSM3872442}
 sce.sep <- runUMAP(sce.sep, dimred="PCA")
 plotUMAP(sce.sep, colour_by="Run", size_by = "sum")
 ```
 
 ## Normalise batches together
 
-```{r}
+```{r tog_norm_batch_GSM3872442}
 sample3.nz.sce <- SingleCellExperiment(list(counts=counts(sce[, sce$Run %in% c("SRR9264351", "SRR9264352")])),
                                        colData=colData(sce[, sce$Run %in% c("SRR9264351", "SRR9264352")]))
 
@@ -172,7 +188,7 @@ colnames(pool.exprs) <- gsub(colData(sample3.nz.sce)$Barcode, pattern="-", repla
 
 Find the 2000 genes with the highest variance:
 
-```
+```{r tog_hvg_batch_GSM3872442}
 gene.variances <- apply(pool.exprs, 1, var)
 names(gene.variances) <- rownames(pool.exprs)
 highly.variable.genes <- names(gene.variances[order(gene.variances, decreasing=TRUE)])[1:2000]
@@ -180,7 +196,7 @@ highly.variable.genes <- names(gene.variances[order(gene.variances, decreasing=T
 
 Perform PCA:
 
-```{r}
+```{r tog_comp_pca_batch_GSM3872442}
 # we need to use a fast approximate algorithm for PCA on large data sets
 # this algorithm has a stochastic component, so we need to fix the seed number to get the same result each time
 set.seed(42)
@@ -196,7 +212,7 @@ samples.info <- data.frame("Cell"=colnames(pool.exprs),
 combined.pca.merge <- merge(combined.hvg.pcs, samples.info, by='Cell')
 ```
 
-```{r, eval=FALSE, include=FALSE}
+```{r tog_show_irlba_batch_GSM3872442, eval=FALSE, include=FALSE}
 ggplot(combined.pca.merge, aes(x=PC1, y=PC2, fill=Run)) +
   geom_point(shape=21, size=3) +
   theme_minimal()
@@ -204,30 +220,24 @@ ggplot(combined.pca.merge, aes(x=PC1, y=PC2, fill=Run)) +
 
 Plot PC1-PC2 plane, with cells colored by 'Run' (and sized according to library size):
 
-```{r}
+```{r tog_show_pca_batch_GSM3872442}
 sample3.nz.sce <- runPCA(sample3.nz.sce)
 plotPCA(sample3.nz.sce, colour_by="Run", size_by = "sum")
 ```
 
-```{r}
+```{r tog_show_tsne_batch_GSM3872442}
 sample3.nz.sce <- runTSNE(sample3.nz.sce, dimred="PCA")
 plotTSNE(sample3.nz.sce, colour_by="Run", size_by = "sum")
 ```
 
-```{r}
+```{r tog_show_umap_batch_GSM3872442}
 sample3.nz.sce <- runUMAP(sample3.nz.sce, dimred="PCA")
 plotUMAP(sample3.nz.sce, colour_by="Run", size_by = "sum")
 ```
 
-`r #knitr::knit_exit()`
-
-```{r, eval=FALSE}
-knitr::knit_exit()
-```
-
 ## Batch correction
 
-```{r}
+```{r editSce_batch_GSM3872442}
 sample3.nz.sce$Run <- factor(sample3.nz.sce$Run)
 sample3.nz.sce$batch <- sample3.nz.sce$Run
 sce <- sample3.nz.sce
@@ -239,7 +249,7 @@ sce <- sample3.nz.sce
 
 Limma
 
-```{r}
+```{r linReg_batch_GSM3872442}
 suppressMessages(require(limma))
 lm_design_batch <- model.matrix(~0 + batch, data = colData(sce))
 fit_lm_batch <- lmFit(logcounts(sce), lm_design_batch)
@@ -257,7 +267,7 @@ plotReducedDim(sce, dimred = "PCA_lm_batch",
   ggtitle("LM - regress out batch")
 ```
 
-```{r}
+```{r copyPreSct_batch_GSM3872442}
 scePreSct <- sce
 ```
 
@@ -267,13 +277,13 @@ scePreSct <- sce
 
 First make a copy of the SCE object (we will need one later).
 
-```{r}
+```{r batchOnlySctRun_batch_GSM3872442}
 # have log lib size
 sce$log10sum <- log10(sce$sum)
 sceOrig <- sce
 ```
 
-```{r}
+```{r batchOnlySctCheck_batch_GSM3872442}
 counts <- counts(sce)
 class(counts)
 
@@ -308,9 +318,10 @@ ggplot(gene_attr, aes(log_mean, log_var)) +
   geom_abline(intercept = 0, slope = 1, color = "red")
 ```
 
-```{r}
-# mean-variance relationship
+Mean-variance relationship
 
+```{r batchOnlySct_meanVarRel_batch_GSM3872442}
+# Mean-variance relationship
 # add the expected detection rate under Poisson model
 x = seq(from = -3, to = 2, length.out = 1000)
 poisson_model <- data.frame(log_mean = x, detection_rate = 1 - dpois(0, lambda = 10^x))
@@ -318,45 +329,16 @@ ggplot(gene_attr, aes(log_mean, detection_rate)) + geom_point(alpha = 0.3, shape
     geom_line(data = poisson_model, color = "red") + theme_gray(base_size = 8)
 ```
 
-```{r}
-#  Mean-detection-rate relationship 
+Mean-detection-rate relationship 
 
+```{r batchOnlySct_meanDetect_batch_GSM3872442}
+# Mean-detection-rate relationship 
 ggplot(cell_attr, aes(n_umi, n_gene)) +
   geom_point(alpha = 0.3, shape = 16) +
   geom_density_2d(size = 0.3)
 ```
 
-```{r, eval=FALSE, include=FALSE}
-# Debug.
-# Fix was adding rownames to data frame for cell_attr
-
-pbmc_data <- counts(sce) 
-class(pbmc_data)
-dim(pbmc_data)
-colnames(pbmc_data) <- colData(sce)$Barcode
-colnames(pbmc_data) %>% head()
-
-pbmc_data <- Read10X(data.dir = "filtered_gene_bc_matrices/hg19/")  # Seurat function to read in 10x count data
-class(pbmc_data)
-dim(pbmc_data)
-colnames(pbmc_data) %>% head()
-
-cellAttr <- as.data.frame(colData(sce))[,c("log10sum", "batch")]
-rownames(cellAttr) <- colData(sce)$Barcode
-  
-set.seed(44)
-vst_out <- sctransform::vst(pbmc_data,
-                            return_gene_attr = TRUE,
-                            return_cell_attr = TRUE,
-                            verbosity = 1,
-                            cell_attr = cellAttr,
-                            latent_var = c("batch")
-                            #latent_var = c("log_umi"),
-                            )
-```
-
-
-```{r}
+```{r batchOnlySct_vst_batch_GSM3872442}
 counts <- counts(sce)
 colnames(counts) <- colData(sce)$Barcode
 
@@ -365,7 +347,6 @@ rownames(cellAttr) <- colData(sce)$Barcode
 
 #https://github.com/satijalab/seurat/issues/3925
 # remotes::install_github("ChristophH/sctransform@develop")
-
 
 ### Genes expressed in at least 5 cells will be kept
 sctnorm_data <- sctransform::vst(umi = counts,
@@ -384,26 +365,26 @@ sctnorm_data <- sctransform::vst(umi = counts,
 
 Check model used:
 
-```{r}
+```{r batchOnlySct_model_batch_GSM3872442}
 # model:
 print(sctnorm_data$model_str)
 ```
 
 Check new values (here 3 rows and 3 columns only):
 
-```{r}
+```{r batchOnlySct_data_batch_GSM3872442}
 sctnorm_data$y[1:3,1:3]
 ```
 
 Check object:
 
-```{r}
+```{r batchOnlySct_sce_batch_GSM3872442}
 sce
 ```
 
 Some genes were not included in the transformation and excluded from the output, so we will remove them from the SCE object too.
 
-```{r}
+```{r batchOnlySct_subsetGenes_batch_GSM3872442}
 # exclude genes that were not used in the transformation: 
 tmpInd <- which(rownames(sce) %in% rownames(sctnorm_data$y))
 cols.meta <- colData(sceOrig)
@@ -419,7 +400,7 @@ rowData(sce) <- rows.meta[tmpInd, ]
 
 We now copy the transformation output to the SCE object:
 
-```{r}
+```{r batchOnlySct_copyVstMat_batch_GSM3872442}
 vstMat <- as(sctnorm_data$y[rownames(sce),], "dgCMatrix")
 all(colnames(vstMat) == sce$Barcode)
 dim(vstMat)
@@ -430,7 +411,7 @@ assay(sce, "sctrans_norm_batchOnly") <- vstMat # as(vst_out$y[rownames(sce),], "
 
 Also copy 'logcounts':
 
-```{r}
+```{r batchOnlySct_copyLogcounts_batch_GSM3872442}
 assayX <- "logcounts"
 tmpAssay <- assay(sceOrig, assayX)
 assay(sce, assayX) <- tmpAssay[tmpInd, ]
@@ -438,13 +419,13 @@ assay(sce, assayX) <- tmpAssay[tmpInd, ]
 
 Diagnostic plots are shown below:
 
-```{r}
+```{r batchOnlySct_modelPars_batch_GSM3872442}
 sctransform::plot_model_pars(sctnorm_data)
 ```
 
 The reduced dimension plots below show improved mixing of cells from the two sets:
 
-```{r}
+```{r batchOnlySct_pca_batch_GSM3872442}
 reducedDim(sce, "PCA_sctrans_norm_batchOnly") <- reducedDim(
   runPCA(sce, exprs_values = "sctrans_norm_batchOnly"), "PCA"
 )
@@ -457,7 +438,7 @@ plotReducedDim(
 ) + ggtitle("PCA plot: sctransform normalization - batch only") 
 ```
 
-```{r}
+```{r batchOnlySct_tsne_batch_GSM3872442}
 sce <- runTSNE(sce, dimred="PCA_sctrans_norm_batchOnly", name="TSNE_sctrans_norm_batchOnly")
 plotReducedDim(
   sce,
@@ -468,7 +449,7 @@ plotReducedDim(
 ) + ggtitle("TSNE plot: sctransform normalization - batch only") 
 ```
 
-```{r}
+```{r batchOnlySct_umap_batch_GSM3872442}
 sce <- runUMAP(sce, dimred="PCA_sctrans_norm_batchOnly", name="UMAP_sctrans_norm_batchOnly")
 plotReducedDim(
   sce,
@@ -481,7 +462,7 @@ plotReducedDim(
 
 Keep copy of SCE object for later:
 
-```{r}
+```{r batchOnlySct_copy_batch_GSM3872442}
 sce_batchOnly <- sce
 ```
 
@@ -489,67 +470,118 @@ sce_batchOnly <- sce
 
 Use the copy of the SCE object made earlier.
 
-```{r}
+```{r libSizeBatchSct_back_batch_GSM3872442}
 sce <- sceOrig
 ```
 
 Some cells are very different from the rest.
 
-```{r, eval=FALSE, include=FALSE}
-### Genes expressed in at least 5 cells will be kept
+```{r libSizeBatchSct_sctransform_vst_batch_GSM3872442}
 counts <- counts(sce)
-class(counts)
 colnames(counts) <- colData(sce)$Barcode
 
-cellAttr <- as.data.frame(colData(sce))[,c("log10sum", "batch")]
+#cellAttr <- as.data.frame(colData(sce))[,c("log10sum", "batch")]
+cellAttr <- as.data.frame(colData(sce))
 rownames(cellAttr) <- colData(sce)$Barcode
 
 sctnorm_data <- sctransform::vst(umi = counts,
                                  min_cells = 5,
+                                 #min_cells = 10,
+                                 #method = "nb_fast",
+                                 #n_genes = 3000,
+                                 #bw_adjust = 2, # 3
                                  cell_attr = cellAttr,
-                                 #latent_var = c("batch"),
-                                 #latent_var = c("log10sum"),
                                  latent_var = c("log10sum", "batch"),
+                                 #latent_var = c("batch"),
                                  return_gene_attr = TRUE,
                                  return_cell_attr = TRUE,
-                                 show_progress = FALSE,
                                  verbosity = 0)
-```
 
-```{r}
+sctransform::plot_model_pars(sctnorm_data)
+
+# exclude genes that were not used in the transformation: 
+tmpInd <- which(rownames(sce) %in% rownames(sctnorm_data$y))
+cols.meta <- colData(sceOrig)
+rows.meta <- rowData(sceOrig)
+
+new.counts <- counts(sceOrig)[tmpInd, ]
+sce <- SingleCellExperiment(list(counts=new.counts))
+
+# reset the column data on the new object
+colData(sce) <- cols.meta
+rowData(sce) <- rows.meta[tmpInd, ]
+
+# We now copy the transformation output to the SCE object:
+
+vstMat <- as(sctnorm_data$y[rownames(sce),], "dgCMatrix")
+all(colnames(vstMat) == sce$Barcode)
+dim(vstMat)
+
+colnames(vstMat) <- NULL
+assay(sce, "sctrans_norm_libSizeBatch0") <- vstMat # as(vst_out$y[rownames(sce),], "dgCMatrix")
+
+#Also copy 'logcounts':
+
+assayX <- "logcounts"
+tmpAssay <- assay(sceOrig, assayX)
+assay(sce, assayX) <- tmpAssay[tmpInd, ]
+
+reducedDim(sce, "PCA_sctrans_norm_libSizeBatch0") <- reducedDim(
+  runPCA(sce,
+         exprs_values = "sctrans_norm_libSizeBatch0"),
+  "PCA"
+)
+plotReducedDim(
+  sce,
+  dimred = "PCA_sctrans_norm_libSizeBatch0",
+  colour_by = "batch",
+  size_by = "sum",
+  shape_by = "Sample.Name"
+) + ggtitle("PCA plot: sctransform normalization - libSizeBatch0")
+sceDev <- sce
+```
+                                 
+                                 
+                                 
+```{r libSizeBatchSct_vst_batch_GSM3872442}
+
+sce <- sceOrig
+
 require(Seurat)
 # use Seurat's SCTransform
 sce.srt <- as.Seurat(sce)
 sce.srt <- SCTransform(sce.srt,
                        min_cells = 5,
                        vars.to.regress = c("log10sum", "batch"),
+                       #vars.to.regress = c("batch"),
                         # Variables to regress out in a second non-regularized linear regression
                         # so log10sum is redundant here ...
-                       #return_gene_attr = TRUE,
-                       #return_cell_attr = TRUE,
+                       return_gene_attr = TRUE,
+                       return_cell_attr = TRUE,
                        #show_progress = FALSE,
                        verbose = FALSE,
                        verbosity = 0
                        )
 
+str(sce.srt[["SCT"]])
 ##sce.srt[["SCT"]]@misc
 
 # https://hbctraining.github.io/scRNA-seq/lessons/06_SC_SCT_and_integration.html
 
-
-#GetAssay(sce.srt)@misc$vst.out
+#GetAssay(sce.srt, assay = "SCT")@misc$vst.out
 ##sce.srt[["SCT"]]@scale.data %>% head()
 ```
 
 Check model used:
 
-```{r}
-print(sce.srt[["SCT"]]@misc$vst.out$model_str)
+```{r libSizeBatchSct_model_batch_GSM3872442}
+#print(sce.srt[["SCT"]]@misc$vst.out$model_str) # sctransform::vst
+print(sce.srt[["SCT"]]@SCTModel.list$model1@model) # Seurat::SCTransform
 ```
 
 Discard genes that were not used in the transformation.
 
-```{r}
+```{r libSizeBatchSct_subsetGenes_batch_GSM3872442}
 # exclude genes that were not used in the transformation: 
 tmpInd <- which(rownames(sce) %in% rownames(sce.srt[["SCT"]]@scale.data))
 cols.meta <- colData(sceOrig)
@@ -565,22 +597,27 @@ rowData(sce) <- rows.meta[tmpInd, ]
 
 Copy the transformation output to the SCE object.
 
-```{r}
+```{r libSizeBatchSct_copyVstMat_batch_GSM3872442}
 vstMat <- as(sce.srt[["SCT"]]@scale.data[rownames(sce),], "dgCMatrix")
-all(colnames(vstMat) == sce$Barcode)
+#all(colnames(vstMat) == sce$Barcode)
+dd <- sce.srt@meta.data %>%
+  dplyr::select(Barcode)
+# check order of cells are identical
+all(dd[colnames(vstMat), "Barcode"] == sce$Barcode)
 colnames(vstMat) <- NULL
 assay(sce, "sctrans_norm") <- vstMat
 ```
 
 Show diagnostic plots:
 
-```{r}
-sctransform::plot_model_pars(sce.srt[["SCT"]]@misc$vst.out)
+```{r libSizeBatchSct_modelPars_batch_GSM3872442}
+#sctransform::plot_model_pars(sce.srt[["SCT"]]@misc$vst.out) # sctransform::vst
+# not with Seurat::SCTransform ... empty sce.srt[["SCT"]]@misc 20200422
 ```
 
 Show reduced dimension plots and check for improved mixing of cells from the two sets:
 
-```{r}
+```{r libSizeBatchSct_pca_batch_GSM3872442}
 reducedDim(sce, "PCA_sctrans_norm") <- reducedDim(
   runPCA(sce, exprs_values = "sctrans_norm")
 )
@@ -597,7 +634,7 @@ plotReducedDim(
 reducedDimNames(sce)
 ```
 
-```{r}
+```{r libSizeBatchSct_tsne_batch_GSM3872442}
 sce <- runTSNE(sce, dimred="PCA_sctrans_norm", name="TSNE_sctrans_norm")
 plotReducedDim(
   sce,
@@ -612,7 +649,7 @@ plotReducedDim(
 reducedDimNames(sce)
 ```
 
-```{r}
+```{r libSizeBatchSct_umap_batch_GSM3872442}
 sce <- runUMAP(sce, dimred="PCA_sctrans_norm", name="UMAP_sctrans_norm")
 plotReducedDim(
   sce,
@@ -629,13 +666,13 @@ reducedDimNames(sce)
 
 Add PCA_sctrans_norm_batchOnly (same cells, only genes may differ)
 
-```{r}
+```{r libSizeBatchSct_addBatchOnly_batch_GSM3872442}
 reducedDim(sce, "PCA_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "PCA_sctrans_norm_batchOnly")
 reducedDim(sce, "TSNE_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "TSNE_sctrans_norm_batchOnly")
 reducedDim(sce, "UMAP_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "UMAP_sctrans_norm_batchOnly")
 ```
 
-```{r}
+```{r libSizeBatchSct_copy_batch_GSM3872442}
 scePostSct <- sce
 ```
 
@@ -647,7 +684,7 @@ scePostSct <- sce
 
 Same as above but with batchelor commands to make the two batches and identify highly variable genes for faster dimensionality reduction.
 
-```{r}
+```{r noCor_prep_batch_GSM3872442}
 sce <- sample3.nz.sce
 library(batchelor)
 # Mind assayNames()
@@ -655,7 +692,7 @@ sce1 <- sce[, sce$Run == "SRR9264351"]
 sce2 <- sce[, sce$Run == "SRR9264352"]
 ```
 
-```{r}
+```{r noCor_var_batch_GSM3872442}
 library(scran)
 dec1 <- modelGeneVar(sce1)
 dec2 <- modelGeneVar(sce2)
@@ -668,7 +705,7 @@ As a diagnostic, we check that there actually is a batch effect across these dat
 
 There is a moderate batch effect.
 
-```{r}
+```{r noCor_redDim_batch_GSM3872442}
 library(scater)
 combined <- correctExperiments(A=sce1, B=sce2, PARAM=NoCorrectParam())
 combined <- runPCA(combined, subset_row=chosen.hvgs)
@@ -679,7 +716,7 @@ plotTSNE(combined, colour_by="batch")
 plotUMAP(combined, colour_by="batch")
 ```
 
-```{r}
+```{r noCor_addNoCor_batch_GSM3872442}
 reducedDim(sce, "PCA_noCor") <- reducedDim(combined, "PCA")
 reducedDim(sce, "TSNE_noCor") <- reducedDim(combined, "TSNE")
 reducedDim(sce, "UMAP_noCor") <- reducedDim(combined, "UMAP")
@@ -691,12 +728,12 @@ This is the initial method. It uses gene expression values to identify cells wit
 
 Let us get the normalised counts:
 
-```{r}
+```{r mnnCor_prep_batch_GSM3872442}
 batch1 <- logcounts(sce1)
 batch2 <- logcounts(sce2)
 ```
 
-```{r, eval=FALSE, include=FALSE}
+```{r mnnCor_hvgOnly_batch_GSM3872442, eval=FALSE, include=FALSE}
 # using a subset of genes to compute correction and correcting all genes
 # returns a matrix with rownames only for the gene subset,
 # at the top of the matrix
@@ -721,7 +758,7 @@ head(rownames(assay(x, "corrected")))
 all(rownames(sce) == rownames(x))
 ```
 
-```{r}
+```{r mnnCor_allGenes_batch_GSM3872442}
 y <- batchelor::mnnCorrect(
           batch1, batch2,  
 	  #subset.row = fewer.hvgs,
@@ -735,25 +772,25 @@ y <- batchelor::mnnCorrect(
 
 Copy the corrected values to the SCE object:
 
-```{r}
+```{r mnnCor_addCorr_batch_GSM3872442}
 assay(sce, "mnn") <- assay(y, "corrected")
 ```
 
 Show reduced dimension plots and check for improved mixing of cells from the two sets:
 
-```{r}
+```{r mnnCor_pca_batch_GSM3872442}
 sce <- runPCA(sce, exprs_values = "mnn")
 plotPCA(sce, colour_by="batch")
 reducedDim(sce, "PCA_mnn") <- reducedDim(sce, "PCA")
 ```
 
-```{r}
+```{r mnnCor_tsne_batch_GSM3872442}
 sce <- runTSNE(sce, dimred="PCA_mnn")
 plotTSNE(sce, colour_by="batch")
 reducedDim(sce, "TSNE_mnn") <- reducedDim(sce, "TSNE")
 ```
 
-```{r}
+```{r mnnCor_umap_batch_GSM3872442}
 sce <- runUMAP(sce, dimred="PCA_mnn")
 plotUMAP(sce, colour_by="batch")
 reducedDim(sce, "UMAP_mnn") <- reducedDim(sce, "UMAP")
@@ -763,7 +800,7 @@ reducedDim(sce, "UMAP_mnn") <- reducedDim(sce, "UMAP")
 
 This method is faster than mnnCorrect as it identifies nearest neighbours after dimensionality reduction. 
 
-```{r}
+```{r fastMnn_run_batch_GSM3872442}
 fx <- batchelor::fastMNN(
                       sce,
 		      #correct.all = TRUE,
@@ -774,7 +811,7 @@ class(fx)
 
 Copy the corrected values to the SCE object:
 
-```{r}
+```{r fastMnn_addRecon_batch_GSM3872442}
 # fastMNN may drop some genes
 # so we may not be able to keep the outcome in 'assay'
 assay(sce, "fastmnn") <- assay(fx, "reconstructed")
@@ -782,12 +819,10 @@ assay(sce, "fastmnn") <- assay(fx, "reconstructed")
 
 Show reduced dimension plots and check for improved mixing of cells from the two sets:
 
-```{r}
+```{r fastMnn_pca_batch_GSM3872442}
 fastmnn_pca <- runPCA(assay(sce, "fastmnn"), rank=2) # slow
 reducedDim(sce, "PCA_fastmnn") <- fastmnn_pca$rotation
-```
 
-```{r}
 plotReducedDim(
   sce,
   dimred = "PCA_fastmnn",
@@ -797,13 +832,13 @@ plotReducedDim(
 ) + ggtitle("PCA plot: fastMNN") 
 ```
 
-```{r}
+```{r fastMnn_tsne_batch_GSM3872442}
 sce <- runTSNE(sce, dimred="PCA_fastmnn")
 plotTSNE(sce, colour_by="batch")
 reducedDim(sce, "TSNE_fastmnn") <- reducedDim(sce, "TSNE")
 ```
 
-```{r}
+```{r fastMnn_umap_batch_GSM3872442}
 sce <- runUMAP(sce, dimred="PCA_fastmnn")
 plotUMAP(sce, colour_by="batch")
 reducedDim(sce, "UMAP_fastmnn") <- reducedDim(sce, "UMAP")
@@ -813,7 +848,7 @@ reducedDim(sce, "UMAP_fastmnn") <- reducedDim(sce, "UMAP")
 
 Harmony [Korsunsky2018fast] is a newer batch correction method, which is designed to operate on PC space. The algorithm proceeds to iteratively cluster the cells, with the objective function formulated to promote cells from multiple datasets within each cluster. Once a clustering is obtained, the positions of the centroids of each dataset are obtained on a per-cluster basis and the coordinates are corrected. This procedure is iterated until convergence. Harmony comes with a theta parameter that controls the degree of batch correction (higher values lead to more dataset integration), and can account for multiple experimental and biological factors on input (see [variant of the 'Hemberg course'](https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#harmony)).
 
-```{r}
+```{r harmony_run_batch_GSM3872442}
 library(harmony)
 
 reducedDim(sce, "PCA_logcounts") <- reducedDim(
@@ -833,4 +868,10 @@ plotReducedDim(
     size_by = "sum",
     shape_by = "Sample.Name"
 )
+```
+
+## Session information
+
+```{r}
+sessionInfo()
 ```

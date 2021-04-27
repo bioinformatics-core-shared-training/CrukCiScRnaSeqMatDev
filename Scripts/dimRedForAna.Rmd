@@ -22,19 +22,36 @@ params:
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE
+  bookType: "mk"
+  setName: "caron"
+  setSuf: "_5hCellPerSpl"
+  splSetToGet: "dummy"
+  dsiSuf: '_dummy'
 ---
 
 # Dimensionality reduction for analysis
+
+**TODO** add text and fix fig size.
 
 ```{r}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
+cacheBool <- params$cacheBool
+setName <- params$setName
+setSuf <- params$setSuf
+
+if(params$bookType == "mk") {
+	setName <- "caron"
+	setSuf <- "_5hCellPerSpl"
+	dirRel <- ".."
+}
+
 nbPcToComp <- 50
 ```
 
-```{r dimRedForAna_setup, include=FALSE, echo=FALSE}
+```{r setup_dimRedForAna, include=FALSE, echo=FALSE}
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 knitr::opts_chunk$set(echo = TRUE)
@@ -46,22 +63,20 @@ options(bitmapType='cairo')
 set.seed(123) # for reproducibility 
 ```
 
-```{r, warning=FALSE}
-suppressMessages(library(ggplot2))
-suppressMessages(library(scater))
-suppressMessages(library(scran))
-suppressMessages(library(dplyr))
-fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
+```{r libraries_dimRedForAna, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(scater)
+library(scran)
+library(dplyr)
+fontsize <- theme(axis.text=element_text(size=12),
+		  axis.title=element_text(size=16))
 ```
 
 ## Load data
 
 We will load the R file keeping the SCE object with the normalised counts for 500 cells per sample.
 
-```{r, cache=FALSE}
-setName <- "caron"
-setSuf <- "_5hCellPerSpl"
-
+```{r load_dimRedForAna, cache=FALSE}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds", projDir, outDirBit, setName, setSuf)
 print(tmpFn)
@@ -130,7 +145,7 @@ plotReducedDim(sce, dimred = "PCA", ncomponents = 3,
 
 ## Visualise expression patterns of some HVGs
 
-```{r}
+```{r viz_dimRedForAna}
 o <- order(dec.sce$bio, decreasing=TRUE)
 chosen.genes.index <- o[1:20]
 dec.sce %>%
@@ -187,17 +202,20 @@ tsne2 + facet_wrap(. ~ sce$source_name)
 
 Write R object to file
 
-```{r}
+```{r write_denoised_dimRedForAna}
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_denoised.Rds", projDir, outDirBit, setName, setSuf)
 print(tmpFn)
 saveRDS(sce, file=tmpFn)
 ```
 
+Genes correlated with PC1:
+
 <!-- http://bioinformatics.age.mpg.de/presentations-tutorials/presentations/modules/single-cell//bioconductor_tutorial.html -->
 
-```{r}
+```{r corel_pc1_dimRedForAna}
 sce <- readRDS(tmpFn)
-rownames(sce) <- uniquifyFeatureNames(rowData(sce)$ensembl_gene_id, rowData(sce)$Symbol)
+rownames(sce) <- uniquifyFeatureNames(rowData(sce)$ensembl_gene_id,
+				      rowData(sce)$Symbol)
 pc1 <- reducedDim(sce, "PCA")[,1]
 design <- model.matrix(~pc1)
 library(limma)
@@ -207,7 +225,7 @@ topTab <- topTable(fit)
 head(topTab)
 ```
 
-```{r}
+```{r heatmap_dimRedForAna}
 library(pheatmap)
 de.genes <- rownames(topTable(fit, coef=2, n=50))
 heat.vals <- logcounts(sce)[de.genes,]
@@ -215,5 +233,11 @@ heat.vals <- heat.vals - rowMeans(heat.vals)
 heat.vals[heat.vals > 2] <- 2
 heat.vals[heat.vals < -2] <- -2
 p <- pheatmap(heat.vals[,order(pc1)], cluster_cols=FALSE)
-plot(p$gtable)
+#plot(p$gtable)
+```
+
+## Session information
+
+```{r}
+sessionInfo()
 ```

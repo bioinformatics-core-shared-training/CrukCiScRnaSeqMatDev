@@ -41,13 +41,20 @@ splSetToGet <- params$splSetToGet
 setName <- params$setName
 setSuf <- params$setSuf
 dsiSuf <- params$dsiSuf # 'dsi' for data set integration
+
+if(params$bookType == "mk"){
+	setName <- "caron"
+	splSetToGet <- "PBMMC,ETV6-RUNX1"
+	setSuf <- "_5hCps"
+}
+
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r setup, include=FALSE, echo=FALSE}
+```{r multiSplComp_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)

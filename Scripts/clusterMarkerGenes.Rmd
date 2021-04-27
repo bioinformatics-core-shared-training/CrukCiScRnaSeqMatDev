@@ -22,9 +22,9 @@ params:
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
   cacheBool: FALSE  
-  splSetToGet: "PBMMC,ETV6-RUNX1"
   setName: "caron"
   setSuf: "_5hCellPerSpl"
+  splSetToGet: "PBMMC,ETV6-RUNX1"
   dsiSuf: '_dsi'
 ---
 
@@ -32,13 +32,7 @@ params:
 
 <img src="../../Images/Andrews2017_Fig1.png" style="margin:auto; display:block" />
 
-```{r, eval=FALSE}
-projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
-outDirBit <- "AnaWiSce/Attempt1"
-nbPcToComp <- 50
-```
-
-```{r}
+```{r params_clusterMarkerGenes}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
@@ -53,7 +47,7 @@ nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r setup, include=FALSE, echo=FALSE}
+```{r clusterMarkerGenes_setup, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -109,7 +103,8 @@ uncorrected <- readRDS(file=fn)
 
 # Read object in:
 #tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clustered.Rds", projDir, outDirBit, setName, setSuf)
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clust.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clust.Rds",
+                 projDir, outDirBit, setName, setSuf)
 print(tmpFn)
 if(!file.exists(tmpFn))
 {
@@ -407,7 +402,7 @@ mat_colors <- list(group = getPalette(colourCount))
 names(mat_colors$group) <- unique(sce$cluster)
 
 # plot heatmap:
-pheatmap(tmpData3,
+pheatmap(tmpData3[,order(colData(sce)$clusterStg)],
            border_color      = NA,
            show_colnames     = FALSE,
            #show_rownames     = FALSE,
@@ -415,7 +410,8 @@ pheatmap(tmpData3,
            drop_levels       = TRUE,
            labels_row        = rowData(sce)[rownames(tmpData),"Symbol"],
            annotation_col    = mat_col,
-           annotation_colors = mat_colors
+           annotation_colors = mat_colors,
+           cluster_cols      = FALSE
            )
 ```
 
@@ -798,8 +794,6 @@ In addition, multiMarkerStats() will compute a number of new statistics by combi
 Write list to file:
 
 ```{r}
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clustMarkCombi.Rds",
-                 projDir, outDirBit, setName, setSuf)
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_clustMarkCombi.Rds",
                  projDir, outDirBit, setName, setSuf, dsiSuf, splSetToGet2)
 print(tmpFn)

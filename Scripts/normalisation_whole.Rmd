@@ -177,7 +177,7 @@ plot(lib.sf,
 abline(a=0, b=1, col="red")
 ```
 
-```{r scatter_deconvSf_libSf_plot_norm_caron_whole}
+```{r scatter_deconvSf_libSf_colBy_plot_norm_caron_whole}
 deconvDf <- data.frame(lib.sf,
 		       deconv.sf,
 		       "source_name" = sce$source_name,
@@ -336,7 +336,7 @@ plot(lib.sf,
 abline(a=0, b=1, col="red")
 ```
 
-```{r scatter_deconvSf_libSf_plot_norm_abmmc_whole}
+```{r scatter_deconvSf_libSf_colBy_plot_norm_abmmc_whole}
 deconvDf <- data.frame(lib.sf, deconv.sf,
 			"source_name" = sce$source_name,
 			"sum" = sce$sum,
@@ -466,7 +466,7 @@ Estimate model parameters and transform data
 
 The vst function estimates model parameters and performs the variance stabilizing transformation. Here we use the log10 of the total UMI counts of a cell as variable for sequencing depth for each cell. After data transformation we plot the model parameters as a function of gene mean (geometric mean).
 
-```{r comp_sct_caron_whole}
+```{r comp_sct_caron_whole, cache.lazy = FALSE}
 # We use the Future API for parallel processing; set parameters here
 future::plan(strategy = 'multicore', workers = 4)
 options(future.globals.maxSize = 10 * 1024 ^ 3)
@@ -566,7 +566,7 @@ colnames(counts) <- colData(sce)$Barcode
 
 Inspect data
 
-```{r attr_comp_sct_abmmc_whole}
+```{r attr_comp_sct_abmmc_whole, cache.lazy = FALSE}
 gene_attr <- data.frame(mean = rowMeans(counts), 
                         detection_rate = rowMeans(counts > 0),
                         var = apply(counts, 1, var))
@@ -599,7 +599,7 @@ ggplot(cell_attr, aes(n_umi, n_gene)) +
   geom_density_2d(size = 0.3)
 ```
 
-```{r comp_sct_abmmc_whole}
+```{r comp_sct_abmmc_whole, cache.lazy = FALSE}
 # We use the Future API for parallel processing; set parameters here
 future::plan(strategy = 'multicore', workers = 4)
 options(future.globals.maxSize = 10 * 1024 ^ 3)
