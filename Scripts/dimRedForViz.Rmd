@@ -26,6 +26,8 @@ params:
   cacheBool: FALSE
 ---
 
+# Dimensionality reduction for visualisation {#dimRedForVizTop}
+
 <!--
 Should have Caron and HCA separately
 -->
@@ -57,7 +59,6 @@ In part 1 we gathered the data, aligned reads, checked quality, and normalised r
 
 We'll first explain dimensionality reduction for visualisation, using Principal Component Analysis, t-SNE and UMAP.
 
-# Dimensionality reduction for visualisation
 
 ## Principal Component Analysis
 

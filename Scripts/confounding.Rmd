@@ -41,7 +41,6 @@ outDirBit <- params$outDirBit
 
 `r setName`
 
-
 ```{r {{setNameUpp}}_confound_libraries, include=FALSE}
 library(scater)
 library(scran)
@@ -54,17 +53,20 @@ library(BiocSingular)
 Should have Caron and HCA separately
 -->
 
-Load object 
+## Load object 
 
 ```{r {{setNameUpp}}_confound_readIn, cache=FALSE}
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
+		 projDir, outDirBit, setName, setSuf)
 tmpFn
 #getwd()
 #file.exists(tmpFn)
 sce <- readRDS(tmpFn)
 sce
 ```
+
+## PCA
 
 Remember scran PCA:
 
@@ -110,6 +112,10 @@ plotPCA(
     shape_by = "source_name"
 )
 ```
+
+<!--
+## Raw counts
+-->
 
 <!--
 Correlation with PCs: logcounts_raw:
@@ -165,6 +171,8 @@ plotExplanatoryVariables(
 )
 ```
 
+## Normalised counts
+
 Correlation with PCs: logcounts (normalised):
 
 ```{r {{setNameUpp}}_confound_norm_getExpPc}
@@ -205,3 +213,6 @@ plotExplanatoryVariables(
 )
 ```
 
+```{r tidy_confounding}
+rm(sce)
+```

@@ -97,6 +97,7 @@ tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_featSel.Rds", projDir, o
 tmpList <- readRDS(tmpFn)
 dec.sce <- tmpList$dec.sce
 hvg.index <- tmpList$hvg.index
+rm(tmpList)
 ```
 
 ## Denoising expression values using PCA
@@ -113,6 +114,8 @@ var.fit <- metadata(dec.sce)
 # remove uninteresting PCs:
 #options(BiocSingularParam.default=IrlbaParam())
 sce <- denoisePCA(sce, technical=var.fit$trend, assay.type="logcounts")
+rm(var.fit)
+
 # check assay names, should see 'PCA':
 ##assayNames(sce)
 # check dimension of the PC table:
@@ -133,14 +136,17 @@ cumsum(attributes(sce.pca)$percentVar)[1:dim(sce.pca)[2]]
 # plot on PC1 and PC2 plane:
 plotPCA(sce, colour_by = "Sample.Name")
 #require(knitr); knit_exit()
-rm(tmpCol)
+rm(sce.pca, tmpCol)
 ```
 
 Show cells on plane for PC1 and PC2:
 
 ```{r plot_denoisePCA}
-plotReducedDim(sce, dimred = "PCA", ncomponents = 3, 
-		colour_by = "Sample.Name") + fontsize
+plotReducedDim(sce,
+	       dimred = "PCA",
+	       ncomponents = 3,
+	       colour_by = "Sample.Name") +
+fontsize
 ```
 
 ## Visualise expression patterns of some HVGs
@@ -154,15 +160,22 @@ dec.sce %>%
 	right_join(data.frame(rowData(sce)[chosen.genes.index,]), by="ensembl_gene_id") %>%
 	select(ensembl_gene_id, Symbol, bio, FDR) %>%
 	arrange(-bio)
+rm(dec.sce)
 ```
 
 On PCA plot:
 
 ```{r plot_count_pca_HVGtop2}
 # make and store PCA plot for top HVG 1:
-pca1 <- plotReducedDim(sce, dimred="PCA", colour_by=rowData(sce)[chosen.genes.index[1],"ensembl_gene_id"]) + fontsize  # + coord_fixed()
+pca1 <- plotReducedDim(sce,
+		       dimred="PCA",
+		       colour_by=rowData(sce)[chosen.genes.index[1],"ensembl_gene_id"]) +
+fontsize  # + coord_fixed()
 # make and store PCA plot for top HVG 2:
-pca2 <- plotReducedDim(sce, dimred="PCA", colour_by=rowData(sce)[chosen.genes.index[2],"ensembl_gene_id"]) + fontsize # + coord_fixed()
+pca2 <- plotReducedDim(sce,
+		       dimred="PCA",
+		       colour_by=rowData(sce)[chosen.genes.index[2],"ensembl_gene_id"]) +
+fontsize # + coord_fixed()
 
 pca1
 pca2
@@ -174,6 +187,8 @@ pca2
 
 pca1 + facet_wrap(. ~ sce$source_name) + coord_fixed()
 pca2 + facet_wrap(. ~ sce$source_name) + coord_fixed()
+
+rm(pca1, pca2)
 ```
 
 On t-SNE plot:
@@ -198,6 +213,8 @@ tsne2 + facet_wrap(. ~ sce$source_name)
 
 # display plots next to each other, splitting each by sample:
 #multiplot(tsne1 + facet_grid(. ~ sce$Sample2), tsne2 + facet_grid(. ~ sce$Sample2), cols=2)
+
+rm(tsne1, tsne2)
 ```
 
 Write R object to file
@@ -223,6 +240,7 @@ fit <- lmFit(logcounts(sce), design)
 fit <- eBayes(fit, trend=TRUE, robust=TRUE)
 topTab <- topTable(fit)
 head(topTab)
+rm(topTab)
 ```
 
 ```{r heatmap_dimRedForAna}
@@ -234,6 +252,8 @@ heat.vals[heat.vals > 2] <- 2
 heat.vals[heat.vals < -2] <- -2
 p <- pheatmap(heat.vals[,order(pc1)], cluster_cols=FALSE)
 #plot(p$gtable)
+rm(pc1, design, fit, de.genes, heat.vals)
+rm(sce)
 ```
 
 ## Session information

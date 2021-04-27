@@ -107,6 +107,8 @@ sample1.nz.sce <- logNormCounts(sample1.nz.sce)
 sample2.clusters <- quickCluster(sample2.nz.sce, method="igraph")
 sample2.nz.sce <- computeSumFactors(sample2.nz.sce, min.mean=0.1, cluster=sample2.clusters)
 sample2.nz.sce <- logNormCounts(sample2.nz.sce)
+
+rm(sample1.clusters, sample2.clusters)
 ```
 
 Re-pool:
@@ -126,6 +128,7 @@ For the PCA we want to quickly select the genes that are most informative. We wi
 gene.variances <- apply(all.samp.exprs, 1, var)
 names(gene.variances) <- rownames(all.samp.exprs)
 highly.variable.genes <- names(gene.variances[order(gene.variances, decreasing=TRUE)])[1:2000]
+rm(gene.variances)
 ```
 
 Perform PCA:
@@ -146,6 +149,9 @@ samples.info <- data.frame("Cell"=colnames(all.samp.exprs),
 
 # merge the two data frames together
 separate.pca.merge <- merge(separate.hvg.pcs, samples.info, by='Cell')
+
+# tidy
+rm(all.samp.exprs, separate.hvg.pca, separate.hvg.pcs, samples.info)
 ```
 
 ```{r sep_plot_pca_batch_GSM3872442, eval=FALSE, include=FALSE}
@@ -158,6 +164,7 @@ Plot PC1-PC2 plane, with cells colored by 'Run' (and sized according to library 
 
 ```{r sep_cbind_batch_GSM3872442}
 sce.sep <- cbind(sample1.nz.sce, sample2.nz.sce)
+rm(sample1.nz.sce, sample2.nz.sce)
 sce.sep <- runPCA(sce.sep)
 plotPCA(sce.sep, colour_by="Run", size_by = "sum")
 ```
@@ -170,6 +177,7 @@ plotTSNE(sce.sep, colour_by="Run", size_by = "sum")
 ```{r sep_umap_batch_GSM3872442}
 sce.sep <- runUMAP(sce.sep, dimred="PCA")
 plotUMAP(sce.sep, colour_by="Run", size_by = "sum")
+rm(sce.sep)
 ```
 
 ## Normalise batches together
@@ -184,6 +192,8 @@ sample3.nz.sce <- logNormCounts(sample3.nz.sce)
 
 pool.exprs <- exprs(sample3.nz.sce)
 colnames(pool.exprs) <- gsub(colData(sample3.nz.sce)$Barcode, pattern="-", replacement=".")
+
+rm(sample3.clusters, sce)
 ```
 
 Find the 2000 genes with the highest variance:
@@ -192,6 +202,7 @@ Find the 2000 genes with the highest variance:
 gene.variances <- apply(pool.exprs, 1, var)
 names(gene.variances) <- rownames(pool.exprs)
 highly.variable.genes <- names(gene.variances[order(gene.variances, decreasing=TRUE)])[1:2000]
+rm(gene.variances)
 ```
 
 Perform PCA:
@@ -210,6 +221,8 @@ samples.info <- data.frame("Cell"=colnames(pool.exprs),
 
 # merge the two data frames together
 combined.pca.merge <- merge(combined.hvg.pcs, samples.info, by='Cell')
+
+rm(all.samp.exprs, combined.hvg.pca, combined.hvg.pcs, samples.info)
 ```
 
 ```{r tog_show_irlba_batch_GSM3872442, eval=FALSE, include=FALSE}
@@ -267,8 +280,8 @@ plotReducedDim(sce, dimred = "PCA_lm_batch",
   ggtitle("LM - regress out batch")
 ```
 
-```{r copyPreSct_batch_GSM3872442}
-scePreSct <- sce
+```{r copyPreSct_batch_GSM3872442, eval=FALSE}
+#scePreSct <- sce # not used TODO delete
 ```
 
 ## SCTransform
@@ -280,6 +293,8 @@ First make a copy of the SCE object (we will need one later).
 ```{r batchOnlySctRun_batch_GSM3872442}
 # have log lib size
 sce$log10sum <- log10(sce$sum)
+# keep copy of SCE to draw from after SCTransform,
+# which discard some genes TODO check-again/mention slow 'return all' option
 sceOrig <- sce
 ```
 
@@ -298,18 +313,16 @@ counts <- Read10X(data.dir = "filtered_gene_bc_matrices/hg19/")  # Seurat functi
 getwd()
 }
 
-pbmc_data <- counts 
-
 # inspect data
-gene_attr <- data.frame(mean = rowMeans(pbmc_data),
-                        detection_rate = rowMeans(pbmc_data > 0),
-                        var = apply(pbmc_data, 1, var))
+gene_attr <- data.frame(mean = rowMeans(counts),
+                        detection_rate = rowMeans(counts > 0),
+                        var = apply(counts, 1, var))
 gene_attr$log_mean <- log10(gene_attr$mean)
 gene_attr$log_var <- log10(gene_attr$var)
-rownames(gene_attr) <- rownames(pbmc_data)
-cell_attr <- data.frame(n_umi = colSums(pbmc_data),
-                        n_gene = colSums(pbmc_data > 0))
-rownames(cell_attr) <- colnames(pbmc_data)
+rownames(gene_attr) <- rownames(counts)
+cell_attr <- data.frame(n_umi = colSums(counts),
+                        n_gene = colSums(counts > 0))
+rownames(cell_attr) <- colnames(counts)
 
 # plot
 ggplot(gene_attr, aes(log_mean, log_var)) +
@@ -327,6 +340,7 @@ x = seq(from = -3, to = 2, length.out = 1000)
 poisson_model <- data.frame(log_mean = x, detection_rate = 1 - dpois(0, lambda = 10^x))
 ggplot(gene_attr, aes(log_mean, detection_rate)) + geom_point(alpha = 0.3, shape = 16) + 
     geom_line(data = poisson_model, color = "red") + theme_gray(base_size = 8)
+rm(gene_attr)
 ```
 
 Mean-detection-rate relationship 
@@ -336,6 +350,7 @@ Mean-detection-rate relationship
 ggplot(cell_attr, aes(n_umi, n_gene)) +
   geom_point(alpha = 0.3, shape = 16) +
   geom_density_2d(size = 0.3)
+rm(cell_attr)
 ```
 
 ```{r batchOnlySct_vst_batch_GSM3872442}
@@ -538,13 +553,11 @@ plotReducedDim(
   size_by = "sum",
   shape_by = "Sample.Name"
 ) + ggtitle("PCA plot: sctransform normalization - libSizeBatch0")
-sceDev <- sce
 ```
                                  
                                  
                                  
 ```{r libSizeBatchSct_vst_batch_GSM3872442}
-
 sce <- sceOrig
 
 require(Seurat)
@@ -593,6 +606,9 @@ sce <- SingleCellExperiment(list(counts=new.counts))
 # reset the column data on the new object
 colData(sce) <- cols.meta
 rowData(sce) <- rows.meta[tmpInd, ]
+
+# tidy
+rm(sceOrig)
 ```
 
 Copy the transformation output to the SCE object.
@@ -613,6 +629,7 @@ Show diagnostic plots:
 ```{r libSizeBatchSct_modelPars_batch_GSM3872442}
 #sctransform::plot_model_pars(sce.srt[["SCT"]]@misc$vst.out) # sctransform::vst
 # not with Seurat::SCTransform ... empty sce.srt[["SCT"]]@misc 20200422
+rm(sce.srt)
 ```
 
 Show reduced dimension plots and check for improved mixing of cells from the two sets:
@@ -672,8 +689,8 @@ reducedDim(sce, "TSNE_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "TSN
 reducedDim(sce, "UMAP_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "UMAP_sctrans_norm_batchOnly")
 ```
 
-```{r libSizeBatchSct_copy_batch_GSM3872442}
-scePostSct <- sce
+```{r libSizeBatchSct_copy_batch_GSM3872442, eval=FALSE}
+#scePostSct <- sce # not used TODO remove
 ```
 
 ## mnnCorrect
@@ -686,6 +703,8 @@ Same as above but with batchelor commands to make the two batches and identify h
 
 ```{r noCor_prep_batch_GSM3872442}
 sce <- sample3.nz.sce
+rm(sample3.nz.sce)
+
 library(batchelor)
 # Mind assayNames()
 sce1 <- sce[, sce$Run == "SRR9264351"]
@@ -699,6 +718,7 @@ dec2 <- modelGeneVar(sce2)
 combined.dec <- combineVar(dec1, dec2)
 chosen.hvgs <- combined.dec$bio > 0
 summary(chosen.hvgs)
+rm(dec1, dec2)
 ```
 
 As a diagnostic, we check that there actually is a batch effect across these datasets by checking that they cluster separately. Here, we combine the two SingleCellExperiment objects without any correction using the NoCorrectParam() flag, and we informally verify that cells from different batches are separated using a t-SNE plot.
@@ -720,6 +740,7 @@ plotUMAP(combined, colour_by="batch")
 reducedDim(sce, "PCA_noCor") <- reducedDim(combined, "PCA")
 reducedDim(sce, "TSNE_noCor") <- reducedDim(combined, "TSNE")
 reducedDim(sce, "UMAP_noCor") <- reducedDim(combined, "UMAP")
+rm(combined)
 ```
 
 ### Correct batch effect with mnnCorrect
@@ -731,6 +752,7 @@ Let us get the normalised counts:
 ```{r mnnCor_prep_batch_GSM3872442}
 batch1 <- logcounts(sce1)
 batch2 <- logcounts(sce2)
+rm(sce1, sce2)
 ```
 
 ```{r mnnCor_hvgOnly_batch_GSM3872442, eval=FALSE, include=FALSE}
@@ -796,6 +818,10 @@ plotUMAP(sce, colour_by="batch")
 reducedDim(sce, "UMAP_mnn") <- reducedDim(sce, "UMAP")
 ```
 
+```{r mnnCor_tidy_batch_GSM3872442}
+rm(combined.dec, chosen.hvgs)
+```
+
 ## fastMNN
 
 This method is faster than mnnCorrect as it identifies nearest neighbours after dimensionality reduction. 
@@ -822,6 +848,7 @@ Show reduced dimension plots and check for improved mixing of cells from the two
 ```{r fastMnn_pca_batch_GSM3872442}
 fastmnn_pca <- runPCA(assay(sce, "fastmnn"), rank=2) # slow
 reducedDim(sce, "PCA_fastmnn") <- fastmnn_pca$rotation
+rm(fastmnn_pca)
 
 plotReducedDim(
   sce,
@@ -858,7 +885,10 @@ reducedDim(sce, "PCA_logcounts") <- reducedDim(
 #Seeing how the end result of Harmony is an altered dimensional reduction space created on the basis of PCA, we plot the obtained manifold here and exclude it from the rest of the follow-ups in the section.
 
 pca <- as.matrix(reducedDim(sce, "PCA_logcounts"))
-harmony_emb <- HarmonyMatrix(pca, sce$batch, theta=2, do_pca=FALSE)
+harmony_emb <- HarmonyMatrix(pca,
+			     sce$batch,
+			     theta=2,
+			     do_pca=FALSE)
 reducedDim(sce, "harmony") <- harmony_emb
 
 plotReducedDim(

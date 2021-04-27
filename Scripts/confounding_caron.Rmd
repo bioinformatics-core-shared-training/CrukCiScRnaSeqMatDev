@@ -48,6 +48,7 @@ set.seed(123) # for reproducibility
 ```
 
 ```{r expand_confounding, include=FALSE, cache=FALSE}
+# mind hardcoded setSuf <- "_5hCellPerSpl" in child template
 src <- lapply(c("Caron"),
 	      function(setNameUpp) knit_expand(file = "confounding.Rmd"))
 ```

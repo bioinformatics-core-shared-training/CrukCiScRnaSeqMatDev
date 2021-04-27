@@ -34,7 +34,7 @@ opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
 ```
 
-# Quality Control  {#QcTop}
+# Quality Control  {#PreProcTop}
 
 ## Introduction
 

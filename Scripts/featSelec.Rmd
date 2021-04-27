@@ -29,7 +29,7 @@ params:
   dsiSuf: '_dummy'
 ---
 
-# Feature selection
+# Feature selection {#featSelecTop}
 
 ```{r libraries_featSelec, message=FALSE, warning=FALSE}
 library(ggplot2)
@@ -144,7 +144,7 @@ curve(metadata(dec.pois.sce)$trend(x), col="dodgerblue", add=TRUE)
 
 Interestingly, trends based purely on technical noise tend to yield large biological components for highly-expressed genes. This often includes so-called “house-keeping” genes coding for essential cellular components such as ribosomal proteins, which are considered uninteresting for characterizing cellular heterogeneity. These observations suggest that a more accurate noise model does not necessarily yield a better ranking of HVGs, though one should keep an open mind - house-keeping genes are regularly DE in a variety of conditions (Glare et al. 2002; Nazari, Parham, and Maleki 2015; Guimaraes and Zavolan 2016), and the fact that they have large biological components indicates that there is strong variation across cells that may not be completely irrelevant.
 
-### Choosing some HVGs:
+### Choosing some HVGs
 
 Identify the top 20 HVGs by sorting genes in decreasing order of biological component.
 
@@ -185,6 +185,7 @@ Save objects to file
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_featSel.Rds",
 		 projDir, outDirBit, setName, setSuf)
 saveRDS(list("dec.sce"=dec.sce,"hvg.index"=hvg.index), tmpFn)
+rm(var.fit, hvgBool, hvg.index)
 ```
 
 HVGs may be driven by outlier cells. So let's plot the distribution of expression values for the genes with the largest biological components.
@@ -213,6 +214,7 @@ g <- plotExpression(sce, rownames(dec.sce)[chosen.genes.index],
 g <- g + scale_x_discrete(breaks=rownames(dec.sce)[chosen.genes.index],
         labels=tmpName)
 g
+rm(tmpName)
 ```
 
 Another few genes:
@@ -235,6 +237,7 @@ g <- plotExpression(sce, rownames(dec.sce)[chosen.genes.index],
 g <- g + scale_x_discrete(breaks=rownames(dec.sce)[chosen.genes.index],
         labels=tmpName)
 g
+rm(tmpName)
 ```
 
 __Challenge__: Show violin plots for the 20 genes with the lowest biological component. How do they compare to the those for HVGs chosen above?
@@ -255,7 +258,13 @@ g <- plotExpression(sce, rownames(dec.sce)[chosen.genes.index.tmp],
 g <- g + scale_x_discrete(breaks=rownames(dec.sce)[chosen.genes.index.tmp],
         labels=tmpName)
 g
-rm(chosen.genes.index.tmp)
+rm(chosen.genes.index.tmp, tmpName)
+```
+
+```{r tidy_featSelec}
+rm(dec.sce)
+rm(dec.pois.sce)
+rm(sce)
 ```
 
 ## Session information

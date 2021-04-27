@@ -28,6 +28,8 @@ params:
   dsiSuf: 'dummy'
 ---
 
+# Normalisation {#NormalisationAllCellsTop}
+
 ```{r norm.knitr_options, echo=FALSE, results="hide", message=FALSE}
 cacheBool <- params$cacheBool
 require(knitr)
@@ -36,8 +38,6 @@ opts_chunk$set(fig.width=7, fig.height=7)
 opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
 ```
-
-# Normalisation {#NormalisationAllCells}
 
 Why normalise?
 

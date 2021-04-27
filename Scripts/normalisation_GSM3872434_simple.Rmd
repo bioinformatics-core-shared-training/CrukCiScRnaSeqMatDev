@@ -27,6 +27,8 @@ params:
   dsiSuf: 'dummy'
 ---
 
+# Normalisation - GSM3872434 set {#NormalisationGSM3872434Top}
+
 ```{r norm_GSM3872434.knitr_options, echo=FALSE, results="hide", message=FALSE}
 cacheBool <- params$cacheBool
 require(knitr)
@@ -36,7 +38,6 @@ opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
 ```
 
-# Normalisation - GSM3872434 set
 
 Sources: chapters on normalisation in the [OSCA book](https://osca.bioconductor.org/normalization.html) and the ['Hemberg group material'](https://scrnaseq-course.cog.sanger.ac.uk/website/index.html).
 
@@ -933,7 +934,7 @@ rm(tmpFn)
 
 Cell-wise RLE for the `r typeNorm` counts in the `r setName` set.
 
-```{r plot_rle_sct_GSM3872434_allCells}
+```{r plot_rle_sct_GSM3872434_allCells, cache.lazy = FALSE}
 p <- plotRLE(
     sce,
     exprs_values = "sctrans_norm",
@@ -947,7 +948,7 @@ print("DEV"); print(getwd()); print(tmpFn)
 ##ggsave(filename=tmpFn, plot=p)
 ```
 
-```{r show_rle_sct_GSM3872434_allCells, cache.lazy = FALSE}
+```{r show_rle_sct_GSM3872434_allCells}
 tmpFn <- sprintf("%s/%s/%s_sce_nz_postQc%s_%sRle.png",
                  dirRel, normPlotDirBit, setName, setSuf, typeNorm)
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
