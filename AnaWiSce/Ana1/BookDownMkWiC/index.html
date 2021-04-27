@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
+  <meta name="description" content="A report for all analyses (bookdown::gitbook)." />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="A report for all analyses (bookdown::gitbook)." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  
+  <meta name="twitter:description" content="A report for all analyses (bookdown::gitbook)." />
+  
+
+<meta name="author" content="Stephane Ballereau, Zeynep Kalender Atak" />
+
+
+<meta name="date" content="2021-04-27" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+
+<link rel="next" href="SeqQualTop.html"/>
+<script src="libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<script src="libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding-0.18/datatables.js"></script>
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.10.20/js/jquery.dataTables.min.js"></script>
+<link href="libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
+
+<script>
+/* ========================================================================
+ * Bootstrap: transition.js v3.3.7
+ * http://getbootstrap.com/javascript/#transitions
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      WebkitTransition : 'webkitTransitionEnd',
+      MozTransition    : 'transitionend',
+      OTransition      : 'oTransitionEnd otransitionend',
+      transition       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+
+    return false // explicit for ie8 (  ._.)
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false
+    var $el = this
+    $(this).one('bsTransitionEnd', function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+
+    if (!$.support.transition) return
+
+    $.event.special.bsTransitionEnd = {
+      bindType: $.support.transition.end,
+      delegateType: $.support.transition.end,
+      handle: function (e) {
+        if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
+      }
+    }
+  })
+
+}(jQuery);
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: collapse.js v3.3.7
+ * http://getbootstrap.com/javascript/#collapse
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+/* jshint latedef: false */
+
++function ($) {
+  'use strict';
+
+  // COLLAPSE PUBLIC CLASS DEFINITION
+  // ================================
+
+  var Collapse = function (element, options) {
+    this.$element      = $(element)
+    this.options       = $.extend({}, Collapse.DEFAULTS, options)
+    this.$trigger      = $('[data-toggle="collapse"][href="#' + element.id + '"],' +
+                           '[data-toggle="collapse"][data-target="#' + element.id + '"]')
+    this.transitioning = null
+
+    if (this.options.parent) {
+      this.$parent = this.getParent()
+    } else {
+      this.addAriaAndCollapsedClass(this.$element, this.$trigger)
+    }
+
+    if (this.options.toggle) this.toggle()
+  }
+
+  Collapse.VERSION  = '3.3.7'
+
+  Collapse.TRANSITION_DURATION = 350
+
+  Collapse.DEFAULTS = {
+    toggle: true
+  }
+
+  Collapse.prototype.dimension = function () {
+    var hasWidth = this.$element.hasClass('width')
+    return hasWidth ? 'width' : 'height'
+  }
+
+  Collapse.prototype.show = function () {
+    if (this.transitioning || this.$element.hasClass('in')) return
+
+    var activesData
+    var actives = this.$parent && this.$parent.children('.panel').children('.in, .collapsing')
+
+    if (actives && actives.length) {
+      activesData = actives.data('bs.collapse')
+      if (activesData && activesData.transitioning) return
+    }
+
+    var startEvent = $.Event('show.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    if (actives && actives.length) {
+      Plugin.call(actives, 'hide')
+      activesData || actives.data('bs.collapse', null)
+    }
+
+    var dimension = this.dimension()
+
+    this.$element
+      .removeClass('collapse')
+      .addClass('collapsing')[dimension](0)
+      .attr('aria-expanded', true)
+
+    this.$trigger
+      .removeClass('collapsed')
+      .attr('aria-expanded', true)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse in')[dimension]('')
+      this.transitioning = 0
+      this.$element
+        .trigger('shown.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    var scrollSize = $.camelCase(['scroll', dimension].join('-'))
+
+    this.$element
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)[dimension](this.$element[0][scrollSize])
+  }
+
+  Collapse.prototype.hide = function () {
+    if (this.transitioning || !this.$element.hasClass('in')) return
+
+    var startEvent = $.Event('hide.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    var dimension = this.dimension()
+
+    this.$element[dimension](this.$element[dimension]())[0].offsetHeight
+
+    this.$element
+      .addClass('collapsing')
+      .removeClass('collapse in')
+      .attr('aria-expanded', false)
+
+    this.$trigger
+      .addClass('collapsed')
+      .attr('aria-expanded', false)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.transitioning = 0
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse')
+        .trigger('hidden.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    this.$element
+      [dimension](0)
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)
+  }
+
+  Collapse.prototype.toggle = function () {
+    this[this.$element.hasClass('in') ? 'hide' : 'show']()
+  }
+
+  Collapse.prototype.getParent = function () {
+    return $(this.options.parent)
+      .find('[data-toggle="collapse"][data-parent="' + this.options.parent + '"]')
+      .each($.proxy(function (i, element) {
+        var $element = $(element)
+        this.addAriaAndCollapsedClass(getTargetFromTrigger($element), $element)
+      }, this))
+      .end()
+  }
+
+  Collapse.prototype.addAriaAndCollapsedClass = function ($element, $trigger) {
+    var isOpen = $element.hasClass('in')
+
+    $element.attr('aria-expanded', isOpen)
+    $trigger
+      .toggleClass('collapsed', !isOpen)
+      .attr('aria-expanded', isOpen)
+  }
+
+  function getTargetFromTrigger($trigger) {
+    var href
+    var target = $trigger.attr('data-target')
+      || (href = $trigger.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+
+    return $(target)
+  }
+
+
+  // COLLAPSE PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('bs.collapse')
+      var options = $.extend({}, Collapse.DEFAULTS, $this.data(), typeof option == 'object' && option)
+
+      if (!data && options.toggle && /show|hide/.test(option)) options.toggle = false
+      if (!data) $this.data('bs.collapse', (data = new Collapse(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  var old = $.fn.collapse
+
+  $.fn.collapse             = Plugin
+  $.fn.collapse.Constructor = Collapse
+
+
+  // COLLAPSE NO CONFLICT
+  // ====================
+
+  $.fn.collapse.noConflict = function () {
+    $.fn.collapse = old
+    return this
+  }
+
+
+  // COLLAPSE DATA-API
+  // =================
+
+  $(document).on('click.bs.collapse.data-api', '[data-toggle="collapse"]', function (e) {
+    var $this   = $(this)
+
+    if (!$this.attr('data-target')) e.preventDefault()
+
+    var $target = getTargetFromTrigger($this)
+    var data    = $target.data('bs.collapse')
+    var option  = data ? 'toggle' : $this.data()
+
+    Plugin.call($target, option)
+  })
+
+}(jQuery);
+</script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.sourceCode, pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan');
+  rCodeBlocks.each(function() {
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    if (show)
+      div.addClass('in');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (show ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs code-folding-btn pull-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-target', '#' + id)
+        .attr('aria-expanded', show)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // update state of button on show/hide
+    div.on('hidden.bs.collapse', function () {
+      showCodeText.text('Code');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+    });
+  });
+
+}
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: dropdown.js v3.3.7
+ * http://getbootstrap.com/javascript/#dropdowns
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // DROPDOWN CLASS DEFINITION
+  // =========================
+
+  var backdrop = '.dropdown-backdrop'
+  var toggle   = '[data-toggle="dropdown"]'
+  var Dropdown = function (element) {
+    $(element).on('click.bs.dropdown', this.toggle)
+  }
+
+  Dropdown.VERSION = '3.3.7'
+
+  function getParent($this) {
+    var selector = $this.attr('data-target')
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && /#[A-Za-z]/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+    }
+
+    var $parent = selector && $(selector)
+
+    return $parent && $parent.length ? $parent : $this.parent()
+  }
+
+  function clearMenus(e) {
+    if (e && e.which === 3) return
+    $(backdrop).remove()
+    $(toggle).each(function () {
+      var $this         = $(this)
+      var $parent       = getParent($this)
+      var relatedTarget = { relatedTarget: this }
+
+      if (!$parent.hasClass('open')) return
+
+      if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return
+
+      $parent.trigger(e = $.Event('hide.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this.attr('aria-expanded', 'false')
+      $parent.removeClass('open').trigger($.Event('hidden.bs.dropdown', relatedTarget))
+    })
+  }
+
+  Dropdown.prototype.toggle = function (e) {
+    var $this = $(this)
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    clearMenus()
+
+    if (!isActive) {
+      if ('ontouchstart' in document.documentElement && !$parent.closest('.navbar-nav').length) {
+        // if mobile we use a backdrop because click events don't delegate
+        $(document.createElement('div'))
+          .addClass('dropdown-backdrop')
+          .insertAfter($(this))
+          .on('click', clearMenus)
+      }
+
+      var relatedTarget = { relatedTarget: this }
+      $parent.trigger(e = $.Event('show.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this
+        .trigger('focus')
+        .attr('aria-expanded', 'true')
+
+      $parent
+        .toggleClass('open')
+        .trigger($.Event('shown.bs.dropdown', relatedTarget))
+    }
+
+    return false
+  }
+
+  Dropdown.prototype.keydown = function (e) {
+    if (!/(38|40|27|32)/.test(e.which) || /input|textarea/i.test(e.target.tagName)) return
+
+    var $this = $(this)
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    if (!isActive && e.which != 27 || isActive && e.which == 27) {
+      if (e.which == 27) $parent.find(toggle).trigger('focus')
+      return $this.trigger('click')
+    }
+
+    var desc = ' li:not(.disabled):visible a'
+    var $items = $parent.find('.dropdown-menu' + desc)
+
+    if (!$items.length) return
+
+    var index = $items.index(e.target)
+
+    if (e.which == 38 && index > 0)                 index--         // up
+    if (e.which == 40 && index < $items.length - 1) index++         // down
+    if (!~index)                                    index = 0
+
+    $items.eq(index).trigger('focus')
+  }
+
+
+  // DROPDOWN PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this = $(this)
+      var data  = $this.data('bs.dropdown')
+
+      if (!data) $this.data('bs.dropdown', (data = new Dropdown(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  var old = $.fn.dropdown
+
+  $.fn.dropdown             = Plugin
+  $.fn.dropdown.Constructor = Dropdown
+
+
+  // DROPDOWN NO CONFLICT
+  // ====================
+
+  $.fn.dropdown.noConflict = function () {
+    $.fn.dropdown = old
+    return this
+  }
+
+
+  // APPLY TO STANDARD DROPDOWN ELEMENTS
+  // ===================================
+
+  $(document)
+    .on('click.bs.dropdown.data-api', clearMenus)
+    .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle)
+    .on('keydown.bs.dropdown.data-api', toggle, Dropdown.prototype.keydown)
+    .on('keydown.bs.dropdown.data-api', '.dropdown-menu', Dropdown.prototype.keydown)
+
+}(jQuery);
+</script>
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+.row { display: flex; }
+.collapse { display: none; }
+.in { display:block }
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+.open > .dropdown-menu {
+    display: block;
+}
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "hide");
+});
+</script>
+
+
+<script>
+document.write('<div class="btn-group pull-right" style="position: absolute; top: 20%; right: 2%; z-index: 200"><button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-_extension-text-contrast=""><span>Code</span> <span class="caret"></span></button><ul class="dropdown-menu" style="min-width: 50px;"><li><a id="rmd-show-all-code" href="#">Show All Code</a></li><li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li></ul></div>')
+</script>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">CRUK Functional Genomics Summer School 2020</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Preamble</a><ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#the-study"><i class="fa fa-check"></i><b>1.1</b> The study</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#the-plan"><i class="fa fa-check"></i><b>1.2</b> The plan</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#the-analyses"><i class="fa fa-check"></i><b>1.3</b> The analyses</a></li>
+<li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#overall-summary"><i class="fa fa-check"></i><b>1.4</b> Overall summary</a></li>
+<li class="chapter" data-level="1.5" data-path="index.html"><a href="index.html#conclusion"><i class="fa fa-check"></i><b>1.5</b> Conclusion</a></li>
+<li class="chapter" data-level="1.6" data-path="index.html"><a href="index.html#abbreviations"><i class="fa fa-check"></i><b>1.6</b> Abbreviations</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="SeqQualTop.html"><a href="SeqQualTop.html"><i class="fa fa-check"></i><b>2</b> Sequence Quality</a><ul>
+<li class="chapter" data-level="2.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#introduction"><i class="fa fa-check"></i><b>2.1</b> Introduction</a></li>
+<li class="chapter" data-level="2.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#caronbourque2020---fastqc"><i class="fa fa-check"></i><b>2.2</b> CaronBourque2020 - fastqc</a></li>
+<li class="chapter" data-level="2.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#caronbourque2020---multiqc"><i class="fa fa-check"></i><b>2.3</b> CaronBourque2020 - MultiQC</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#sample-index-i1"><i class="fa fa-check"></i><b>2.3.1</b> sample index: I1</a></li>
+<li class="chapter" data-level="2.3.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#cell-barcode-umi-r1"><i class="fa fa-check"></i><b>2.3.2</b> cell barcode + UMI: R1</a></li>
+<li class="chapter" data-level="2.3.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#insert-r2"><i class="fa fa-check"></i><b>2.3.3</b> insert: R2</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="SeqQualTop.html"><a href="SeqQualTop.html#hca-adult-bmmc---fastqc"><i class="fa fa-check"></i><b>2.4</b> HCA adult BMMC - fastqc</a></li>
+<li class="chapter" data-level="2.5" data-path="SeqQualTop.html"><a href="SeqQualTop.html#hca-adult-bmmc---multiqc"><i class="fa fa-check"></i><b>2.5</b> HCA adult BMMC - MultiQC</a><ul>
+<li class="chapter" data-level="2.5.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#sample-index-i1-1"><i class="fa fa-check"></i><b>2.5.1</b> sample index: I1</a></li>
+<li class="chapter" data-level="2.5.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#cell-barcode-umi-r1-1"><i class="fa fa-check"></i><b>2.5.2</b> cell barcode + UMI: R1</a></li>
+<li class="chapter" data-level="2.5.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#insert-r2-1"><i class="fa fa-check"></i><b>2.5.3</b> insert: R2</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html"><i class="fa fa-check"></i><b>3</b> Alignment and feature counting</a><ul>
+<li class="chapter" data-level="3.1" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#introduction-1"><i class="fa fa-check"></i><b>3.1</b> Introduction</a></li>
+<li class="chapter" data-level="3.2" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-pipeline-in-brief"><i class="fa fa-check"></i><b>3.2</b> 10X cellranger pipeline in brief</a></li>
+<li class="chapter" data-level="3.3" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#sample-sheet"><i class="fa fa-check"></i><b>3.3</b> sample sheet</a></li>
+<li class="chapter" data-level="3.4" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-reports-for-caronbourque2020"><i class="fa fa-check"></i><b>3.4</b> 10X cellranger reports for CaronBourque2020</a></li>
+<li class="chapter" data-level="3.5" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-reports-for-hcas-adult-bmmcs"><i class="fa fa-check"></i><b>3.5</b> 10X cellranger reports for HCA’s adult BMMCs</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html"><i class="fa fa-check"></i><b>4</b> Quality Control</a><ul>
+<li class="chapter" data-level="4.1" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#introduction-2"><i class="fa fa-check"></i><b>4.1</b> Introduction</a></li>
+<li class="chapter" data-level="4.2" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#load-packages"><i class="fa fa-check"></i><b>4.2</b> Load packages</a></li>
+<li class="chapter" data-level="4.3" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#sample-sheet-1"><i class="fa fa-check"></i><b>4.3</b> Sample sheet</a></li>
+<li class="chapter" data-level="4.4" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#data-representation"><i class="fa fa-check"></i><b>4.4</b> Data representation</a></li>
+<li class="chapter" data-level="4.5" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#example"><i class="fa fa-check"></i><b>4.5</b> Example</a></li>
+<li class="chapter" data-level="4.6" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#mapping-qc"><i class="fa fa-check"></i><b>4.6</b> Mapping QC</a><ul>
+<li class="chapter" data-level="4.6.1" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#gene-body-coverage"><i class="fa fa-check"></i><b>4.6.1</b> Gene body coverage</a></li>
+<li class="chapter" data-level="4.6.2" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#amplification-rate"><i class="fa fa-check"></i><b>4.6.2</b> Amplification rate</a></li>
+</ul></li>
+<li class="chapter" data-level="4.7" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#cell-calling-for-droplet-data"><i class="fa fa-check"></i><b>4.7</b> Cell calling for droplet data</a><ul>
+<li class="chapter" data-level="4.7.1" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#mixture-model"><i class="fa fa-check"></i><b>4.7.1</b> Mixture model</a></li>
+<li class="chapter" data-level="4.7.2" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#barcode-rank-plot"><i class="fa fa-check"></i><b>4.7.2</b> Barcode rank plot</a></li>
+<li class="chapter" data-level="4.7.3" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#inflection-point"><i class="fa fa-check"></i><b>4.7.3</b> Inflection point</a></li>
+<li class="chapter" data-level="4.7.4" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#cellranger-v1-and-v2"><i class="fa fa-check"></i><b>4.7.4</b> Cellranger v1 and v2</a></li>
+<li class="chapter" data-level="4.7.5" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#dropletutils-and-emptydrops"><i class="fa fa-check"></i><b>4.7.5</b> DropletUtils and EmptyDrops</a></li>
+</ul></li>
+<li class="chapter" data-level="4.8" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#load-filtered-matrices"><i class="fa fa-check"></i><b>4.8</b> Load filtered matrices</a></li>
+<li class="chapter" data-level="4.9" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#properties-of-scrna-seq-data"><i class="fa fa-check"></i><b>4.9</b> Properties of scRNA-seq data</a></li>
+<li class="chapter" data-level="4.10" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#quality-control"><i class="fa fa-check"></i><b>4.10</b> Quality control</a><ul>
+<li class="chapter" data-level="4.10.1" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#qc-metric-distribution"><i class="fa fa-check"></i><b>4.10.1</b> QC metric distribution</a></li>
+</ul></li>
+<li class="chapter" data-level="4.11" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#identification-of-low-quality-cells-with-adaptive-thresholds"><i class="fa fa-check"></i><b>4.11</b> Identification of low-quality cells with adaptive thresholds</a><ul>
+<li class="chapter" data-level="4.11.1" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#library-size"><i class="fa fa-check"></i><b>4.11.1</b> Library size</a></li>
+<li class="chapter" data-level="4.11.2" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#number-of-genes"><i class="fa fa-check"></i><b>4.11.2</b> Number of genes</a></li>
+<li class="chapter" data-level="4.11.3" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#mitochondrial-content"><i class="fa fa-check"></i><b>4.11.3</b> Mitochondrial content</a></li>
+<li class="chapter" data-level="4.11.4" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#summary"><i class="fa fa-check"></i><b>4.11.4</b> Summary</a></li>
+<li class="chapter" data-level="4.11.5" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#all-steps-at-once"><i class="fa fa-check"></i><b>4.11.5</b> All steps at once</a></li>
+<li class="chapter" data-level="4.11.6" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#assumptions"><i class="fa fa-check"></i><b>4.11.6</b> Assumptions</a></li>
+</ul></li>
+<li class="chapter" data-level="4.12" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#experimental-factors"><i class="fa fa-check"></i><b>4.12</b> Experimental factors</a><ul>
+<li class="chapter" data-level="4.12.1" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#identify-poor-quality-batches"><i class="fa fa-check"></i><b>4.12.1</b> Identify poor-quality batches</a><ul>
+<li class="chapter" data-level="4.12.1.1" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#number-of-genes-detected"><i class="fa fa-check"></i><b>4.12.1.1</b> Number of genes detected</a><ul>
+<li class="chapter" data-level="4.12.1.1.1" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#mitochondrial-content-1"><i class="fa fa-check"></i><b>4.12.1.1.1</b> Mitochondrial content</a></li>
+</ul></li>
+<li class="chapter" data-level="4.12.1.2" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#samples-to-check"><i class="fa fa-check"></i><b>4.12.1.2</b> Samples to check</a></li>
+</ul></li>
+<li class="chapter" data-level="4.12.2" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#qc-metrics-space"><i class="fa fa-check"></i><b>4.12.2</b> QC metrics space</a></li>
+<li class="chapter" data-level="4.12.3" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#qc-pca"><i class="fa fa-check"></i><b>4.12.3</b> QC PCA</a></li>
+<li class="chapter" data-level="4.12.4" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#other-diagnostic-plots"><i class="fa fa-check"></i><b>4.12.4</b> Other diagnostic plots</a></li>
+<li class="chapter" data-level="4.12.5" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#filter-low-quality-cells-out"><i class="fa fa-check"></i><b>4.12.5</b> Filter low-quality cells out</a></li>
+</ul></li>
+<li class="chapter" data-level="4.13" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#novelty"><i class="fa fa-check"></i><b>4.13</b> Novelty</a></li>
+<li class="chapter" data-level="4.14" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#qc-based-on-sparsity"><i class="fa fa-check"></i><b>4.14</b> QC based on sparsity</a><ul>
+<li class="chapter" data-level="4.14.1" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#remove-genes-that-are-not-expressed-at-all"><i class="fa fa-check"></i><b>4.14.1</b> Remove genes that are not expressed at all</a></li>
+<li class="chapter" data-level="4.14.2" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#sparsity-plots"><i class="fa fa-check"></i><b>4.14.2</b> Sparsity plots</a></li>
+<li class="chapter" data-level="4.14.3" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#filters"><i class="fa fa-check"></i><b>4.14.3</b> Filters</a></li>
+<li class="chapter" data-level="4.14.4" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#separate-caron-and-hca-batches"><i class="fa fa-check"></i><b>4.14.4</b> Separate Caron and Hca batches</a></li>
+<li class="chapter" data-level="4.14.5" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#caron-only"><i class="fa fa-check"></i><b>4.14.5</b> Caron only</a></li>
+<li class="chapter" data-level="4.14.6" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#hca-only"><i class="fa fa-check"></i><b>4.14.6</b> Hca only</a></li>
+</ul></li>
+<li class="chapter" data-level="4.15" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#subsample-hca-set"><i class="fa fa-check"></i><b>4.15</b> Subsample Hca set</a></li>
+<li class="chapter" data-level="4.16" data-path="QcTopAllCells.html"><a href="QcTopAllCells.html#session-information"><i class="fa fa-check"></i><b>4.16</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="QcTop.html"><a href="QcTop.html"><i class="fa fa-check"></i><b>5</b> Quality Control</a><ul>
+<li class="chapter" data-level="5.1" data-path="QcTop.html"><a href="QcTop.html#introduction-3"><i class="fa fa-check"></i><b>5.1</b> Introduction</a></li>
+<li class="chapter" data-level="5.2" data-path="QcTop.html"><a href="QcTop.html#load-packages-1"><i class="fa fa-check"></i><b>5.2</b> Load packages</a></li>
+<li class="chapter" data-level="5.3" data-path="QcTop.html"><a href="QcTop.html#sample-sheet-2"><i class="fa fa-check"></i><b>5.3</b> Sample sheet</a></li>
+<li class="chapter" data-level="5.4" data-path="QcTop.html"><a href="QcTop.html#data-representation-1"><i class="fa fa-check"></i><b>5.4</b> Data representation</a></li>
+<li class="chapter" data-level="5.5" data-path="QcTop.html"><a href="QcTop.html#example-1"><i class="fa fa-check"></i><b>5.5</b> Example</a></li>
+<li class="chapter" data-level="5.6" data-path="QcTop.html"><a href="QcTop.html#mapping-qc-1"><i class="fa fa-check"></i><b>5.6</b> Mapping QC</a><ul>
+<li class="chapter" data-level="5.6.1" data-path="QcTop.html"><a href="QcTop.html#gene-body-coverage-1"><i class="fa fa-check"></i><b>5.6.1</b> Gene body coverage</a></li>
+<li class="chapter" data-level="5.6.2" data-path="QcTop.html"><a href="QcTop.html#amplification-rate-1"><i class="fa fa-check"></i><b>5.6.2</b> Amplification rate</a></li>
+</ul></li>
+<li class="chapter" data-level="5.7" data-path="QcTop.html"><a href="QcTop.html#cell-calling-for-droplet-data-1"><i class="fa fa-check"></i><b>5.7</b> Cell calling for droplet data</a><ul>
+<li class="chapter" data-level="5.7.1" data-path="QcTop.html"><a href="QcTop.html#mixture-model-1"><i class="fa fa-check"></i><b>5.7.1</b> Mixture model</a></li>
+<li class="chapter" data-level="5.7.2" data-path="QcTop.html"><a href="QcTop.html#barcode-rank-plot-1"><i class="fa fa-check"></i><b>5.7.2</b> Barcode rank plot</a></li>
+<li class="chapter" data-level="5.7.3" data-path="QcTop.html"><a href="QcTop.html#inflection-point-1"><i class="fa fa-check"></i><b>5.7.3</b> Inflection point</a></li>
+<li class="chapter" data-level="5.7.4" data-path="QcTop.html"><a href="QcTop.html#cellranger-v1-and-v2-1"><i class="fa fa-check"></i><b>5.7.4</b> Cellranger v1 and v2</a></li>
+<li class="chapter" data-level="5.7.5" data-path="QcTop.html"><a href="QcTop.html#dropletutils-and-emptydrops-1"><i class="fa fa-check"></i><b>5.7.5</b> DropletUtils and EmptyDrops</a></li>
+</ul></li>
+<li class="chapter" data-level="5.8" data-path="QcTop.html"><a href="QcTop.html#load-filtered-matrices-1"><i class="fa fa-check"></i><b>5.8</b> Load filtered matrices</a></li>
+<li class="chapter" data-level="5.9" data-path="QcTop.html"><a href="QcTop.html#properties-of-scrna-seq-data-1"><i class="fa fa-check"></i><b>5.9</b> Properties of scRNA-seq data</a></li>
+<li class="chapter" data-level="5.10" data-path="QcTop.html"><a href="QcTop.html#quality-control-1"><i class="fa fa-check"></i><b>5.10</b> Quality control</a><ul>
+<li class="chapter" data-level="5.10.1" data-path="QcTop.html"><a href="QcTop.html#qc-metric-distribution-1"><i class="fa fa-check"></i><b>5.10.1</b> QC metric distribution</a></li>
+</ul></li>
+<li class="chapter" data-level="5.11" data-path="QcTop.html"><a href="QcTop.html#identification-of-low-quality-cells-with-adaptive-thresholds-1"><i class="fa fa-check"></i><b>5.11</b> Identification of low-quality cells with adaptive thresholds</a><ul>
+<li class="chapter" data-level="5.11.1" data-path="QcTop.html"><a href="QcTop.html#library-size-1"><i class="fa fa-check"></i><b>5.11.1</b> Library size</a></li>
+<li class="chapter" data-level="5.11.2" data-path="QcTop.html"><a href="QcTop.html#number-of-genes-1"><i class="fa fa-check"></i><b>5.11.2</b> Number of genes</a></li>
+<li class="chapter" data-level="5.11.3" data-path="QcTop.html"><a href="QcTop.html#mitochondrial-content-2"><i class="fa fa-check"></i><b>5.11.3</b> Mitochondrial content</a></li>
+<li class="chapter" data-level="5.11.4" data-path="QcTop.html"><a href="QcTop.html#summary-1"><i class="fa fa-check"></i><b>5.11.4</b> Summary</a></li>
+<li class="chapter" data-level="5.11.5" data-path="QcTop.html"><a href="QcTop.html#all-steps-at-once-1"><i class="fa fa-check"></i><b>5.11.5</b> All steps at once</a></li>
+<li class="chapter" data-level="5.11.6" data-path="QcTop.html"><a href="QcTop.html#assumptions-1"><i class="fa fa-check"></i><b>5.11.6</b> Assumptions</a></li>
+</ul></li>
+<li class="chapter" data-level="5.12" data-path="QcTop.html"><a href="QcTop.html#experimental-factors-1"><i class="fa fa-check"></i><b>5.12</b> Experimental factors</a><ul>
+<li class="chapter" data-level="5.12.1" data-path="QcTop.html"><a href="QcTop.html#identify-poor-quality-batches-1"><i class="fa fa-check"></i><b>5.12.1</b> Identify poor-quality batches</a><ul>
+<li class="chapter" data-level="5.12.1.1" data-path="QcTop.html"><a href="QcTop.html#number-of-genes-detected-1"><i class="fa fa-check"></i><b>5.12.1.1</b> Number of genes detected</a><ul>
+<li class="chapter" data-level="5.12.1.1.1" data-path="QcTop.html"><a href="QcTop.html#mitochondrial-content-3"><i class="fa fa-check"></i><b>5.12.1.1.1</b> Mitochondrial content</a></li>
+</ul></li>
+<li class="chapter" data-level="5.12.1.2" data-path="QcTop.html"><a href="QcTop.html#samples-to-check-1"><i class="fa fa-check"></i><b>5.12.1.2</b> Samples to check</a></li>
+</ul></li>
+<li class="chapter" data-level="5.12.2" data-path="QcTop.html"><a href="QcTop.html#qc-metrics-space-1"><i class="fa fa-check"></i><b>5.12.2</b> QC metrics space</a></li>
+<li class="chapter" data-level="5.12.3" data-path="QcTop.html"><a href="QcTop.html#qc-pca-1"><i class="fa fa-check"></i><b>5.12.3</b> QC PCA</a></li>
+<li class="chapter" data-level="5.12.4" data-path="QcTop.html"><a href="QcTop.html#other-diagnostic-plots-1"><i class="fa fa-check"></i><b>5.12.4</b> Other diagnostic plots</a></li>
+<li class="chapter" data-level="5.12.5" data-path="QcTop.html"><a href="QcTop.html#filter-low-quality-cells-out-1"><i class="fa fa-check"></i><b>5.12.5</b> Filter low-quality cells out</a></li>
+</ul></li>
+<li class="chapter" data-level="5.13" data-path="QcTop.html"><a href="QcTop.html#novelty-1"><i class="fa fa-check"></i><b>5.13</b> Novelty</a></li>
+<li class="chapter" data-level="5.14" data-path="QcTop.html"><a href="QcTop.html#qc-based-on-sparsity-1"><i class="fa fa-check"></i><b>5.14</b> QC based on sparsity</a><ul>
+<li class="chapter" data-level="5.14.1" data-path="QcTop.html"><a href="QcTop.html#remove-genes-that-are-not-expressed-at-all-1"><i class="fa fa-check"></i><b>5.14.1</b> Remove genes that are not expressed at all</a></li>
+<li class="chapter" data-level="5.14.2" data-path="QcTop.html"><a href="QcTop.html#sparsity-plots-1"><i class="fa fa-check"></i><b>5.14.2</b> Sparsity plots</a></li>
+<li class="chapter" data-level="5.14.3" data-path="QcTop.html"><a href="QcTop.html#filters-1"><i class="fa fa-check"></i><b>5.14.3</b> Filters</a></li>
+<li class="chapter" data-level="5.14.4" data-path="QcTop.html"><a href="QcTop.html#separate-caron-and-hca-batches-1"><i class="fa fa-check"></i><b>5.14.4</b> Separate Caron and Hca batches</a></li>
+<li class="chapter" data-level="5.14.5" data-path="QcTop.html"><a href="QcTop.html#caron-only-1"><i class="fa fa-check"></i><b>5.14.5</b> Caron only</a></li>
+<li class="chapter" data-level="5.14.6" data-path="QcTop.html"><a href="QcTop.html#hca-only-1"><i class="fa fa-check"></i><b>5.14.6</b> Hca only</a></li>
+</ul></li>
+<li class="chapter" data-level="5.15" data-path="QcTop.html"><a href="QcTop.html#session-information-1"><i class="fa fa-check"></i><b>5.15</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html"><i class="fa fa-check"></i><b>6</b> Normalisation</a><ul>
+<li class="chapter" data-level="6.1" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#caron"><i class="fa fa-check"></i><b>6.1</b> Caron</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#library-size-normalization"><i class="fa fa-check"></i><b>6.1.1</b> Library size normalization</a></li>
+<li class="chapter" data-level="6.1.2" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#deconvolution"><i class="fa fa-check"></i><b>6.1.2</b> Deconvolution</a></li>
+<li class="chapter" data-level="6.1.3" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#compute-size-factors"><i class="fa fa-check"></i><b>6.1.3</b> Compute size factors</a><ul>
+<li class="chapter" data-level="6.1.3.1" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#apply-size-factors"><i class="fa fa-check"></i><b>6.1.3.1</b> Apply size factors</a></li>
+<li class="chapter" data-level="6.1.3.2" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#save-object"><i class="fa fa-check"></i><b>6.1.3.2</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6.2" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#hca"><i class="fa fa-check"></i><b>6.2</b> Hca</a><ul>
+<li class="chapter" data-level="6.2.1" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#library-size-normalization-1"><i class="fa fa-check"></i><b>6.2.1</b> Library size normalization</a></li>
+<li class="chapter" data-level="6.2.2" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#deconvolution-1"><i class="fa fa-check"></i><b>6.2.2</b> Deconvolution</a></li>
+<li class="chapter" data-level="6.2.3" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#compute-size-factors-1"><i class="fa fa-check"></i><b>6.2.3</b> Compute size factors</a><ul>
+<li class="chapter" data-level="6.2.3.1" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#apply-size-factors-1"><i class="fa fa-check"></i><b>6.2.3.1</b> Apply size factors</a></li>
+<li class="chapter" data-level="6.2.3.2" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#save-object-1"><i class="fa fa-check"></i><b>6.2.3.2</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#sctransform"><i class="fa fa-check"></i><b>6.3</b> SCTransform</a><ul>
+<li class="chapter" data-level="6.3.1" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#caron-1"><i class="fa fa-check"></i><b>6.3.1</b> Caron</a></li>
+<li class="chapter" data-level="6.3.2" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#hca-1"><i class="fa fa-check"></i><b>6.3.2</b> Hca</a></li>
+</ul></li>
+<li class="chapter" data-level="6.4" data-path="NormalisationAllCells.html"><a href="NormalisationAllCells.html#session-information-2"><i class="fa fa-check"></i><b>6.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html"><i class="fa fa-check"></i><b>7</b> Normalisation - Caron set</a><ul>
+<li class="chapter" data-level="7.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#scaling-normalization"><i class="fa fa-check"></i><b>7.1</b> Scaling normalization</a><ul>
+<li class="chapter" data-level="7.1.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#cpm"><i class="fa fa-check"></i><b>7.1.1</b> CPM</a></li>
+<li class="chapter" data-level="7.1.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#deseqs-size-factor"><i class="fa fa-check"></i><b>7.1.2</b> DESeq’s size factor</a></li>
+<li class="chapter" data-level="7.1.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#weighted-trimmed-mean-of-m-values"><i class="fa fa-check"></i><b>7.1.3</b> Weighted Trimmed mean of M-values</a></li>
+<li class="chapter" data-level="7.1.4" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#library-size-normalization-2"><i class="fa fa-check"></i><b>7.1.4</b> Library size normalization</a></li>
+<li class="chapter" data-level="7.1.5" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#deconvolution-2"><i class="fa fa-check"></i><b>7.1.5</b> Deconvolution</a><ul>
+<li class="chapter" data-level="7.1.5.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#cluster-cells"><i class="fa fa-check"></i><b>7.1.5.1</b> Cluster cells</a></li>
+<li class="chapter" data-level="7.1.5.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#compute-size-factors-2"><i class="fa fa-check"></i><b>7.1.5.2</b> Compute size factors</a></li>
+<li class="chapter" data-level="7.1.5.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#apply-size-factors-2"><i class="fa fa-check"></i><b>7.1.5.3</b> Apply size factors</a></li>
+<li class="chapter" data-level="7.1.5.4" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#save-object-2"><i class="fa fa-check"></i><b>7.1.5.4</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#sctransform-1"><i class="fa fa-check"></i><b>7.2</b> SCTransform</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#inspect-data"><i class="fa fa-check"></i><b>7.2.1</b> Inspect data</a></li>
+<li class="chapter" data-level="7.2.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#transformation"><i class="fa fa-check"></i><b>7.2.2</b> Transformation</a></li>
+<li class="chapter" data-level="7.2.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#save-sce-object"><i class="fa fa-check"></i><b>7.2.3</b> Save SCE object</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#visualisation"><i class="fa fa-check"></i><b>7.3</b> Visualisation</a><ul>
+<li class="chapter" data-level="7.3.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#log-raw-counts"><i class="fa fa-check"></i><b>7.3.1</b> log raw counts</a></li>
+<li class="chapter" data-level="7.3.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#log-cpm"><i class="fa fa-check"></i><b>7.3.2</b> log CPM</a></li>
+<li class="chapter" data-level="7.3.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#scran"><i class="fa fa-check"></i><b>7.3.3</b> scran</a></li>
+<li class="chapter" data-level="7.3.4" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#sctransform-2"><i class="fa fa-check"></i><b>7.3.4</b> SCTransform</a></li>
+</ul></li>
+<li class="chapter" data-level="7.4" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#session-information-3"><i class="fa fa-check"></i><b>7.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html"><i class="fa fa-check"></i><b>8</b> Normalisation - GSM3872434 set</a><ul>
+<li class="chapter" data-level="8.1" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#scaling-normalization-1"><i class="fa fa-check"></i><b>8.1</b> Scaling normalization</a><ul>
+<li class="chapter" data-level="8.1.1" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#cpm-1"><i class="fa fa-check"></i><b>8.1.1</b> CPM</a></li>
+<li class="chapter" data-level="8.1.2" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#deseqs-size-factor-1"><i class="fa fa-check"></i><b>8.1.2</b> DESeq’s size factor</a></li>
+<li class="chapter" data-level="8.1.3" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#weighted-trimmed-mean-of-m-values-1"><i class="fa fa-check"></i><b>8.1.3</b> Weighted Trimmed mean of M-values</a></li>
+<li class="chapter" data-level="8.1.4" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#library-size-factor-distribution"><i class="fa fa-check"></i><b>8.1.4</b> Library size factor distribution</a></li>
+<li class="chapter" data-level="8.1.5" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#deconvolution-3"><i class="fa fa-check"></i><b>8.1.5</b> Deconvolution</a><ul>
+<li class="chapter" data-level="8.1.5.1" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#cluster-cells-1"><i class="fa fa-check"></i><b>8.1.5.1</b> Cluster cells</a></li>
+<li class="chapter" data-level="8.1.5.2" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#compute-size-factors-3"><i class="fa fa-check"></i><b>8.1.5.2</b> Compute size factors</a></li>
+<li class="chapter" data-level="8.1.5.3" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#apply-size-factors-3"><i class="fa fa-check"></i><b>8.1.5.3</b> Apply size factors</a></li>
+<li class="chapter" data-level="8.1.5.4" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#save-object-3"><i class="fa fa-check"></i><b>8.1.5.4</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#sctransform-3"><i class="fa fa-check"></i><b>8.2</b> SCTransform</a><ul>
+<li class="chapter" data-level="8.2.1" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#inspect-data-1"><i class="fa fa-check"></i><b>8.2.1</b> Inspect data</a></li>
+<li class="chapter" data-level="8.2.2" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#transformation-1"><i class="fa fa-check"></i><b>8.2.2</b> Transformation</a></li>
+<li class="chapter" data-level="8.2.3" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#save-sce-object-1"><i class="fa fa-check"></i><b>8.2.3</b> Save SCE object</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#visualisation-1"><i class="fa fa-check"></i><b>8.3</b> Visualisation</a><ul>
+<li class="chapter" data-level="8.3.1" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#log-raw-counts-1"><i class="fa fa-check"></i><b>8.3.1</b> log raw counts</a></li>
+<li class="chapter" data-level="8.3.2" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#log-cpm-1"><i class="fa fa-check"></i><b>8.3.2</b> log CPM</a></li>
+<li class="chapter" data-level="8.3.3" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#scran-1"><i class="fa fa-check"></i><b>8.3.3</b> scran</a></li>
+<li class="chapter" data-level="8.3.4" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#sctransform-4"><i class="fa fa-check"></i><b>8.3.4</b> SCTransform</a></li>
+</ul></li>
+<li class="chapter" data-level="8.4" data-path="normalisation-gsm3872434-set.html"><a href="normalisation-gsm3872434-set.html#session-information-4"><i class="fa fa-check"></i><b>8.4</b> Session information</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="header">
+<h1 class="title">CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</h1>
+<h2 class="subtitle"><em>Heterogeneity in childhood acute lymphoblastic leukemia with droplet-based 10X Chromium assay.</em></h2>
+<p class="author"><em>Stephane Ballereau, Zeynep Kalender Atak</em></p>
+<p class="date"><em>2021-04-27</em></p>
+</div>
+<div id="Preamble" class="section level1">
+<h1><span class="header-section-number">Chapter 1</span> Preamble</h1>
+<div id="the-study" class="section level2">
+<h2><span class="header-section-number">1.1</span> The study</h2>
+<p>“Childhood acute lymphoblastic leukemia (cALL) is the most common pediatric cancer. It is characterized by bone marrow lymphoid precursors that acquire genetic alterations, resulting in disrupted maturation and uncontrollable proliferation.” <a href="https://www.nature.com/articles/s41598-020-64929-x">Caron et al. 2020</a>. Nowaways, up to 85–90% of patients are cured, but others do not respond to treatment or relapse and die. The aim of the study is to characterise the heterogeneity of gene expression at the cell level, within and between patients.</p>
+<!--
+See similar findings in CRC
+https://www.cell.com/cell-stem-cell/fulltext/S1934-5909(20)30151-X?rss=yes
+
+https://www.nature.com/articles/s41568-020-0276-8
+https://www.sciencedirect.com/science/article/pii/S1934590920302034
+
+https://scinapse.io/papers/2955045010
+(https://www.nature.com/articles/nm.4505)
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4273416/
+https://www.nature.com/articles/s41375-018-0127-8
+-->
+<p>Four type of samples are considered:</p>
+<ul>
+<li>eight patients:
+<ul>
+<li>six B-ALL</li>
+<li>two T-ALL</li>
+</ul></li>
+<li>three healthy pediatric controls</li>
+<li>eight healthy adult controls, publicly available</li>
+</ul>
+<p>As the study aims at identifying cell populations, large numbers of cells were sequenced with the droplet-based 10X Chromium assay.</p>
+</div>
+<div id="the-plan" class="section level2">
+<h2><span class="header-section-number">1.2</span> The plan</h2>
+<p>We will follow several steps:</p>
+<ul>
+<li>sequencing quality check</li>
+<li>alignment of reads to the human genome (GRCh38) with 10X software cellranger</li>
+<li>quality control (cell calls, cells and genes filtering) <!-- mention doublet detection --></li>
+<li>count normalisation</li>
+<li>data set integration</li>
+<li>feature selection</li>
+<li>dimensionality reduction</li>
+<li>clustering</li>
+<li>marker gene identification</li>
+<li>cell type annotation</li>
+<li>cell cycle assignment</li>
+<li>trajectory analysis</li>
+</ul>
+<!--
+TODO: add analysis flowchart?
+-->
+</div>
+<div id="the-analyses" class="section level2">
+<h2><span class="header-section-number">1.3</span> The analyses</h2>
+<p>This report includes:</p>
+<ul>
+<li><strong>Sequence Quality</strong> is good (see <a href="SeqQualTop.html#SeqQualTop">2</a>) <!-- seqQual.Rmd --></li>
+<li><strong>cellranger</strong> output suggests the data sets are good quality (see <a href="AliFeatCountTop.html#AliFeatCountTop">3</a>) <!-- cellRanger.Rmd --></li>
+<li><strong>Quality control</strong> - a first glance at the RNA data set comprising all droplets deemed to contain at leat one cell, to check the data quality and biological signal (eg. do we observe cell types we expect?) (see <a href="#PreProcTop"><strong>??</strong></a>) <!-- preProc.Rmd --></li>
+<li>an annotation of RNA clusters using known PBMC marker genes (see <a href="#AllDropletsCellTypeAnnotTop"><strong>??</strong></a>) <!-- .Rmd --></li>
+</ul>
+</div>
+<div id="overall-summary" class="section level2">
+<h2><span class="header-section-number">1.4</span> Overall summary</h2>
+<!-- seurat3Adt_glanceAtGex.Rmd -->
+<ul>
+<li></li>
+</ul>
+<!-- seurat3Adt_10x3kPbmcMarkers.Rmd -->
+<ul>
+<li></li>
+</ul>
+<!-- seurat3Hto.Rmd -->
+<ul>
+<li></li>
+</ul>
+</div>
+<div id="conclusion" class="section level2">
+<h2><span class="header-section-number">1.5</span> Conclusion</h2>
+</div>
+<div id="abbreviations" class="section level2">
+<h2><span class="header-section-number">1.6</span> Abbreviations</h2>
+<ul>
+<li>BMMC: Bone Marrow Mononuclear Cell</li>
+<li>HCA: Human Cell Atlas</li>
+<li>PCA: Principal Component Analysis</li>
+<li>UMI: Unique Molecular Identifier</li>
+</ul>
+
+<!--
+TODO:
+-->
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="index.html#cb2-1"></a><span class="co">#projDirOsx &lt;- &quot;/Users/baller01/MyMount/clust1a/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
+<span id="cb2-2"><a href="index.html#cb2-2"></a><span class="co">#projDir &lt;- &quot;/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
+<span id="cb2-3"><a href="index.html#cb2-3"></a><span class="co">#projDir &lt;- &quot;/home/ubuntu/Course_Materials/scRNAseq&quot;</span></span>
+<span id="cb2-4"><a href="index.html#cb2-4"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb2-5"><a href="index.html#cb2-5"></a>projDirLink &lt;-<span class="st"> &quot;/Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
+<span id="cb2-6"><a href="index.html#cb2-6"></a>inpDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>inpDirBit</span>
+<span id="cb2-7"><a href="index.html#cb2-7"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="index.html#cb3-1"></a><span class="kw">library</span>(DT)</span></code></pre></div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+<a href="SeqQualTop.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/index.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["MkWiC.pdf", "MkWiC.epub"],
+"toc": {
+"collapse": "subsection",
+"scroll_highlight": true
+},
+"code_folding": "hide"
+});
+});
+</script>
+
+</body>
+
+</html>
