@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 10 Identifying confounding factors - Caron set | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
+  <title>Chapter 9 Dimensionality reduction for visualisation | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
   <meta name="description" content="A report for all analyses (bookdown::gitbook)." />
   <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 10 Identifying confounding factors - Caron set | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta property="og:title" content="Chapter 9 Dimensionality reduction for visualisation | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   <meta name="github-repo" content="rstudio/bookdown-demo" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 10 Identifying confounding factors - Caron set | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta name="twitter:title" content="Chapter 9 Dimensionality reduction for visualisation | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
   
   <meta name="twitter:description" content="A report for all analyses (bookdown::gitbook)." />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="dimRedForVizTop.html"/>
-<link rel="next" href="feature-selection.html"/>
+<link rel="prev" href="normalisation-gsm3872434-set.html"/>
+<link rel="next" href="identifying-confounding-factors-caron-set.html"/>
 <script src="libs/jquery-3.5.1/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -950,32 +950,164 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="identifying-confounding-factors---caron-set" class="section level1">
-<h1><span class="header-section-number">Chapter 10</span> Identifying confounding factors - Caron set</h1>
-<div class="sourceCode" id="cb844"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb844-1"><a href="identifying-confounding-factors-caron-set.html#cb844-1"></a>normPlotDirBit &lt;-<span class="st"> &quot;Plots/Norm&quot;</span> <span class="co"># &quot;ConfoundPlots&quot;</span></span>
-<span id="cb844-2"><a href="identifying-confounding-factors-caron-set.html#cb844-2"></a><span class="co">#setNameUpp &lt;- &quot;Caron&quot;</span></span>
-<span id="cb844-3"><a href="identifying-confounding-factors-caron-set.html#cb844-3"></a><span class="co">#setNameLow &lt;- &quot;caron&quot;</span></span>
-<span id="cb844-4"><a href="identifying-confounding-factors-caron-set.html#cb844-4"></a>setName &lt;-<span class="st"> </span><span class="kw">tolower</span>(<span class="st">&quot;Caron&quot;</span>)</span>
-<span id="cb844-5"><a href="identifying-confounding-factors-caron-set.html#cb844-5"></a>setSuf &lt;-<span class="st"> &quot;_5hCellPerSpl&quot;</span></span>
-<span id="cb844-6"><a href="identifying-confounding-factors-caron-set.html#cb844-6"></a>typeNorm &lt;-<span class="st"> &quot;scran&quot;</span></span>
-<span id="cb844-7"><a href="identifying-confounding-factors-caron-set.html#cb844-7"></a></span>
-<span id="cb844-8"><a href="identifying-confounding-factors-caron-set.html#cb844-8"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
-<span id="cb844-9"><a href="identifying-confounding-factors-caron-set.html#cb844-9"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
-<span id="cb844-10"><a href="identifying-confounding-factors-caron-set.html#cb844-10"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span></code></pre></div>
-<p>caron</p>
+<div id="dimRedForVizTop" class="section level1">
+<h1><span class="header-section-number">Chapter 9</span> Dimensionality reduction for visualisation</h1>
 <!--
 Should have Caron and HCA separately
 -->
-<p>Load object</p>
-<div class="sourceCode" id="cb845"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb845-1"><a href="identifying-confounding-factors-caron-set.html#cb845-1"></a><span class="co"># Read object in:</span></span>
-<span id="cb845-2"><a href="identifying-confounding-factors-caron-set.html#cb845-2"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds&quot;</span>,</span>
-<span id="cb845-3"><a href="identifying-confounding-factors-caron-set.html#cb845-3"></a>         projDir, outDirBit, setName, setSuf)</span>
-<span id="cb845-4"><a href="identifying-confounding-factors-caron-set.html#cb845-4"></a>tmpFn</span></code></pre></div>
+<div class="sourceCode" id="cb794"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb794-1"><a href="dimRedForVizTop.html#cb794-1"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb794-2"><a href="dimRedForVizTop.html#cb794-2"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
+<span id="cb794-3"><a href="dimRedForVizTop.html#cb794-3"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span></code></pre></div>
+<p>In part 1 we gathered the data, aligned reads, checked quality, and normalised read counts. We will now identify genes to focus on, use visualisation to explore the data, collapse the data set, cluster cells by their expression profile and identify genes that best characterise these cell populations. These main steps are shown below <span class="citation">(<span class="citeproc-not-found" data-reference-id="ANDREWS2018114"><strong>???</strong></span>)</span>.</p>
+<p><img src="../../Images/Andrews2017_Fig1.png" style="margin:auto; display:block" /></p>
+<!--knitr::include_graphics(tmpFn, auto_pdf = TRUE)-->
+<p>We’ll first explain dimensionality reduction for visualisation, using Principal Component Analysis, t-SNE and UMAP.</p>
+<div id="principal-component-analysis" class="section level2">
+<h2><span class="header-section-number">9.1</span> Principal Component Analysis</h2>
+<p>In a single cell RNA-seq (scRNASeq) data set, each cell is described by the expression level of thoushands of genes.</p>
+<p>The total number of genes measured is referred to as dimensionality. Each gene measured is one dimension in the space characterising the data set. Many genes will little vary across cells and thus be uninformative when comparing cells. Also, because some genes will have correlated expression patterns, some information is redundant. Moreover, we can represent data in three dimensions, not more. So reducing the number of useful dimensions is necessary.</p>
+<div id="description" class="section level3">
+<h3><span class="header-section-number">9.1.1</span> Description</h3>
+<p>The data set: a matrix with one row per sample and one variable per column. Here samples are cells and each variable is the normalised read count for a given gene.</p>
+<p>The space: each cell is associated to a point in a multi-dimensional space where each gene is a dimension.</p>
+<p>The aim: to find a new set of variables defining a space with fewer dimensions while losing as little information as possible.</p>
+<p>Out of a set of variables (read counts), PCA defines new variables called Principal Components (PCs) that best capture the variability observed amongst samples (cells), see <span class="citation">(<span class="citeproc-not-found" data-reference-id="field2012discovering"><strong>???</strong></span>)</span> for example.</p>
+<p>The number of variables does not change. Only the fraction of variance captured by each variable differs.
+The first PC explains the highest proportion of variance possible (bound by prperties of PCA).
+The second PC explains the highest proportion of variance not explained by the first PC.
+PCs each explain a decreasing amount of variance not explained by the previous ones.
+Each PC is a dimension in the new space.</p>
+<p>The total amount of variance explained by the first few PCs is usually such that excluding remaining PCs, ie dimensions, loses little information. The stronger the correlation between the initial variables, the stronger the reduction in dimensionality. PCs to keep can be chosen as those capturing at least as much as the average variance per initial variable or using a scree plot, see below.</p>
+<p>PCs are linear combinations of the initial variables. PCs represent the same amount of information as the initial set and enable its restoration. The data is not altered. We only look at it in a different way.</p>
+<p>About the mapping function from the old to the new space:</p>
+<ul>
+<li>it is linear</li>
+<li>it is inverse, to restore the original space</li>
+<li>it relies on orthogonal PCs so that the total variance remains the same.</li>
+</ul>
+<p>Two transformations of the data are necessary:</p>
+<ul>
+<li>center the data so that the sample mean for each column is 0 so the covariance matrix of the intial matrix takes a simple form</li>
+<li>scale variance to 1, ie standardize, to avoid PCA loading on variables with large variance.</li>
+</ul>
+</div>
+<div id="example-2" class="section level3">
+<h3><span class="header-section-number">9.1.2</span> Example</h3>
+<p>Here we will make a simple data set of 100 samples and 2 variables, perform PCA and visualise on the initial plane the data set and PCs <span class="citation">(<span class="citeproc-not-found" data-reference-id="pca_blog_Patcher2014"><strong>???</strong></span>)</span>.</p>
+<div class="sourceCode" id="cb795"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb795-1"><a href="dimRedForVizTop.html#cb795-1"></a><span class="kw">library</span>(ggplot2)</span>
+<span id="cb795-2"><a href="dimRedForVizTop.html#cb795-2"></a>fontsize &lt;-<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">12</span>),</span>
+<span id="cb795-3"><a href="dimRedForVizTop.html#cb795-3"></a>                  <span class="dt">axis.title=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>))</span></code></pre></div>
+<p>Let’s make and plot a data set.</p>
+<div class="sourceCode" id="cb796"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb796-1"><a href="dimRedForVizTop.html#cb796-1"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)            <span class="co">#sets the seed for random number generation.</span></span>
+<span id="cb796-2"><a href="dimRedForVizTop.html#cb796-2"></a> x &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">100</span>              <span class="co">#creates a vector x with numbers from 1 to 100</span></span>
+<span id="cb796-3"><a href="dimRedForVizTop.html#cb796-3"></a> ex &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">30</span>) <span class="co">#100 normally distributed rand. nos. w/ mean=0, s.d.=30</span></span>
+<span id="cb796-4"><a href="dimRedForVizTop.html#cb796-4"></a> ey &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">30</span>) <span class="co"># &quot; &quot; </span></span>
+<span id="cb796-5"><a href="dimRedForVizTop.html#cb796-5"></a> y &lt;-<span class="st"> </span><span class="dv">30</span> <span class="op">+</span><span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>x         <span class="co">#sets y to be a vector that is a linear function of x</span></span>
+<span id="cb796-6"><a href="dimRedForVizTop.html#cb796-6"></a> x_obs &lt;-<span class="st"> </span>x <span class="op">+</span><span class="st"> </span>ex         <span class="co">#adds &quot;noise&quot; to x</span></span>
+<span id="cb796-7"><a href="dimRedForVizTop.html#cb796-7"></a> y_obs &lt;-<span class="st"> </span>y <span class="op">+</span><span class="st"> </span>ey         <span class="co">#adds &quot;noise&quot; to y</span></span>
+<span id="cb796-8"><a href="dimRedForVizTop.html#cb796-8"></a> P &lt;-<span class="st"> </span><span class="kw">cbind</span>(x_obs,y_obs) <span class="co">#places points in matrix</span></span>
+<span id="cb796-9"><a href="dimRedForVizTop.html#cb796-9"></a> <span class="kw">plot</span>(P,<span class="dt">asp=</span><span class="dv">1</span>,<span class="dt">col=</span><span class="dv">1</span>) <span class="co">#plot points</span></span>
+<span id="cb796-10"><a href="dimRedForVizTop.html#cb796-10"></a> <span class="kw">points</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">3</span>, <span class="dt">pch=</span><span class="dv">19</span>) <span class="co">#show center</span></span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/pca_toy_set-1.png" width="672" /></p>
+<p>Center the data and compute covariance matrix.</p>
+<div class="sourceCode" id="cb797"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb797-1"><a href="dimRedForVizTop.html#cb797-1"></a>M &lt;-<span class="st"> </span><span class="kw">cbind</span>(x_obs <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(x_obs), y_obs <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(y_obs)) <span class="co">#centered matrix</span></span>
+<span id="cb797-2"><a href="dimRedForVizTop.html#cb797-2"></a>MCov &lt;-<span class="st"> </span><span class="kw">cov</span>(M)          <span class="co">#creates covariance matrix</span></span></code></pre></div>
+<p>Compute the principal axes, ie eigenvectors and corresponding eigenvalues.</p>
+<p>An eigenvector is a direction and an eigenvalue is a number measuring the spread of the data in that direction. The eigenvector with the highest eigenvalue is the first principal component.</p>
+<p>The eigenvectors of the covariance matrix provide the principal axes, and the eigenvalues quantify the fraction of variance explained in each component.</p>
+<div class="sourceCode" id="cb798"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb798-1"><a href="dimRedForVizTop.html#cb798-1"></a>eigenValues &lt;-<span class="st"> </span><span class="kw">eigen</span>(MCov)<span class="op">$</span>values       <span class="co">#compute eigenvalues</span></span>
+<span id="cb798-2"><a href="dimRedForVizTop.html#cb798-2"></a>eigenVectors &lt;-<span class="st"> </span><span class="kw">eigen</span>(MCov)<span class="op">$</span>vectors     <span class="co">#compute eigenvectors</span></span>
+<span id="cb798-3"><a href="dimRedForVizTop.html#cb798-3"></a></span>
+<span id="cb798-4"><a href="dimRedForVizTop.html#cb798-4"></a><span class="co"># or use &#39;singular value decomposition&#39; of the matrix</span></span>
+<span id="cb798-5"><a href="dimRedForVizTop.html#cb798-5"></a>d &lt;-<span class="st"> </span><span class="kw">svd</span>(M)<span class="op">$</span>d          <span class="co">#the singular values</span></span>
+<span id="cb798-6"><a href="dimRedForVizTop.html#cb798-6"></a>v &lt;-<span class="st"> </span><span class="kw">svd</span>(M)<span class="op">$</span>v          <span class="co">#the right singular vectors</span></span></code></pre></div>
+<p>Let’s plot the principal axes.</p>
+<p>First PC:</p>
+<div class="sourceCode" id="cb799"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb799-1"><a href="dimRedForVizTop.html#cb799-1"></a><span class="co"># PC 1:</span></span>
+<span id="cb799-2"><a href="dimRedForVizTop.html#cb799-2"></a> <span class="kw">plot</span>(P,<span class="dt">asp=</span><span class="dv">1</span>,<span class="dt">col=</span><span class="dv">1</span>) <span class="co">#plot points</span></span>
+<span id="cb799-3"><a href="dimRedForVizTop.html#cb799-3"></a> <span class="kw">points</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">3</span>, <span class="dt">pch=</span><span class="dv">19</span>) <span class="co">#show center</span></span>
+<span id="cb799-4"><a href="dimRedForVizTop.html#cb799-4"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">1</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">1</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/pca_show_PC1-1.png" width="672" /></p>
+<p>Second PC:</p>
+<div class="sourceCode" id="cb800"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb800-1"><a href="dimRedForVizTop.html#cb800-1"></a> <span class="kw">plot</span>(P,<span class="dt">asp=</span><span class="dv">1</span>,<span class="dt">col=</span><span class="dv">1</span>) <span class="co">#plot points</span></span>
+<span id="cb800-2"><a href="dimRedForVizTop.html#cb800-2"></a> <span class="kw">points</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">3</span>, <span class="dt">pch=</span><span class="dv">19</span>) <span class="co">#show center</span></span>
+<span id="cb800-3"><a href="dimRedForVizTop.html#cb800-3"></a><span class="co"># PC 1:</span></span>
+<span id="cb800-4"><a href="dimRedForVizTop.html#cb800-4"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">1</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">1</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span>
+<span id="cb800-5"><a href="dimRedForVizTop.html#cb800-5"></a><span class="co"># PC 2:</span></span>
+<span id="cb800-6"><a href="dimRedForVizTop.html#cb800-6"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">2</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">2</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/pca_show_PC2-1.png" width="672" /></p>
+<p>Add the projections of the points onto the first PC:</p>
+<div class="sourceCode" id="cb801"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb801-1"><a href="dimRedForVizTop.html#cb801-1"></a><span class="kw">plot</span>(P,<span class="dt">asp=</span><span class="dv">1</span>,<span class="dt">col=</span><span class="dv">1</span>) <span class="co">#plot points</span></span>
+<span id="cb801-2"><a href="dimRedForVizTop.html#cb801-2"></a><span class="kw">points</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">3</span>, <span class="dt">pch=</span><span class="dv">19</span>) <span class="co">#show center</span></span>
+<span id="cb801-3"><a href="dimRedForVizTop.html#cb801-3"></a><span class="co"># PC 1:</span></span>
+<span id="cb801-4"><a href="dimRedForVizTop.html#cb801-4"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">1</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">1</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span>
+<span id="cb801-5"><a href="dimRedForVizTop.html#cb801-5"></a><span class="co"># PC 2:</span></span>
+<span id="cb801-6"><a href="dimRedForVizTop.html#cb801-6"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">2</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">2</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span>
+<span id="cb801-7"><a href="dimRedForVizTop.html#cb801-7"></a><span class="co"># add projecions:</span></span>
+<span id="cb801-8"><a href="dimRedForVizTop.html#cb801-8"></a>trans &lt;-<span class="st"> </span>(M<span class="op">%*%</span>v[,<span class="dv">1</span>])<span class="op">%*%</span>v[,<span class="dv">1</span>] <span class="co">#compute projections of points</span></span>
+<span id="cb801-9"><a href="dimRedForVizTop.html#cb801-9"></a>P_proj &lt;-<span class="st"> </span><span class="kw">scale</span>(trans, <span class="dt">center=</span><span class="op">-</span><span class="kw">cbind</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs)), <span class="dt">scale=</span><span class="ot">FALSE</span>) </span>
+<span id="cb801-10"><a href="dimRedForVizTop.html#cb801-10"></a><span class="kw">points</span>(P_proj, <span class="dt">col=</span><span class="dv">4</span>,<span class="dt">pch=</span><span class="dv">19</span>,<span class="dt">cex=</span><span class="fl">0.5</span>) <span class="co">#plot projections</span></span>
+<span id="cb801-11"><a href="dimRedForVizTop.html#cb801-11"></a><span class="kw">segments</span>(x_obs,y_obs,P_proj[,<span class="dv">1</span>],P_proj[,<span class="dv">2</span>],<span class="dt">col=</span><span class="dv">4</span>,<span class="dt">lty=</span><span class="dv">2</span>) <span class="co">#connect to points</span></span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/pca_add_projection_onto_PC1-1.png" width="672" /></p>
+<p>Compute PCs with prcomp().</p>
+<div class="sourceCode" id="cb802"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb802-1"><a href="dimRedForVizTop.html#cb802-1"></a>pca_res &lt;-<span class="st"> </span><span class="kw">prcomp</span>(M)</span></code></pre></div>
+<div class="sourceCode" id="cb803"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb803-1"><a href="dimRedForVizTop.html#cb803-1"></a><span class="kw">summary</span>(pca_res)</span></code></pre></div>
+<pre><code>## Importance of components:
+##                           PC1    PC2
+## Standard deviation     73.827 28.279
+## Proportion of Variance  0.872  0.128
+## Cumulative Proportion   0.872  1.000</code></pre>
+<div class="sourceCode" id="cb805"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb805-1"><a href="dimRedForVizTop.html#cb805-1"></a>var_explained &lt;-<span class="st"> </span>pca_res<span class="op">$</span>sdev<span class="op">^</span><span class="dv">2</span><span class="op">/</span><span class="kw">sum</span>(pca_res<span class="op">$</span>sdev<span class="op">^</span><span class="dv">2</span>)</span>
+<span id="cb805-2"><a href="dimRedForVizTop.html#cb805-2"></a>var_explained</span></code></pre></div>
+<pre><code>## [1] 0.8720537 0.1279463</code></pre>
+<p>Check amount of variance captured by PCs on a scree plot.</p>
+<div class="sourceCode" id="cb807"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb807-1"><a href="dimRedForVizTop.html#cb807-1"></a><span class="co"># Show scree plot:</span></span>
+<span id="cb807-2"><a href="dimRedForVizTop.html#cb807-2"></a><span class="kw">plot</span>(pca_res)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/pca_scree-1.png" width="672" /></p>
+<p>Plot with ggplot.</p>
+<div class="sourceCode" id="cb808"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb808-1"><a href="dimRedForVizTop.html#cb808-1"></a>df_pc &lt;-<span class="st"> </span><span class="kw">data.frame</span>(pca_res<span class="op">$</span>x)</span>
+<span id="cb808-2"><a href="dimRedForVizTop.html#cb808-2"></a>g &lt;-<span class="st"> </span><span class="kw">ggplot</span>(df_pc, <span class="kw">aes</span>(PC1, PC2)) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb808-3"><a href="dimRedForVizTop.html#cb808-3"></a><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">size=</span><span class="dv">2</span>) <span class="op">+</span><span class="st">   </span><span class="co"># draw points</span></span>
+<span id="cb808-4"><a href="dimRedForVizTop.html#cb808-4"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;PCA&quot;</span>, </span>
+<span id="cb808-5"><a href="dimRedForVizTop.html#cb808-5"></a>       <span class="dt">subtitle=</span><span class="st">&quot;With principal components PC1 and PC2 as X and Y axis&quot;</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb808-6"><a href="dimRedForVizTop.html#cb808-6"></a><span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="fl">1.2</span> <span class="op">*</span><span class="st"> </span><span class="kw">c</span>(<span class="kw">min</span>(df_pc<span class="op">$</span>PC1), <span class="kw">max</span>(df_pc<span class="op">$</span>PC1)), </span>
+<span id="cb808-7"><a href="dimRedForVizTop.html#cb808-7"></a>                  <span class="dt">ylim =</span> <span class="fl">1.2</span> <span class="op">*</span><span class="st"> </span><span class="kw">c</span>(<span class="kw">min</span>(df_pc<span class="op">$</span>PC2), <span class="kw">max</span>(df_pc<span class="op">$</span>PC2)))</span>
+<span id="cb808-8"><a href="dimRedForVizTop.html#cb808-8"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">geom_hline</span>(<span class="dt">yintercept=</span><span class="dv">0</span>)</span>
+<span id="cb808-9"><a href="dimRedForVizTop.html#cb808-9"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">geom_vline</span>(<span class="dt">xintercept=</span><span class="dv">0</span>)</span>
+<span id="cb808-10"><a href="dimRedForVizTop.html#cb808-10"></a>g</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/pca_show_PC_plane_with_ggplot-1.png" width="672" /></p>
+<p>Or use ggfortify autoplot().</p>
+<div class="sourceCode" id="cb809"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb809-1"><a href="dimRedForVizTop.html#cb809-1"></a><span class="co"># ggfortify</span></span>
+<span id="cb809-2"><a href="dimRedForVizTop.html#cb809-2"></a><span class="kw">library</span>(ggfortify)</span>
+<span id="cb809-3"><a href="dimRedForVizTop.html#cb809-3"></a>g &lt;-<span class="st"> </span><span class="kw">autoplot</span>(pca_res)</span>
+<span id="cb809-4"><a href="dimRedForVizTop.html#cb809-4"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">geom_hline</span>(<span class="dt">yintercept=</span><span class="dv">0</span>)</span>
+<span id="cb809-5"><a href="dimRedForVizTop.html#cb809-5"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">geom_vline</span>(<span class="dt">xintercept=</span><span class="dv">0</span>)</span>
+<span id="cb809-6"><a href="dimRedForVizTop.html#cb809-6"></a>g</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/pca_show_PC_plane_with_ggfortify-1.png" width="672" /></p>
+<p>Going from 2D to 3D (figure from <span class="citation">(<span class="citeproc-not-found" data-reference-id="nlpcaPlot"><strong>???</strong></span>)</span>):</p>
+<p><img src="../../Images/hemberg_pca.png" style="margin:auto; display:block" /></p>
+</div>
+</div>
+<div id="load-packages-2" class="section level2">
+<h2><span class="header-section-number">9.2</span> Load packages</h2>
+<div class="sourceCode" id="cb810"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb810-1"><a href="dimRedForVizTop.html#cb810-1"></a><span class="kw">library</span>(scater) <span class="co"># for QC and plots</span></span></code></pre></div>
+</div>
+<div id="load-data" class="section level2">
+<h2><span class="header-section-number">9.3</span> Load data</h2>
+<p>We will load the R file keeping the SCE object with the normalised counts for 500 cells per sample.</p>
+<div class="sourceCode" id="cb811"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb811-1"><a href="dimRedForVizTop.html#cb811-1"></a>setName &lt;-<span class="st"> &quot;caron&quot;</span></span>
+<span id="cb811-2"><a href="dimRedForVizTop.html#cb811-2"></a>setSuf &lt;-<span class="st"> &quot;_5hCellPerSpl&quot;</span></span>
+<span id="cb811-3"><a href="dimRedForVizTop.html#cb811-3"></a></span>
+<span id="cb811-4"><a href="dimRedForVizTop.html#cb811-4"></a><span class="co"># Read object in:</span></span>
+<span id="cb811-5"><a href="dimRedForVizTop.html#cb811-5"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds&quot;</span>, projDir, outDirBit, setName, setSuf)</span>
+<span id="cb811-6"><a href="dimRedForVizTop.html#cb811-6"></a><span class="kw">print</span>(tmpFn)</span></code></pre></div>
 <pre><code>## [1] &quot;/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/AnaWiSce/Ana1/Robjects/caron_sce_nz_postDeconv_5hCellPerSpl.Rds&quot;</code></pre>
-<div class="sourceCode" id="cb847"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb847-1"><a href="identifying-confounding-factors-caron-set.html#cb847-1"></a><span class="co">#getwd()</span></span>
-<span id="cb847-2"><a href="identifying-confounding-factors-caron-set.html#cb847-2"></a><span class="co">#file.exists(tmpFn)</span></span>
-<span id="cb847-3"><a href="identifying-confounding-factors-caron-set.html#cb847-3"></a>sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
-<span id="cb847-4"><a href="identifying-confounding-factors-caron-set.html#cb847-4"></a>sce</span></code></pre></div>
+<div class="sourceCode" id="cb813"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb813-1"><a href="dimRedForVizTop.html#cb813-1"></a><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(tmpFn))</span>
+<span id="cb813-2"><a href="dimRedForVizTop.html#cb813-2"></a>{</span>
+<span id="cb813-3"><a href="dimRedForVizTop.html#cb813-3"></a>    knitr<span class="op">::</span><span class="kw">knit_exit</span>()</span>
+<span id="cb813-4"><a href="dimRedForVizTop.html#cb813-4"></a>}</span>
+<span id="cb813-5"><a href="dimRedForVizTop.html#cb813-5"></a>sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
+<span id="cb813-6"><a href="dimRedForVizTop.html#cb813-6"></a>sce</span></code></pre></div>
 <pre><code>## class: SingleCellExperiment 
 ## dim: 16629 5500 
 ## metadata(0):
@@ -988,115 +1120,232 @@ Should have Caron and HCA separately
 ## colData names(16): Barcode Run ... cell_sparsity sizeFactor
 ## reducedDimNames(0):
 ## altExpNames(0):</code></pre>
-<p>Remember scran PCA:</p>
-<p>Normalised counts are stored in ‘logcounts’ assay</p>
-<div class="sourceCode" id="cb849"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb849-1"><a href="identifying-confounding-factors-caron-set.html#cb849-1"></a><span class="co"># </span></span>
-<span id="cb849-2"><a href="identifying-confounding-factors-caron-set.html#cb849-2"></a>scranPca &lt;-<span class="st"> </span><span class="kw">runPCA</span>(</span>
-<span id="cb849-3"><a href="identifying-confounding-factors-caron-set.html#cb849-3"></a>  sce,</span>
-<span id="cb849-4"><a href="identifying-confounding-factors-caron-set.html#cb849-4"></a>  <span class="dt">exprs_values =</span> <span class="st">&quot;logcounts&quot;</span></span>
-<span id="cb849-5"><a href="identifying-confounding-factors-caron-set.html#cb849-5"></a>)</span></code></pre></div>
-<p>PCA plot for the ‘scran’ counts in the caron set.</p>
-<div class="sourceCode" id="cb850"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb850-1"><a href="identifying-confounding-factors-caron-set.html#cb850-1"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png&quot;</span>,</span>
-<span id="cb850-2"><a href="identifying-confounding-factors-caron-set.html#cb850-2"></a>         <span class="co">#projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)</span></span>
-<span id="cb850-3"><a href="identifying-confounding-factors-caron-set.html#cb850-3"></a>         dirRel, normPlotDirBit, setName, setSuf, typeNorm)</span>
-<span id="cb850-4"><a href="identifying-confounding-factors-caron-set.html#cb850-4"></a>tmpFn</span>
-<span id="cb850-5"><a href="identifying-confounding-factors-caron-set.html#cb850-5"></a>knitr<span class="op">::</span><span class="kw">include_graphics</span>(tmpFn, <span class="dt">auto_pdf =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb851"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb851-1"><a href="identifying-confounding-factors-caron-set.html#cb851-1"></a><span class="co">#options(BiocSingularParam.default=IrlbaParam())</span></span>
-<span id="cb851-2"><a href="identifying-confounding-factors-caron-set.html#cb851-2"></a><span class="kw">options</span>(<span class="dt">BiocSingularParam.default=</span><span class="kw">ExactParam</span>())</span>
-<span id="cb851-3"><a href="identifying-confounding-factors-caron-set.html#cb851-3"></a></span>
-<span id="cb851-4"><a href="identifying-confounding-factors-caron-set.html#cb851-4"></a>qclust &lt;-<span class="st"> </span><span class="kw">quickCluster</span>(sce, <span class="dt">min.size =</span> <span class="dv">30</span>, <span class="dt">use.ranks =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb851-5"><a href="identifying-confounding-factors-caron-set.html#cb851-5"></a>sce &lt;-<span class="st"> </span><span class="kw">computeSumFactors</span>(sce, <span class="dt">sizes =</span> <span class="dv">15</span>, <span class="dt">clusters =</span> qclust)</span>
-<span id="cb851-6"><a href="identifying-confounding-factors-caron-set.html#cb851-6"></a>sce &lt;-<span class="st"> </span><span class="kw">logNormCounts</span>(sce)</span></code></pre></div>
-<p>Perform PCA:</p>
-<div class="sourceCode" id="cb852"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb852-1"><a href="identifying-confounding-factors-caron-set.html#cb852-1"></a><span class="kw">reducedDim</span>(sce, <span class="st">&quot;PCA&quot;</span>) &lt;-<span class="st"> </span><span class="kw">reducedDim</span>(</span>
-<span id="cb852-2"><a href="identifying-confounding-factors-caron-set.html#cb852-2"></a>  <span class="kw">runPCA</span>(sce, <span class="dt">exprs_values =</span> <span class="st">&quot;logcounts&quot;</span>, <span class="dt">ncomponents =</span> <span class="dv">10</span>), <span class="st">&quot;PCA&quot;</span>)</span>
-<span id="cb852-3"><a href="identifying-confounding-factors-caron-set.html#cb852-3"></a></span>
-<span id="cb852-4"><a href="identifying-confounding-factors-caron-set.html#cb852-4"></a><span class="kw">plotPCA</span>(</span>
-<span id="cb852-5"><a href="identifying-confounding-factors-caron-set.html#cb852-5"></a>    sce,</span>
-<span id="cb852-6"><a href="identifying-confounding-factors-caron-set.html#cb852-6"></a>    <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>,</span>
-<span id="cb852-7"><a href="identifying-confounding-factors-caron-set.html#cb852-7"></a>    <span class="dt">size_by =</span> <span class="st">&quot;sum&quot;</span>,</span>
-<span id="cb852-8"><a href="identifying-confounding-factors-caron-set.html#cb852-8"></a>    <span class="dt">shape_by =</span> <span class="st">&quot;source_name&quot;</span></span>
-<span id="cb852-9"><a href="identifying-confounding-factors-caron-set.html#cb852-9"></a>)</span></code></pre></div>
-<p><img src="MkWiC_files/figure-html/Caron_confound_postDeconvPcaPlotShow-1.png" width="672" /></p>
-<!--
-Correlation with PCs: logcounts_raw:
--->
-<div class="sourceCode" id="cb853"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb853-1"><a href="identifying-confounding-factors-caron-set.html#cb853-1"></a><span class="kw">assay</span>(sce, <span class="st">&quot;logcounts_raw&quot;</span>) &lt;-<span class="st"> </span><span class="kw">log2</span>(<span class="kw">counts</span>(sce)<span class="op">+</span><span class="dv">1</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb854"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb854-1"><a href="identifying-confounding-factors-caron-set.html#cb854-1"></a><span class="co"># on norm count https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors</span></span>
-<span id="cb854-2"><a href="identifying-confounding-factors-caron-set.html#cb854-2"></a><span class="co"># on logcounts_raw https://scrnaseq-course.cog.sanger.ac.uk/website/cleaning-the-expression-matrix.html#correlations-with-pcs</span></span>
-<span id="cb854-3"><a href="identifying-confounding-factors-caron-set.html#cb854-3"></a><span class="co"># a bit long</span></span>
-<span id="cb854-4"><a href="identifying-confounding-factors-caron-set.html#cb854-4"></a></span>
-<span id="cb854-5"><a href="identifying-confounding-factors-caron-set.html#cb854-5"></a><span class="co"># issue with scale, trying with explanPc/100</span></span>
-<span id="cb854-6"><a href="identifying-confounding-factors-caron-set.html#cb854-6"></a><span class="co"># see next chunk too</span></span>
-<span id="cb854-7"><a href="identifying-confounding-factors-caron-set.html#cb854-7"></a></span>
-<span id="cb854-8"><a href="identifying-confounding-factors-caron-set.html#cb854-8"></a>explanPc &lt;-<span class="st"> </span><span class="kw">getExplanatoryPCs</span>(</span>
-<span id="cb854-9"><a href="identifying-confounding-factors-caron-set.html#cb854-9"></a>    sce,</span>
-<span id="cb854-10"><a href="identifying-confounding-factors-caron-set.html#cb854-10"></a>    <span class="dt">exprs_values =</span> <span class="st">&quot;logcounts_raw&quot;</span>,</span>
-<span id="cb854-11"><a href="identifying-confounding-factors-caron-set.html#cb854-11"></a>    <span class="dt">variables =</span> <span class="kw">c</span>(</span>
-<span id="cb854-12"><a href="identifying-confounding-factors-caron-set.html#cb854-12"></a>        <span class="st">&quot;sum&quot;</span>,</span>
-<span id="cb854-13"><a href="identifying-confounding-factors-caron-set.html#cb854-13"></a>    <span class="st">&quot;detected&quot;</span>,</span>
-<span id="cb854-14"><a href="identifying-confounding-factors-caron-set.html#cb854-14"></a>        <span class="st">&quot;source_name&quot;</span>,</span>
-<span id="cb854-15"><a href="identifying-confounding-factors-caron-set.html#cb854-15"></a>        <span class="st">&quot;Sample.Name&quot;</span>,</span>
-<span id="cb854-16"><a href="identifying-confounding-factors-caron-set.html#cb854-16"></a>    <span class="st">&quot;subsets_Mito_percent&quot;</span></span>
-<span id="cb854-17"><a href="identifying-confounding-factors-caron-set.html#cb854-17"></a>    )</span>
-<span id="cb854-18"><a href="identifying-confounding-factors-caron-set.html#cb854-18"></a>)</span>
-<span id="cb854-19"><a href="identifying-confounding-factors-caron-set.html#cb854-19"></a><span class="kw">plotExplanatoryPCs</span>(explanPc<span class="op">/</span><span class="dv">100</span>) </span></code></pre></div>
-<!--
-Explanatory variables: logcounts_raw:
--->
-<div class="sourceCode" id="cb855"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb855-1"><a href="identifying-confounding-factors-caron-set.html#cb855-1"></a><span class="co"># on logcounts_raw</span></span>
-<span id="cb855-2"><a href="identifying-confounding-factors-caron-set.html#cb855-2"></a><span class="co"># https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors</span></span>
-<span id="cb855-3"><a href="identifying-confounding-factors-caron-set.html#cb855-3"></a></span>
-<span id="cb855-4"><a href="identifying-confounding-factors-caron-set.html#cb855-4"></a><span class="kw">plotExplanatoryVariables</span>(</span>
-<span id="cb855-5"><a href="identifying-confounding-factors-caron-set.html#cb855-5"></a>    sce,</span>
-<span id="cb855-6"><a href="identifying-confounding-factors-caron-set.html#cb855-6"></a>    <span class="dt">exprs_values =</span> <span class="st">&quot;logcounts_raw&quot;</span>,</span>
-<span id="cb855-7"><a href="identifying-confounding-factors-caron-set.html#cb855-7"></a>    <span class="co">#exprs_values = &quot;counts&quot;,</span></span>
-<span id="cb855-8"><a href="identifying-confounding-factors-caron-set.html#cb855-8"></a>    <span class="co">#exprs_values = &quot;logcounts&quot;,</span></span>
-<span id="cb855-9"><a href="identifying-confounding-factors-caron-set.html#cb855-9"></a>    <span class="dt">variables =</span> <span class="kw">c</span>(</span>
-<span id="cb855-10"><a href="identifying-confounding-factors-caron-set.html#cb855-10"></a>        <span class="st">&quot;sum&quot;</span>,</span>
-<span id="cb855-11"><a href="identifying-confounding-factors-caron-set.html#cb855-11"></a>    <span class="st">&quot;detected&quot;</span>,</span>
-<span id="cb855-12"><a href="identifying-confounding-factors-caron-set.html#cb855-12"></a>        <span class="st">&quot;source_name&quot;</span>,</span>
-<span id="cb855-13"><a href="identifying-confounding-factors-caron-set.html#cb855-13"></a>        <span class="st">&quot;Sample.Name&quot;</span>,</span>
-<span id="cb855-14"><a href="identifying-confounding-factors-caron-set.html#cb855-14"></a>    <span class="st">&quot;subsets_Mito_percent&quot;</span></span>
-<span id="cb855-15"><a href="identifying-confounding-factors-caron-set.html#cb855-15"></a>    )</span>
-<span id="cb855-16"><a href="identifying-confounding-factors-caron-set.html#cb855-16"></a>)</span></code></pre></div>
-<p>Correlation with PCs: logcounts (normalised):</p>
-<div class="sourceCode" id="cb856"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb856-1"><a href="identifying-confounding-factors-caron-set.html#cb856-1"></a><span class="co"># on norm count https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors</span></span>
-<span id="cb856-2"><a href="identifying-confounding-factors-caron-set.html#cb856-2"></a><span class="co"># on logcounts_raw https://scrnaseq-course.cog.sanger.ac.uk/website/cleaning-the-expression-matrix.html#correlations-with-pcs</span></span>
-<span id="cb856-3"><a href="identifying-confounding-factors-caron-set.html#cb856-3"></a><span class="co"># a bit long</span></span>
-<span id="cb856-4"><a href="identifying-confounding-factors-caron-set.html#cb856-4"></a><span class="kw">colData</span>(sce)<span class="op">$</span>source_name &lt;-<span class="st"> </span><span class="kw">factor</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>source_name)</span>
-<span id="cb856-5"><a href="identifying-confounding-factors-caron-set.html#cb856-5"></a>explanPc &lt;-<span class="st"> </span><span class="kw">getExplanatoryPCs</span>(sce,</span>
-<span id="cb856-6"><a href="identifying-confounding-factors-caron-set.html#cb856-6"></a>    <span class="co">#exprs_values = &quot;logcounts&quot;, # default</span></span>
-<span id="cb856-7"><a href="identifying-confounding-factors-caron-set.html#cb856-7"></a>    <span class="dt">variables =</span> <span class="kw">c</span>(</span>
-<span id="cb856-8"><a href="identifying-confounding-factors-caron-set.html#cb856-8"></a>        <span class="st">&quot;sum&quot;</span>,</span>
-<span id="cb856-9"><a href="identifying-confounding-factors-caron-set.html#cb856-9"></a>        <span class="st">&quot;detected&quot;</span>,</span>
-<span id="cb856-10"><a href="identifying-confounding-factors-caron-set.html#cb856-10"></a>        <span class="st">&quot;source_name&quot;</span>,</span>
-<span id="cb856-11"><a href="identifying-confounding-factors-caron-set.html#cb856-11"></a>        <span class="st">&quot;Sample.Name&quot;</span>,</span>
-<span id="cb856-12"><a href="identifying-confounding-factors-caron-set.html#cb856-12"></a>        <span class="st">&quot;subsets_Mito_percent&quot;</span></span>
-<span id="cb856-13"><a href="identifying-confounding-factors-caron-set.html#cb856-13"></a>    )</span>
-<span id="cb856-14"><a href="identifying-confounding-factors-caron-set.html#cb856-14"></a>)</span>
-<span id="cb856-15"><a href="identifying-confounding-factors-caron-set.html#cb856-15"></a><span class="kw">plotExplanatoryPCs</span>(explanPc<span class="op">/</span><span class="dv">100</span>) </span></code></pre></div>
-<p><img src="MkWiC_files/figure-html/Caron_confound_norm_getExpPc-1.png" width="672" /></p>
-<p>Explanatory variables: logcounts (normalised):</p>
-<div class="sourceCode" id="cb857"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb857-1"><a href="identifying-confounding-factors-caron-set.html#cb857-1"></a><span class="co"># on logcounts_raw</span></span>
-<span id="cb857-2"><a href="identifying-confounding-factors-caron-set.html#cb857-2"></a><span class="co"># https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/normalization-confounders-and-batch-correction.html#identifying-confounding-factors</span></span>
-<span id="cb857-3"><a href="identifying-confounding-factors-caron-set.html#cb857-3"></a></span>
-<span id="cb857-4"><a href="identifying-confounding-factors-caron-set.html#cb857-4"></a><span class="kw">plotExplanatoryVariables</span>(</span>
-<span id="cb857-5"><a href="identifying-confounding-factors-caron-set.html#cb857-5"></a>    sce,</span>
-<span id="cb857-6"><a href="identifying-confounding-factors-caron-set.html#cb857-6"></a>    <span class="co"># exprs_values = &quot;logcounts&quot;, # default</span></span>
-<span id="cb857-7"><a href="identifying-confounding-factors-caron-set.html#cb857-7"></a>    <span class="dt">variables =</span> <span class="kw">c</span>(</span>
-<span id="cb857-8"><a href="identifying-confounding-factors-caron-set.html#cb857-8"></a>        <span class="st">&quot;sum&quot;</span>,</span>
-<span id="cb857-9"><a href="identifying-confounding-factors-caron-set.html#cb857-9"></a>        <span class="st">&quot;detected&quot;</span>,</span>
-<span id="cb857-10"><a href="identifying-confounding-factors-caron-set.html#cb857-10"></a>        <span class="st">&quot;source_name&quot;</span>,</span>
-<span id="cb857-11"><a href="identifying-confounding-factors-caron-set.html#cb857-11"></a>        <span class="st">&quot;Sample.Name&quot;</span>,</span>
-<span id="cb857-12"><a href="identifying-confounding-factors-caron-set.html#cb857-12"></a>        <span class="st">&quot;subsets_Mito_percent&quot;</span></span>
-<span id="cb857-13"><a href="identifying-confounding-factors-caron-set.html#cb857-13"></a>    )</span>
-<span id="cb857-14"><a href="identifying-confounding-factors-caron-set.html#cb857-14"></a>)</span></code></pre></div>
-<p><img src="MkWiC_files/figure-html/Caron_confound_norm_getExpVar-1.png" width="672" /></p>
-<div class="sourceCode" id="cb858"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb858-1"><a href="identifying-confounding-factors-caron-set.html#cb858-1"></a><span class="kw">rm</span>(sce)</span></code></pre></div>
-<div id="session-information-6" class="section level2">
-<h2><span class="header-section-number">10.1</span> Session information</h2>
-<div class="sourceCode" id="cb859"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb859-1"><a href="identifying-confounding-factors-caron-set.html#cb859-1"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb815"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb815-1"><a href="dimRedForVizTop.html#cb815-1"></a><span class="kw">head</span>(<span class="kw">rowData</span>(sce))</span></code></pre></div>
+<pre><code>## DataFrame with 6 rows and 11 columns
+##                 ensembl_gene_id external_gene_name chromosome_name
+##                     &lt;character&gt;        &lt;character&gt;     &lt;character&gt;
+## ENSG00000237491 ENSG00000237491          LINC01409               1
+## ENSG00000225880 ENSG00000225880          LINC00115               1
+## ENSG00000230368 ENSG00000230368             FAM41C               1
+## ENSG00000230699 ENSG00000230699         AL645608.2               1
+## ENSG00000188976 ENSG00000188976              NOC2L               1
+## ENSG00000187961 ENSG00000187961             KLHL17               1
+##                 start_position end_position    strand      Symbol
+##                      &lt;integer&gt;    &lt;integer&gt; &lt;integer&gt; &lt;character&gt;
+## ENSG00000237491         778747       810065         1  AL669831.5
+## ENSG00000225880         826206       827522        -1   LINC00115
+## ENSG00000230368         868071       876903        -1      FAM41C
+## ENSG00000230699         911435       914948         1  AL645608.3
+## ENSG00000188976         944203       959309        -1       NOC2L
+## ENSG00000187961         960584       965719         1      KLHL17
+##                            Type       mean  detected gene_sparsity
+##                     &lt;character&gt;  &lt;numeric&gt; &lt;numeric&gt;     &lt;numeric&gt;
+## ENSG00000237491 Gene Expression 0.02785355  2.706672      0.977951
+## ENSG00000225880 Gene Expression 0.01376941  1.340222      0.985699
+## ENSG00000230368 Gene Expression 0.02027381  1.946076      0.980821
+## ENSG00000230699 Gene Expression 0.00144251  0.144251      0.997704
+## ENSG00000188976 Gene Expression 0.17711393 14.511645      0.835565
+## ENSG00000187961 Gene Expression 0.00354070  0.348825      0.995935</code></pre>
+<div class="sourceCode" id="cb817"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb817-1"><a href="dimRedForVizTop.html#cb817-1"></a><span class="co">#any(duplicated(rowData(nz.sce)$ensembl_gene_id))</span></span>
+<span id="cb817-2"><a href="dimRedForVizTop.html#cb817-2"></a><span class="co"># some function(s) used below complain about &#39;strand&#39; already being used in row data,</span></span>
+<span id="cb817-3"><a href="dimRedForVizTop.html#cb817-3"></a><span class="co"># so rename that column now:</span></span>
+<span id="cb817-4"><a href="dimRedForVizTop.html#cb817-4"></a><span class="kw">colnames</span>(<span class="kw">rowData</span>(sce))[<span class="kw">colnames</span>(<span class="kw">rowData</span>(sce)) <span class="op">==</span><span class="st"> &quot;strand&quot;</span>] &lt;-<span class="st"> &quot;strandNum&quot;</span></span></code></pre></div>
+</div>
+<div id="pca" class="section level2">
+<h2><span class="header-section-number">9.4</span> PCA</h2>
+<p>Perform PCA, keep outcome in same object.</p>
+<div class="sourceCode" id="cb818"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb818-1"><a href="dimRedForVizTop.html#cb818-1"></a>nbPcToComp &lt;-<span class="st"> </span><span class="dv">50</span></span>
+<span id="cb818-2"><a href="dimRedForVizTop.html#cb818-2"></a><span class="co"># compute PCA:</span></span>
+<span id="cb818-3"><a href="dimRedForVizTop.html#cb818-3"></a><span class="co">#sce &lt;- runPCA(sce, ncomponents = nbPcToComp, method = &quot;irlba&quot;)</span></span>
+<span id="cb818-4"><a href="dimRedForVizTop.html#cb818-4"></a>sce &lt;-<span class="st"> </span><span class="kw">runPCA</span>(sce, <span class="dt">ncomponents =</span> nbPcToComp)</span></code></pre></div>
+<p>Display scree plot.</p>
+<div class="sourceCode" id="cb819"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb819-1"><a href="dimRedForVizTop.html#cb819-1"></a><span class="co"># with reducedDim</span></span>
+<span id="cb819-2"><a href="dimRedForVizTop.html#cb819-2"></a>sce.pca &lt;-<span class="st"> </span><span class="kw">reducedDim</span>(sce, <span class="st">&quot;PCA&quot;</span>)</span>
+<span id="cb819-3"><a href="dimRedForVizTop.html#cb819-3"></a><span class="kw">attributes</span>(sce.pca)<span class="op">$</span>percentVar</span></code></pre></div>
+<pre><code>##  [1] 16.1072558  9.6482486  4.4673293  3.7808853  1.9639696  1.8008626
+##  [7]  1.6739293  1.2887282  1.0690783  0.8596321  0.8018422  0.6846937
+## [13]  0.6139309  0.5946088  0.5411263  0.4377304  0.3900507  0.3815624
+## [19]  0.3636303  0.3514861  0.3408887  0.2973306  0.2843550  0.2754252
+## [25]  0.2666001  0.2609457  0.2555751  0.2496498  0.2481626  0.2371280
+## [31]  0.2320116  0.2304992  0.2270922  0.2257485  0.2242832  0.2198916
+## [37]  0.2189744  0.2173953  0.2151230  0.2140901  0.2129180  0.2120306
+## [43]  0.2094498  0.2083422  0.2063008  0.2059701  0.2047050  0.2033185
+## [49]  0.2025080  0.2017399</code></pre>
+<div class="sourceCode" id="cb821"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb821-1"><a href="dimRedForVizTop.html#cb821-1"></a><span class="kw">barplot</span>(<span class="kw">attributes</span>(sce.pca)<span class="op">$</span>percentVar,</span>
+<span id="cb821-2"><a href="dimRedForVizTop.html#cb821-2"></a>        <span class="dt">main=</span><span class="kw">sprintf</span>(<span class="st">&quot;Scree plot for the %s first PCs&quot;</span>, nbPcToComp),</span>
+<span id="cb821-3"><a href="dimRedForVizTop.html#cb821-3"></a>        <span class="dt">names.arg=</span><span class="dv">1</span><span class="op">:</span>nbPcToComp,</span>
+<span id="cb821-4"><a href="dimRedForVizTop.html#cb821-4"></a>        <span class="dt">cex.names =</span> <span class="fl">0.8</span>)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/sce_pca_scree_plot-1.png" width="672" /></p>
+<p>Display cells on a plot for the first 2 PCs, colouring by ‘Sample’ and setting size to match ‘total_features’.</p>
+<p>The proximity of cells reflects the similarity of their expression profiles.</p>
+<div class="sourceCode" id="cb822"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb822-1"><a href="dimRedForVizTop.html#cb822-1"></a>g &lt;-<span class="st"> </span><span class="kw">plotPCA</span>(sce,</span>
+<span id="cb822-2"><a href="dimRedForVizTop.html#cb822-2"></a>        <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb822-3"><a href="dimRedForVizTop.html#cb822-3"></a>        <span class="dt">size_by =</span> <span class="st">&quot;sum&quot;</span></span>
+<span id="cb822-4"><a href="dimRedForVizTop.html#cb822-4"></a>)         </span>
+<span id="cb822-5"><a href="dimRedForVizTop.html#cb822-5"></a>g</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/sce_pca_plotColorBySample-1.png" width="672" /></p>
+<p>One can also split the plot by sample.</p>
+<div class="sourceCode" id="cb823"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb823-1"><a href="dimRedForVizTop.html#cb823-1"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st">  </span><span class="kw">facet_wrap</span>(sce<span class="op">$</span>source_name <span class="op">~</span><span class="st"> </span>.)</span>
+<span id="cb823-2"><a href="dimRedForVizTop.html#cb823-2"></a>g</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/sce_pca_plotColorBySample_facetBySample-1.png" width="1152" /></p>
+<p>Or plot several PCs at once, using plotReducedDim():</p>
+<div class="sourceCode" id="cb824"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb824-1"><a href="dimRedForVizTop.html#cb824-1"></a><span class="kw">plotReducedDim</span>(sce, <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">ncomponents=</span><span class="dv">3</span>, </span>
+<span id="cb824-2"><a href="dimRedForVizTop.html#cb824-2"></a>        <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>) <span class="op">+</span><span class="st"> </span>fontsize</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/sce_pca_plotReducedDim-1.png" width="672" /></p>
+<div id="correlation-between-pcs-and-the-total-number-of-features-detected" class="section level3">
+<h3><span class="header-section-number">9.4.1</span> Correlation between PCs and the total number of features detected</h3>
+<p>The PCA plot above shows cells as symbols whose size depends on the total number of features or library size. It suggests there may be a correlation between PCs and these variables. Let’s check:</p>
+<div class="sourceCode" id="cb825"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb825-1"><a href="dimRedForVizTop.html#cb825-1"></a><span class="kw">colData</span>(sce)<span class="op">$</span>source_name &lt;-<span class="st"> </span><span class="kw">factor</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>source_name)</span>
+<span id="cb825-2"><a href="dimRedForVizTop.html#cb825-2"></a><span class="kw">colData</span>(sce)<span class="op">$</span>block &lt;-<span class="st"> </span><span class="kw">factor</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>block)</span>
+<span id="cb825-3"><a href="dimRedForVizTop.html#cb825-3"></a>r2mat &lt;-<span class="st"> </span><span class="kw">getExplanatoryPCs</span>(sce)</span>
+<span id="cb825-4"><a href="dimRedForVizTop.html#cb825-4"></a><span class="co">#r2mat &lt;- getExplanatoryPCs(sce,</span></span>
+<span id="cb825-5"><a href="dimRedForVizTop.html#cb825-5"></a><span class="co">#                           variables = c(&quot;Run&quot;, &quot;source_name&quot;))</span></span>
+<span id="cb825-6"><a href="dimRedForVizTop.html#cb825-6"></a><span class="co">#                           #variables = c(&quot;Run&quot;, &quot;Sample.Name&quot;))</span></span>
+<span id="cb825-7"><a href="dimRedForVizTop.html#cb825-7"></a><span class="co">#                           #variables = c(&quot;Run&quot;, &quot;Sample.Name&quot;, &quot;source_name&quot;))</span></span>
+<span id="cb825-8"><a href="dimRedForVizTop.html#cb825-8"></a></span>
+<span id="cb825-9"><a href="dimRedForVizTop.html#cb825-9"></a>r2mat</span></code></pre></div>
+<pre><code>##      Barcode      Run Sample.Name source_name         sum    detected
+## PC1      NaN 30.85659    30.85659    6.487377  0.43493165  7.08894442
+## PC2      NaN 39.71165    39.71165   25.878094  4.25167387  0.58954116
+## PC3      NaN 30.70223    30.70223   18.018721 38.24631708 43.80921901
+## PC4      NaN 59.99750    59.99750   46.026981  6.29085450  7.52064941
+## PC5      NaN 28.72873    28.72873   11.700557  4.57160974  6.47357417
+## PC6      NaN 43.68081    43.68081   15.832822  0.39643282  0.04005349
+## PC7      NaN 39.80806    39.80806   25.736034  0.34776526  1.87429989
+## PC8      NaN 61.48502    61.48502   53.382059  1.26696650  0.69851353
+## PC9      NaN 20.48116    20.48116    7.806216  2.68842935  2.55756540
+## PC10     NaN 41.24854    41.24854    5.412729  0.01273348  0.43130416
+##      subsets_Mito_sum subsets_Mito_detected subsets_Mito_percent       total
+## PC1        6.51661947            18.1351642            4.1926231  0.43493165
+## PC2        0.10383151             1.9809524           15.5359489  4.25167387
+## PC3       25.12527402            10.3594392            2.3470910 38.24631708
+## PC4        1.55024880             1.7264436            0.2189570  6.29085450
+## PC5        8.47830110            15.8647633            7.0504884  4.57160974
+## PC6       11.71821736            14.7324487           40.4069838  0.39643282
+## PC7        0.05713278             2.0491925            0.8726234  0.34776526
+## PC8        0.05725464             1.8114625            5.5016017  1.26696650
+## PC9        4.79687302             4.6900075            3.4547445  2.68842935
+## PC10       0.06794968             0.2728095            1.0255645  0.01273348
+##          block setName    discard     outlier cell_sparsity  sizeFactor
+## PC1   6.487377      NA  0.1175128  0.34195161    7.08948526  6.03083849
+## PC2  25.878094      NA  7.2209671  7.03388703    0.59077199  0.21122381
+## PC3  18.018721      NA  6.4199167  9.61961429   43.83600840 35.30043641
+## PC4  46.026981      NA  2.7802380  4.06365034    7.50975544  8.72178733
+## PC5  11.700557      NA  0.6676141  0.25601414    6.47138586  4.57011170
+## PC6  15.832822      NA 18.9268506 15.79017131    0.03990797  0.02550611
+## PC7  25.736034      NA  1.2853430  1.97448881    1.87469906  0.71227698
+## PC8  53.382059      NA  0.8302930  0.69206768    0.69721085  0.76186993
+## PC9   7.806216      NA  0.9206323  0.70318630    2.55906696  3.06770581
+## PC10  5.412729      NA  0.2997168  0.08553385    0.43088612  0.30545007</code></pre>
+<div class="sourceCode" id="cb827"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb827-1"><a href="dimRedForVizTop.html#cb827-1"></a>dat &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">colData</span>(sce)[,<span class="kw">c</span>(<span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb827-2"><a href="dimRedForVizTop.html#cb827-2"></a>                 <span class="st">&quot;source_name&quot;</span>,</span>
+<span id="cb827-3"><a href="dimRedForVizTop.html#cb827-3"></a>                 <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb827-4"><a href="dimRedForVizTop.html#cb827-4"></a>                 <span class="st">&quot;detected&quot;</span>,</span>
+<span id="cb827-5"><a href="dimRedForVizTop.html#cb827-5"></a>                 <span class="co">#&quot;percent_top_200&quot;,</span></span>
+<span id="cb827-6"><a href="dimRedForVizTop.html#cb827-6"></a>                 <span class="st">&quot;subsets_Mito_percent&quot;</span>)],</span>
+<span id="cb827-7"><a href="dimRedForVizTop.html#cb827-7"></a>                 <span class="kw">reducedDim</span>(sce,<span class="st">&quot;PCA&quot;</span>))</span>
+<span id="cb827-8"><a href="dimRedForVizTop.html#cb827-8"></a>dat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(dat)</span>
+<span id="cb827-9"><a href="dimRedForVizTop.html#cb827-9"></a>dat<span class="op">$</span>sum &lt;-<span class="st"> </span><span class="kw">log2</span>(dat<span class="op">$</span>sum)</span>
+<span id="cb827-10"><a href="dimRedForVizTop.html#cb827-10"></a><span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(<span class="dt">x=</span>sum, <span class="dt">y=</span>PC1, <span class="dt">shape=</span>source_name, <span class="dt">col=</span>Sample.Name)) <span class="op">+</span></span>
+<span id="cb827-11"><a href="dimRedForVizTop.html#cb827-11"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb827-12"><a href="dimRedForVizTop.html#cb827-12"></a><span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm, <span class="dt">inherit.aes =</span> <span class="ot">FALSE</span>, <span class="kw">aes</span>(<span class="dt">x=</span>sum, <span class="dt">y=</span>PC1)) </span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/sce_pca_plotQC_total_features-1.png" width="672" /></p>
+<div class="sourceCode" id="cb828"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb828-1"><a href="dimRedForVizTop.html#cb828-1"></a><span class="co">#ggplot(dat, aes(x=percent_top_200, y=PC2, shape=source_name, col=Sample.Name)) +</span></span>
+<span id="cb828-2"><a href="dimRedForVizTop.html#cb828-2"></a><span class="co">#    geom_point() +</span></span>
+<span id="cb828-3"><a href="dimRedForVizTop.html#cb828-3"></a><span class="co">#    geom_smooth(method=lm, inherit.aes = FALSE, aes(x=percent_top_200, y=PC2)) </span></span>
+<span id="cb828-4"><a href="dimRedForVizTop.html#cb828-4"></a><span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(<span class="dt">x=</span>detected, <span class="dt">y=</span>PC3, <span class="dt">shape=</span>source_name, <span class="dt">col=</span>Sample.Name)) <span class="op">+</span></span>
+<span id="cb828-5"><a href="dimRedForVizTop.html#cb828-5"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb828-6"><a href="dimRedForVizTop.html#cb828-6"></a><span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm, <span class="dt">inherit.aes =</span> <span class="ot">FALSE</span>, <span class="kw">aes</span>(<span class="dt">x=</span>detected, <span class="dt">y=</span>PC3)) </span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/sce_pca_plotQC_total_features-2.png" width="672" /></p>
+<div class="sourceCode" id="cb829"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb829-1"><a href="dimRedForVizTop.html#cb829-1"></a><span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(<span class="dt">x=</span>subsets_Mito_percent, <span class="dt">y=</span>PC2, <span class="dt">shape=</span>source_name, <span class="dt">col=</span>Sample.Name)) <span class="op">+</span></span>
+<span id="cb829-2"><a href="dimRedForVizTop.html#cb829-2"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb829-3"><a href="dimRedForVizTop.html#cb829-3"></a><span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm, <span class="dt">inherit.aes =</span> <span class="ot">FALSE</span>, <span class="kw">aes</span>(<span class="dt">x=</span>subsets_Mito_percent, <span class="dt">y=</span>PC2)) </span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/sce_pca_plotQC_total_features-3.png" width="672" /></p>
+<div class="sourceCode" id="cb830"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb830-1"><a href="dimRedForVizTop.html#cb830-1"></a><span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(<span class="dt">x=</span>source_name, <span class="dt">y=</span>PC7, <span class="dt">shape=</span>source_name, <span class="dt">col=</span>Sample.Name)) <span class="op">+</span></span>
+<span id="cb830-2"><a href="dimRedForVizTop.html#cb830-2"></a><span class="st">    </span><span class="kw">geom_boxplot</span>()</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/sce_pca_plotQC_total_features-4.png" width="672" /></p>
+</div>
+</div>
+<div id="t-sne-t-distributed-stochastic-neighbor-embedding" class="section level2">
+<h2><span class="header-section-number">9.5</span> t-SNE: t-Distributed Stochastic Neighbor Embedding</h2>
+<!-- https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/latent-spaces.html -->
+<p>The Stochastic Neighbor Embedding (SNE) approach address two shortcomings of PCA that captures the global covariance structure with a linear combination of initial variables: by preserving the local structure allowing for non-linear projections. It uses two distributions of the pairwise similarities between data points: in the input data set and in the low-dimensional space.</p>
+<p>SNE aims at preserving neighbourhoods. For each points, it computes probabilities of chosing each other point as its neighbour based on a Normal distribution depending on 1) the distance matrix and 2) the size of the neighbourhood (perplexity). SNE aims at finding a low-dimension space (eg 2D-plane) such that the similarity matrix deriving from it is as similar as possible as that from the high-dimension space. To address the fact that in low dimension, points are brought together, the similarity matrix in the low-dimension is allowed to follow a t-distribution.</p>
+<p>Two characteristics matter:</p>
+<ul>
+<li>perplexity, to indicate the relative importance of the local and global patterns in structure of the data set, usually use a value of 50,</li>
+<li>stochasticity; running the analysis will produce a different map every time, unless the seed is set.</li>
+</ul>
+<p>See <a href="https://distill.pub/2016/misread-tsne/">misread-tsne</a>.</p>
+<div id="perplexity" class="section level3">
+<h3><span class="header-section-number">9.5.1</span> Perplexity</h3>
+<p>Compute t-SNE with default perplexity, ie 50.</p>
+<div class="sourceCode" id="cb831"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb831-1"><a href="dimRedForVizTop.html#cb831-1"></a><span class="co"># runTSNE default perpexity if min(50, floor(ncol(object)/5))</span></span>
+<span id="cb831-2"><a href="dimRedForVizTop.html#cb831-2"></a>sce &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">perplexity=</span><span class="dv">50</span>, <span class="dt">rand_seed=</span><span class="dv">123</span>)</span></code></pre></div>
+<p>Plot t-SNE:</p>
+<div class="sourceCode" id="cb832"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb832-1"><a href="dimRedForVizTop.html#cb832-1"></a>tsne50 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(sce,</span>
+<span id="cb832-2"><a href="dimRedForVizTop.html#cb832-2"></a>           <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb832-3"><a href="dimRedForVizTop.html#cb832-3"></a>           <span class="dt">size_by=</span><span class="st">&quot;sum&quot;</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb832-4"><a href="dimRedForVizTop.html#cb832-4"></a><span class="st">           </span>fontsize <span class="op">+</span><span class="st"> </span></span>
+<span id="cb832-5"><a href="dimRedForVizTop.html#cb832-5"></a><span class="st">           </span><span class="kw">ggtitle</span>(<span class="st">&quot;Perplexity = 50&quot;</span>)</span>
+<span id="cb832-6"><a href="dimRedForVizTop.html#cb832-6"></a>tsne50</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plotTSNE_perp50-1.png" width="672" /></p>
+<!-- Split by sample type: -->
+<p>Compute t-SNE for several perplexity values:</p>
+<div class="sourceCode" id="cb833"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb833-1"><a href="dimRedForVizTop.html#cb833-1"></a>tsne5.run &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">use_dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">perplexity=</span><span class="dv">5</span>, <span class="dt">rand_seed=</span><span class="dv">123</span>)</span>
+<span id="cb833-2"><a href="dimRedForVizTop.html#cb833-2"></a>tsne5 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(tsne5.run, <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>) <span class="op">+</span><span class="st"> </span>fontsize <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Perplexity = 5&quot;</span>)</span>
+<span id="cb833-3"><a href="dimRedForVizTop.html#cb833-3"></a></span>
+<span id="cb833-4"><a href="dimRedForVizTop.html#cb833-4"></a><span class="co">#tsne200.run &lt;- runTSNE(sce, use_dimred=&quot;PCA&quot;, perplexity=200, rand_seed=123)</span></span>
+<span id="cb833-5"><a href="dimRedForVizTop.html#cb833-5"></a><span class="co">#tsne200 &lt;- plotTSNE(tsne200.run, colour_by=&quot;Sample.Name&quot;) + fontsize + ggtitle(&quot;Perplexity = 200&quot;)</span></span>
+<span id="cb833-6"><a href="dimRedForVizTop.html#cb833-6"></a></span>
+<span id="cb833-7"><a href="dimRedForVizTop.html#cb833-7"></a>tsne500.run &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">use_dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">perplexity=</span><span class="dv">500</span>, <span class="dt">rand_seed=</span><span class="dv">123</span>)</span>
+<span id="cb833-8"><a href="dimRedForVizTop.html#cb833-8"></a>tsne500 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(tsne500.run, <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>) <span class="op">+</span><span class="st"> </span>fontsize <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Perplexity = 500&quot;</span>)</span>
+<span id="cb833-9"><a href="dimRedForVizTop.html#cb833-9"></a></span>
+<span id="cb833-10"><a href="dimRedForVizTop.html#cb833-10"></a><span class="co">#tsne1000.run &lt;- runTSNE(sce, use_dimred=&quot;PCA&quot;, perplexity=1000, rand_seed=123)</span></span>
+<span id="cb833-11"><a href="dimRedForVizTop.html#cb833-11"></a><span class="co">#tsne1000 &lt;- plotTSNE(tsne1000.run, colour_by=&quot;Sample.Name&quot;) + fontsize + ggtitle(&quot;Perplexity = 1000&quot;)</span></span></code></pre></div>
+<div class="sourceCode" id="cb834"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb834-1"><a href="dimRedForVizTop.html#cb834-1"></a>tsne5</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plotTSNE_perpRange-1.png" width="576" /></p>
+<div class="sourceCode" id="cb835"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb835-1"><a href="dimRedForVizTop.html#cb835-1"></a><span class="co">#tsne50</span></span>
+<span id="cb835-2"><a href="dimRedForVizTop.html#cb835-2"></a><span class="co">#tsne200</span></span>
+<span id="cb835-3"><a href="dimRedForVizTop.html#cb835-3"></a>tsne500</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plotTSNE_perpRange-2.png" width="576" /></p>
+</div>
+<div id="stochasticity" class="section level3">
+<h3><span class="header-section-number">9.5.2</span> Stochasticity</h3>
+<p>Use a different seed with the same perplexity 50.</p>
+<div class="sourceCode" id="cb836"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb836-1"><a href="dimRedForVizTop.html#cb836-1"></a>tsne50.b &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">use_dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">perplexity=</span><span class="dv">50</span>, <span class="dt">rand_seed=</span><span class="dv">456</span>)</span>
+<span id="cb836-2"><a href="dimRedForVizTop.html#cb836-2"></a></span>
+<span id="cb836-3"><a href="dimRedForVizTop.html#cb836-3"></a>tsne50.b &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(tsne50.b,</span>
+<span id="cb836-4"><a href="dimRedForVizTop.html#cb836-4"></a>           <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb836-5"><a href="dimRedForVizTop.html#cb836-5"></a>           <span class="dt">size_by=</span><span class="st">&quot;sum&quot;</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb836-6"><a href="dimRedForVizTop.html#cb836-6"></a><span class="st">         </span>fontsize <span class="op">+</span><span class="st"> </span></span>
+<span id="cb836-7"><a href="dimRedForVizTop.html#cb836-7"></a><span class="st">         </span><span class="kw">ggtitle</span>(<span class="st">&quot;Perplexity = 50, seed 456&quot;</span>)</span>
+<span id="cb836-8"><a href="dimRedForVizTop.html#cb836-8"></a>tsne50.b</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plotTSNE_stocha-1.png" width="672" /></p>
+</div>
+</div>
+<div id="umap" class="section level2">
+<h2><span class="header-section-number">9.6</span> UMAP</h2>
+<p>Another neighbour graph method. Similar to t-SNE, but that is determistic, faster and claims to preserve both local and global structures.</p>
+<p>Compute UMAP.</p>
+<div class="sourceCode" id="cb837"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb837-1"><a href="dimRedForVizTop.html#cb837-1"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb837-2"><a href="dimRedForVizTop.html#cb837-2"></a>sce &lt;-<span class="st"> </span><span class="kw">runUMAP</span>(sce, <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>)</span></code></pre></div>
+<p>Plot UMAP:</p>
+<div class="sourceCode" id="cb838"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb838-1"><a href="dimRedForVizTop.html#cb838-1"></a>sce.umap &lt;-<span class="st"> </span><span class="kw">plotUMAP</span>(sce,</span>
+<span id="cb838-2"><a href="dimRedForVizTop.html#cb838-2"></a>           <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb838-3"><a href="dimRedForVizTop.html#cb838-3"></a>           <span class="dt">size_by=</span><span class="st">&quot;sum&quot;</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb838-4"><a href="dimRedForVizTop.html#cb838-4"></a><span class="st">           </span>fontsize <span class="op">+</span><span class="st"> </span></span>
+<span id="cb838-5"><a href="dimRedForVizTop.html#cb838-5"></a><span class="st">           </span><span class="kw">ggtitle</span>(<span class="st">&quot;UMAP&quot;</span>)</span>
+<span id="cb838-6"><a href="dimRedForVizTop.html#cb838-6"></a>sce.umap</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plotUMAP-1.png" width="672" /></p>
+<!-- Split by sample: -->
+<p>Save SCE object:</p>
+<div class="sourceCode" id="cb839"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb839-1"><a href="dimRedForVizTop.html#cb839-1"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds&quot;</span>, projDir, outDirBit, setName, setSuf)</span>
+<span id="cb839-2"><a href="dimRedForVizTop.html#cb839-2"></a><span class="kw">saveRDS</span>(sce, tmpFn)</span></code></pre></div>
+</div>
+<div id="session-information-5" class="section level2">
+<h2><span class="header-section-number">9.7</span> Session information</h2>
+<div class="sourceCode" id="cb840"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb840-1"><a href="dimRedForVizTop.html#cb840-1"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
 <pre><code>## R version 4.0.3 (2020-10-10)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
 ## Running under: CentOS Linux 8
@@ -1118,73 +1367,84 @@ Explanatory variables: logcounts_raw:
 ## [8] methods   base     
 ## 
 ## other attached packages:
-##  [1] BiocSingular_1.6.0          scuttle_1.0.4              
-##  [3] robustbase_0.93-7           mixtools_1.2.0             
-##  [5] dplyr_1.0.5                 DT_0.18                    
-##  [7] irlba_2.3.3                 biomaRt_2.46.3             
-##  [9] Matrix_1.2-18               igraph_1.2.6               
-## [11] DropletUtils_1.10.3         scater_1.18.6              
-## [13] ggplot2_3.3.3               scran_1.18.7               
-## [15] SingleCellExperiment_1.12.0 SummarizedExperiment_1.20.0
-## [17] Biobase_2.50.0              GenomicRanges_1.42.0       
-## [19] GenomeInfoDb_1.26.7         IRanges_2.24.1             
-## [21] S4Vectors_0.28.1            BiocGenerics_0.36.1        
-## [23] MatrixGenerics_1.2.1        matrixStats_0.58.0         
-## [25] knitr_1.32                 
+##  [1] ggfortify_0.4.11            BiocSingular_1.6.0         
+##  [3] scuttle_1.0.4               robustbase_0.93-7          
+##  [5] mixtools_1.2.0              dplyr_1.0.5                
+##  [7] DT_0.18                     irlba_2.3.3                
+##  [9] biomaRt_2.46.3              Matrix_1.2-18              
+## [11] igraph_1.2.6                DropletUtils_1.10.3        
+## [13] scater_1.18.6               ggplot2_3.3.3              
+## [15] scran_1.18.7                SingleCellExperiment_1.12.0
+## [17] SummarizedExperiment_1.20.0 Biobase_2.50.0             
+## [19] GenomicRanges_1.42.0        GenomeInfoDb_1.26.7        
+## [21] IRanges_2.24.1              S4Vectors_0.28.1           
+## [23] BiocGenerics_0.36.1         MatrixGenerics_1.2.1       
+## [25] matrixStats_0.58.0          knitr_1.32                 
 ## 
 ## loaded via a namespace (and not attached):
-##   [1] ggbeeswarm_0.6.0          colorspace_2.0-0         
-##   [3] ellipsis_0.3.1            bluster_1.0.0            
-##   [5] XVector_0.30.0            BiocNeighbors_1.8.2      
-##   [7] rstudioapi_0.13           bit64_4.0.5              
-##   [9] AnnotationDbi_1.52.0      fansi_0.4.2              
-##  [11] xml2_1.3.2                splines_4.0.3            
-##  [13] R.methodsS3_1.8.1         sparseMatrixStats_1.2.1  
-##  [15] cachem_1.0.4              jsonlite_1.7.2           
-##  [17] kernlab_0.9-29            dbplyr_2.0.0             
-##  [19] R.oo_1.24.0               HDF5Array_1.18.1         
-##  [21] readr_1.4.0               compiler_4.0.3           
-##  [23] httr_1.4.2                dqrng_0.2.1              
-##  [25] assertthat_0.2.1          fastmap_1.1.0            
-##  [27] limma_3.46.0              htmltools_0.5.1.1        
-##  [29] prettyunits_1.1.1         tools_4.0.3              
-##  [31] rsvd_1.0.3                gtable_0.3.0             
-##  [33] glue_1.4.2                GenomeInfoDbData_1.2.4   
-##  [35] rappdirs_0.3.1            Rcpp_1.0.6               
-##  [37] jquerylib_0.1.3           vctrs_0.3.7              
-##  [39] rhdf5filters_1.2.0        DelayedMatrixStats_1.12.3
-##  [41] xfun_0.22                 stringr_1.4.0            
-##  [43] beachmat_2.6.4            lifecycle_1.0.0          
-##  [45] statmod_1.4.35            XML_3.99-0.5             
-##  [47] DEoptimR_1.0-8            edgeR_3.32.1             
-##  [49] MASS_7.3-53               zlibbioc_1.36.0          
-##  [51] scales_1.1.1              hms_1.0.0                
-##  [53] rhdf5_2.34.0              curl_4.3                 
-##  [55] yaml_2.2.1                memoise_2.0.0            
-##  [57] gridExtra_2.3             sass_0.3.1               
-##  [59] segmented_1.3-3           stringi_1.5.3            
-##  [61] RSQLite_2.2.6             BiocParallel_1.24.1      
-##  [63] rlang_0.4.10              pkgconfig_2.0.3          
-##  [65] bitops_1.0-6              evaluate_0.14            
-##  [67] lattice_0.20-41           purrr_0.3.4              
-##  [69] Rhdf5lib_1.12.1           htmlwidgets_1.5.3        
-##  [71] bit_4.0.4                 tidyselect_1.1.0         
-##  [73] magrittr_2.0.1            bookdown_0.21            
-##  [75] R6_2.5.0                  generics_0.1.0           
-##  [77] DelayedArray_0.16.3       DBI_1.1.1                
-##  [79] pillar_1.6.0              withr_2.4.2              
-##  [81] survival_3.2-7            RCurl_1.98-1.3           
-##  [83] tibble_3.1.1              crayon_1.4.1             
-##  [85] utf8_1.2.1                BiocFileCache_1.14.0     
-##  [87] rmarkdown_2.7             viridis_0.5.1            
-##  [89] progress_1.2.2            locfit_1.5-9.4           
-##  [91] grid_4.0.3                blob_1.2.1               
-##  [93] digest_0.6.27             R.utils_2.10.1           
-##  [95] openssl_1.4.3             munsell_0.5.0            
-##  [97] beeswarm_0.2.3            viridisLite_0.3.0        
-##  [99] vipor_0.4.5               bslib_0.2.4              
-## [101] askpass_1.1</code></pre>
+##   [1] BiocFileCache_1.14.0      splines_4.0.3            
+##   [3] BiocParallel_1.24.1       digest_0.6.27            
+##   [5] htmltools_0.5.1.1         viridis_0.5.1            
+##   [7] fansi_0.4.2               magrittr_2.0.1           
+##   [9] memoise_2.0.0             limma_3.46.0             
+##  [11] readr_1.4.0               R.utils_2.10.1           
+##  [13] askpass_1.1               prettyunits_1.1.1        
+##  [15] colorspace_2.0-0          blob_1.2.1               
+##  [17] rappdirs_0.3.1            xfun_0.22                
+##  [19] crayon_1.4.1              RCurl_1.98-1.3           
+##  [21] jsonlite_1.7.2            survival_3.2-7           
+##  [23] glue_1.4.2                gtable_0.3.0             
+##  [25] zlibbioc_1.36.0           XVector_0.30.0           
+##  [27] DelayedArray_0.16.3       kernlab_0.9-29           
+##  [29] Rhdf5lib_1.12.1           DEoptimR_1.0-8           
+##  [31] HDF5Array_1.18.1          scales_1.1.1             
+##  [33] DBI_1.1.1                 edgeR_3.32.1             
+##  [35] Rcpp_1.0.6                viridisLite_0.3.0        
+##  [37] progress_1.2.2            dqrng_0.2.1              
+##  [39] bit_4.0.4                 rsvd_1.0.3               
+##  [41] htmlwidgets_1.5.3         httr_1.4.2               
+##  [43] ellipsis_0.3.1            pkgconfig_2.0.3          
+##  [45] XML_3.99-0.5              R.methodsS3_1.8.1        
+##  [47] farver_2.1.0              uwot_0.1.10              
+##  [49] sass_0.3.1                dbplyr_2.0.0             
+##  [51] locfit_1.5-9.4            utf8_1.2.1               
+##  [53] tidyselect_1.1.0          labeling_0.4.2           
+##  [55] rlang_0.4.10              AnnotationDbi_1.52.0     
+##  [57] munsell_0.5.0             tools_4.0.3              
+##  [59] cachem_1.0.4              generics_0.1.0           
+##  [61] RSQLite_2.2.6             evaluate_0.14            
+##  [63] stringr_1.4.0             fastmap_1.1.0            
+##  [65] yaml_2.2.1                bit64_4.0.5              
+##  [67] purrr_0.3.4               nlme_3.1-149             
+##  [69] sparseMatrixStats_1.2.1   R.oo_1.24.0              
+##  [71] xml2_1.3.2                compiler_4.0.3           
+##  [73] rstudioapi_0.13           beeswarm_0.2.3           
+##  [75] curl_4.3                  tibble_3.1.1             
+##  [77] statmod_1.4.35            bslib_0.2.4              
+##  [79] stringi_1.5.3             highr_0.8                
+##  [81] RSpectra_0.16-0           lattice_0.20-41          
+##  [83] bluster_1.0.0             vctrs_0.3.7              
+##  [85] pillar_1.6.0              lifecycle_1.0.0          
+##  [87] rhdf5filters_1.2.0        jquerylib_0.1.3          
+##  [89] RcppAnnoy_0.0.18          BiocNeighbors_1.8.2      
+##  [91] cowplot_1.1.1             bitops_1.0-6             
+##  [93] R6_2.5.0                  bookdown_0.21            
+##  [95] gridExtra_2.3             vipor_0.4.5              
+##  [97] codetools_0.2-16          MASS_7.3-53              
+##  [99] assertthat_0.2.1          rhdf5_2.34.0             
+## [101] openssl_1.4.3             withr_2.4.2              
+## [103] GenomeInfoDbData_1.2.4    mgcv_1.8-33              
+## [105] hms_1.0.0                 grid_4.0.3               
+## [107] beachmat_2.6.4            tidyr_1.1.3              
+## [109] rmarkdown_2.7             DelayedMatrixStats_1.12.3
+## [111] segmented_1.3-3           Rtsne_0.15               
+## [113] ggbeeswarm_0.6.0</code></pre>
 
+<div class="sourceCode" id="cb842"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb842-1"><a href="dimRedForVizTop.html#cb842-1"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb842-2"><a href="dimRedForVizTop.html#cb842-2"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
+<span id="cb842-3"><a href="dimRedForVizTop.html#cb842-3"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span>
+<span id="cb842-4"><a href="dimRedForVizTop.html#cb842-4"></a>cacheBool &lt;-<span class="st"> </span>params<span class="op">$</span>cacheBool</span></code></pre></div>
+<div class="sourceCode" id="cb843"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb843-1"><a href="dimRedForVizTop.html#cb843-1"></a><span class="kw">library</span>(knitr)</span></code></pre></div>
 </div>
 </div>
             </section>
@@ -1192,8 +1452,8 @@ Explanatory variables: logcounts_raw:
           </div>
         </div>
       </div>
-<a href="dimRedForVizTop.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="feature-selection.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="normalisation-gsm3872434-set.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="identifying-confounding-factors-caron-set.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -1224,7 +1484,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/rstudio/bookdown-demo/edit/master/confounding_caron.Rmd",
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/dimRedForViz.Rmd",
 "text": "Edit"
 },
 "history": {

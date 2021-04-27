@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
+  <title>Chapter 11 Feature selection | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
   <meta name="description" content="A report for all analyses (bookdown::gitbook)." />
   <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta property="og:title" content="Chapter 11 Feature selection | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   <meta name="github-repo" content="rstudio/bookdown-demo" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta name="twitter:title" content="Chapter 11 Feature selection | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
   
   <meta name="twitter:description" content="A report for all analyses (bookdown::gitbook)." />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
+<link rel="prev" href="identifying-confounding-factors-caron-set.html"/>
 
-<link rel="next" href="SeqQualTop.html"/>
 <script src="libs/jquery-3.5.1/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -950,110 +950,380 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="header">
-<h1 class="title">CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</h1>
-<h2 class="subtitle"><em>Heterogeneity in childhood acute lymphoblastic leukemia with droplet-based 10X Chromium assay.</em></h2>
-<p class="author"><em>Stephane Ballereau, Zeynep Kalender Atak</em></p>
-<p class="date"><em>2021-04-27</em></p>
+<div id="feature-selection" class="section level1">
+<h1><span class="header-section-number">Chapter 11</span> Feature selection</h1>
+<div class="sourceCode" id="cb861"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb861-1"><a href="feature-selection.html#cb861-1"></a><span class="kw">library</span>(ggplot2)</span>
+<span id="cb861-2"><a href="feature-selection.html#cb861-2"></a><span class="kw">library</span>(scater)</span>
+<span id="cb861-3"><a href="feature-selection.html#cb861-3"></a><span class="kw">library</span>(scran)</span></code></pre></div>
+<div class="sourceCode" id="cb862"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb862-1"><a href="feature-selection.html#cb862-1"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb862-2"><a href="feature-selection.html#cb862-2"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
+<span id="cb862-3"><a href="feature-selection.html#cb862-3"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span>
+<span id="cb862-4"><a href="feature-selection.html#cb862-4"></a>cacheBool &lt;-<span class="st"> </span>params<span class="op">$</span>cacheBool</span>
+<span id="cb862-5"><a href="feature-selection.html#cb862-5"></a>setName &lt;-<span class="st"> </span>params<span class="op">$</span>setName</span>
+<span id="cb862-6"><a href="feature-selection.html#cb862-6"></a>setSuf &lt;-<span class="st"> </span>params<span class="op">$</span>setSuf</span>
+<span id="cb862-7"><a href="feature-selection.html#cb862-7"></a><span class="cf">if</span>(params<span class="op">$</span>bookType <span class="op">==</span><span class="st"> &quot;mk&quot;</span>){</span>
+<span id="cb862-8"><a href="feature-selection.html#cb862-8"></a>    dirRel &lt;-<span class="st"> &quot;..&quot;</span></span>
+<span id="cb862-9"><a href="feature-selection.html#cb862-9"></a>    setName &lt;-<span class="st"> &quot;caron&quot;</span></span>
+<span id="cb862-10"><a href="feature-selection.html#cb862-10"></a>    setSuf &lt;-<span class="st"> &quot;_5hCellPerSpl&quot;</span></span>
+<span id="cb862-11"><a href="feature-selection.html#cb862-11"></a>}</span>
+<span id="cb862-12"><a href="feature-selection.html#cb862-12"></a></span>
+<span id="cb862-13"><a href="feature-selection.html#cb862-13"></a>fontsize &lt;-<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">12</span>), <span class="dt">axis.title=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>))</span></code></pre></div>
+<div id="load-data-1" class="section level2">
+<h2><span class="header-section-number">11.1</span> Load data</h2>
+<p>We will load the R file keeping the SCE object with the normalised counts for 500 cells per sample.</p>
+<div class="sourceCode" id="cb863"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb863-1"><a href="feature-selection.html#cb863-1"></a><span class="co"># Read object in:</span></span>
+<span id="cb863-2"><a href="feature-selection.html#cb863-2"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds&quot;</span>,</span>
+<span id="cb863-3"><a href="feature-selection.html#cb863-3"></a>         projDir, outDirBit, setName, setSuf)</span>
+<span id="cb863-4"><a href="feature-selection.html#cb863-4"></a><span class="kw">print</span>(tmpFn)</span></code></pre></div>
+<pre><code>## [1] &quot;/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/AnaWiSce/Ana1/Robjects/caron_sce_nz_postDeconv_5hCellPerSpl_dimRed.Rds&quot;</code></pre>
+<div class="sourceCode" id="cb865"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb865-1"><a href="feature-selection.html#cb865-1"></a><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(tmpFn))</span>
+<span id="cb865-2"><a href="feature-selection.html#cb865-2"></a>{</span>
+<span id="cb865-3"><a href="feature-selection.html#cb865-3"></a>    knitr<span class="op">::</span><span class="kw">knit_exit</span>()</span>
+<span id="cb865-4"><a href="feature-selection.html#cb865-4"></a>}</span>
+<span id="cb865-5"><a href="feature-selection.html#cb865-5"></a>sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
+<span id="cb865-6"><a href="feature-selection.html#cb865-6"></a>sce</span></code></pre></div>
+<pre><code>## class: SingleCellExperiment 
+## dim: 16629 5500 
+## metadata(0):
+## assays(2): counts logcounts
+## rownames(16629): ENSG00000237491 ENSG00000225880 ... ENSG00000275063
+##   ENSG00000271254
+## rowData names(11): ensembl_gene_id external_gene_name ... detected
+##   gene_sparsity
+## colnames: NULL
+## colData names(16): Barcode Run ... cell_sparsity sizeFactor
+## reducedDimNames(3): PCA TSNE UMAP
+## altExpNames(0):</code></pre>
+<div class="sourceCode" id="cb867"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb867-1"><a href="feature-selection.html#cb867-1"></a><span class="kw">head</span>(<span class="kw">rowData</span>(sce))</span></code></pre></div>
+<pre><code>## DataFrame with 6 rows and 11 columns
+##                 ensembl_gene_id external_gene_name chromosome_name
+##                     &lt;character&gt;        &lt;character&gt;     &lt;character&gt;
+## ENSG00000237491 ENSG00000237491          LINC01409               1
+## ENSG00000225880 ENSG00000225880          LINC00115               1
+## ENSG00000230368 ENSG00000230368             FAM41C               1
+## ENSG00000230699 ENSG00000230699         AL645608.2               1
+## ENSG00000188976 ENSG00000188976              NOC2L               1
+## ENSG00000187961 ENSG00000187961             KLHL17               1
+##                 start_position end_position strandNum      Symbol
+##                      &lt;integer&gt;    &lt;integer&gt; &lt;integer&gt; &lt;character&gt;
+## ENSG00000237491         778747       810065         1  AL669831.5
+## ENSG00000225880         826206       827522        -1   LINC00115
+## ENSG00000230368         868071       876903        -1      FAM41C
+## ENSG00000230699         911435       914948         1  AL645608.3
+## ENSG00000188976         944203       959309        -1       NOC2L
+## ENSG00000187961         960584       965719         1      KLHL17
+##                            Type       mean  detected gene_sparsity
+##                     &lt;character&gt;  &lt;numeric&gt; &lt;numeric&gt;     &lt;numeric&gt;
+## ENSG00000237491 Gene Expression 0.02785355  2.706672      0.977951
+## ENSG00000225880 Gene Expression 0.01376941  1.340222      0.985699
+## ENSG00000230368 Gene Expression 0.02027381  1.946076      0.980821
+## ENSG00000230699 Gene Expression 0.00144251  0.144251      0.997704
+## ENSG00000188976 Gene Expression 0.17711393 14.511645      0.835565
+## ENSG00000187961 Gene Expression 0.00354070  0.348825      0.995935</code></pre>
+<div class="sourceCode" id="cb869"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb869-1"><a href="feature-selection.html#cb869-1"></a><span class="co">#any(duplicated(rowData(sce)$ensembl_gene_id))</span></span>
+<span id="cb869-2"><a href="feature-selection.html#cb869-2"></a><span class="co"># some function(s) used below complain about &#39;strand&#39; already being used in row data,</span></span>
+<span id="cb869-3"><a href="feature-selection.html#cb869-3"></a><span class="co"># so rename that column now:</span></span>
+<span id="cb869-4"><a href="feature-selection.html#cb869-4"></a><span class="kw">colnames</span>(<span class="kw">rowData</span>(sce))[<span class="kw">colnames</span>(<span class="kw">rowData</span>(sce)) <span class="op">==</span><span class="st"> &quot;strand&quot;</span>] &lt;-<span class="st"> &quot;strandNum&quot;</span></span>
+<span id="cb869-5"><a href="feature-selection.html#cb869-5"></a><span class="kw">assayNames</span>(sce)</span></code></pre></div>
+<pre><code>## [1] &quot;counts&quot;    &quot;logcounts&quot;</code></pre>
 </div>
-<div id="Preamble" class="section level1">
-<h1><span class="header-section-number">Chapter 1</span> Preamble</h1>
-<div id="the-study" class="section level2">
-<h2><span class="header-section-number">1.1</span> The study</h2>
-<p>“Childhood acute lymphoblastic leukemia (cALL) is the most common pediatric cancer. It is characterized by bone marrow lymphoid precursors that acquire genetic alterations, resulting in disrupted maturation and uncontrollable proliferation.” <a href="https://www.nature.com/articles/s41598-020-64929-x">Caron et al. 2020</a>. Nowaways, up to 85–90% of patients are cured, but others do not respond to treatment or relapse and die. The aim of the study is to characterise the heterogeneity of gene expression at the cell level, within and between patients.</p>
-<!--
-See similar findings in CRC
-https://www.cell.com/cell-stem-cell/fulltext/S1934-5909(20)30151-X?rss=yes
+<div id="feature-selection-with-scran" class="section level2">
+<h2><span class="header-section-number">11.2</span> Feature selection with scran</h2>
+<p>scRNASeq measures the expression of thousands of genes in each cell. The biological question asked in a study will most often relate to a fraction of these genes only, linked for example to differences between cell types, drivers of differentiation, or response to perturbation.</p>
+<p>Most high-throughput molecular data include variation created by the assay itself, not biology, i.e. technical noise, for example caused by sampling during RNA capture and library preparation. In scRNASeq, this technical noise will result in most genes being detected at different levels. This noise may hinder the detection of the biological signal.</p>
+<p>Let’s identify Highly Variables Genes (HVGs) with the aim to find those underlying the heterogeneity observed across cells.</p>
+<div id="modelling-and-removing-technical-noise" class="section level3">
+<h3><span class="header-section-number">11.2.1</span> Modelling and removing technical noise</h3>
+<p>Some assays allow the inclusion of known molecules in a known amount covering a wide range, from low to high abundance: spike-ins. The technical noise is assessed based on the amount of spike-ins used, the corresponding read counts obtained and their variation across cells. The variance in expression can then be decomposed into the biolgical and technical components.</p>
+<p>UMI-based assays do not (yet?) allow spike-ins. But one can still identify HVGs, that is genes with the highest biological component. Assuming that expression does not vary across cells for most genes, the total variance for these genes mainly reflects technical noise. The latter can thus be assessed by fitting a trend to the variance in expression. The fitted value will be the estimate of the technical component.</p>
+<p>Let’s fit a trend to the variance, using modelGeneVar().</p>
+<div class="sourceCode" id="cb871"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb871-1"><a href="feature-selection.html#cb871-1"></a>dec.sce &lt;-<span class="st"> </span><span class="kw">modelGeneVar</span>(sce)</span></code></pre></div>
+<p>Let’s plot variance against mean of expression (log scale) and the mean-dependent trend fitted to the variance:</p>
+<div class="sourceCode" id="cb872"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb872-1"><a href="feature-selection.html#cb872-1"></a><span class="co"># Visualizing the fit:</span></span>
+<span id="cb872-2"><a href="feature-selection.html#cb872-2"></a>var.fit &lt;-<span class="st"> </span><span class="kw">metadata</span>(dec.sce)</span>
+<span id="cb872-3"><a href="feature-selection.html#cb872-3"></a><span class="kw">plot</span>(var.fit<span class="op">$</span>mean, var.fit<span class="op">$</span>var, <span class="dt">xlab=</span><span class="st">&quot;Mean of log-expression&quot;</span>,</span>
+<span id="cb872-4"><a href="feature-selection.html#cb872-4"></a>    <span class="dt">ylab=</span><span class="st">&quot;Variance of log-expression&quot;</span>)</span>
+<span id="cb872-5"><a href="feature-selection.html#cb872-5"></a><span class="kw">curve</span>(var.fit<span class="op">$</span><span class="kw">trend</span>(x), <span class="dt">col=</span><span class="st">&quot;dodgerblue&quot;</span>, <span class="dt">add=</span><span class="ot">TRUE</span>, <span class="dt">lwd=</span><span class="dv">2</span>)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plot_var_trend-1.png" width="672" /></p>
+<p>In the absence of spike-in data, one can attempt to create a trend by making some distributional assumptions about the noise. For example, UMI counts typically exhibit near-Poisson variation if we only consider technical noise from library preparation and sequencing. This can be used to construct a mean-variance trend in the log-counts with the modelGeneVarByPoisson() function. Note the increased residuals of the high-abundance genes, which can be interpreted as the amount of biological variation that was assumed to be “uninteresting” when fitting the gene-based trend above.</p>
+<div class="sourceCode" id="cb873"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb873-1"><a href="feature-selection.html#cb873-1"></a><span class="kw">set.seed</span>(<span class="dv">0010101</span>)</span>
+<span id="cb873-2"><a href="feature-selection.html#cb873-2"></a>dec.pois.sce &lt;-<span class="st"> </span><span class="kw">modelGeneVarByPoisson</span>(sce)</span>
+<span id="cb873-3"><a href="feature-selection.html#cb873-3"></a>dec.pois.sce &lt;-<span class="st"> </span>dec.pois.sce[<span class="kw">order</span>(dec.pois.sce<span class="op">$</span>bio, <span class="dt">decreasing=</span><span class="ot">TRUE</span>),]</span>
+<span id="cb873-4"><a href="feature-selection.html#cb873-4"></a><span class="kw">head</span>(dec.pois.sce)</span></code></pre></div>
+<pre><code>## DataFrame with 6 rows and 6 columns
+##                      mean     total      tech       bio   p.value       FDR
+##                 &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;
+## ENSG00000244734  2.509485  12.14273  0.944558  11.19817         0         0
+## ENSG00000188536  1.869015   9.81279  1.046947   8.76585         0         0
+## ENSG00000206172  1.624877   8.95495  1.031745   7.92321         0         0
+## ENSG00000223609  0.785968   4.36010  0.707898   3.65221         0         0
+## ENSG00000019582  2.842386   4.37079  0.848232   3.52256         0         0
+## ENSG00000204287  2.329591   3.66889  0.987724   2.68117         0         0</code></pre>
+<p>Plot:</p>
+<div class="sourceCode" id="cb875"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb875-1"><a href="feature-selection.html#cb875-1"></a><span class="kw">plot</span>(dec.pois.sce<span class="op">$</span>mean,</span>
+<span id="cb875-2"><a href="feature-selection.html#cb875-2"></a>     dec.pois.sce<span class="op">$</span>total,</span>
+<span id="cb875-3"><a href="feature-selection.html#cb875-3"></a>     <span class="dt">pch=</span><span class="dv">16</span>,</span>
+<span id="cb875-4"><a href="feature-selection.html#cb875-4"></a>     <span class="dt">xlab=</span><span class="st">&quot;Mean of log-expression&quot;</span>,</span>
+<span id="cb875-5"><a href="feature-selection.html#cb875-5"></a>     <span class="dt">ylab=</span><span class="st">&quot;Variance of log-expression&quot;</span>)</span>
+<span id="cb875-6"><a href="feature-selection.html#cb875-6"></a><span class="kw">curve</span>(<span class="kw">metadata</span>(dec.pois.sce)<span class="op">$</span><span class="kw">trend</span>(x), <span class="dt">col=</span><span class="st">&quot;dodgerblue&quot;</span>, <span class="dt">add=</span><span class="ot">TRUE</span>)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/modelGeneVarByPoisson_plot-1.png" width="672" /></p>
+<p>Interestingly, trends based purely on technical noise tend to yield large biological components for highly-expressed genes. This often includes so-called “house-keeping” genes coding for essential cellular components such as ribosomal proteins, which are considered uninteresting for characterizing cellular heterogeneity. These observations suggest that a more accurate noise model does not necessarily yield a better ranking of HVGs, though one should keep an open mind - house-keeping genes are regularly DE in a variety of conditions (Glare et al. 2002; Nazari, Parham, and Maleki 2015; Guimaraes and Zavolan 2016), and the fact that they have large biological components indicates that there is strong variation across cells that may not be completely irrelevant.</p>
+</div>
+<div id="choosing-some-hvgs" class="section level3">
+<h3><span class="header-section-number">11.2.2</span> Choosing some HVGs:</h3>
+<p>Identify the top 20 HVGs by sorting genes in decreasing order of biological component.</p>
+<div class="sourceCode" id="cb876"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb876-1"><a href="feature-selection.html#cb876-1"></a><span class="co"># order genes by decreasing order of biological component</span></span>
+<span id="cb876-2"><a href="feature-selection.html#cb876-2"></a>o &lt;-<span class="st"> </span><span class="kw">order</span>(dec.sce<span class="op">$</span>bio, <span class="dt">decreasing=</span><span class="ot">TRUE</span>)</span>
+<span id="cb876-3"><a href="feature-selection.html#cb876-3"></a><span class="co"># check top and bottom of sorted table</span></span>
+<span id="cb876-4"><a href="feature-selection.html#cb876-4"></a><span class="kw">head</span>(dec.sce[o,])</span></code></pre></div>
+<pre><code>## DataFrame with 6 rows and 6 columns
+##                      mean     total      tech       bio      p.value
+##                 &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;    &lt;numeric&gt;
+## ENSG00000244734  2.509485  12.14273  1.501176  10.64155  0.00000e+00
+## ENSG00000188536  1.869015   9.81279  1.407077   8.40572  0.00000e+00
+## ENSG00000206172  1.624877   8.95495  1.328093   7.62686  0.00000e+00
+## ENSG00000223609  0.785968   4.36010  0.814664   3.54544 1.76443e-226
+## ENSG00000019582  2.842386   4.37079  1.491606   2.87918  2.57120e-46
+## ENSG00000206177  0.580477   3.24218  0.632917   2.60926 1.77838e-203
+##                          FDR
+##                    &lt;numeric&gt;
+## ENSG00000244734  0.00000e+00
+## ENSG00000188536  0.00000e+00
+## ENSG00000206172  0.00000e+00
+## ENSG00000223609 5.86744e-223
+## ENSG00000019582  1.01789e-43
+## ENSG00000206177 4.92819e-200</code></pre>
+<div class="sourceCode" id="cb878"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb878-1"><a href="feature-selection.html#cb878-1"></a><span class="kw">tail</span>(dec.sce[o,])</span></code></pre></div>
+<pre><code>## DataFrame with 6 rows and 6 columns
+##                      mean     total      tech       bio   p.value       FDR
+##                 &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt; &lt;numeric&gt;
+## ENSG00000108654   2.35282   1.23874   1.50084 -0.262102  0.901192  0.963563
+## ENSG00000063177   3.03164   1.20580   1.48289 -0.277097  0.915987  0.972156
+## ENSG00000174748   3.76111   1.14211   1.43802 -0.295910  0.935507  0.983329
+## ENSG00000115268   3.81719   1.11875   1.42987 -0.311116  0.945777  0.988399
+## ENSG00000149806   2.86380   1.14650   1.49128 -0.344780  0.955963  0.994046
+## ENSG00000173812   3.05559   1.13496   1.48016 -0.345203  0.957336  0.994976</code></pre>
+<div class="sourceCode" id="cb880"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb880-1"><a href="feature-selection.html#cb880-1"></a><span class="co"># choose the top 20 genes with the highest biological component</span></span>
+<span id="cb880-2"><a href="feature-selection.html#cb880-2"></a>chosen.genes.index &lt;-<span class="st"> </span>o[<span class="dv">1</span><span class="op">:</span><span class="dv">20</span>]</span></code></pre></div>
+<p>Show the top 20 HVGs on the plot displaying the variance against the mean expression:</p>
+<div class="sourceCode" id="cb881"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb881-1"><a href="feature-selection.html#cb881-1"></a><span class="kw">plot</span>(var.fit<span class="op">$</span>mean, var.fit<span class="op">$</span>var)</span>
+<span id="cb881-2"><a href="feature-selection.html#cb881-2"></a><span class="kw">curve</span>(var.fit<span class="op">$</span><span class="kw">trend</span>(x), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">add=</span><span class="ot">TRUE</span>)</span>
+<span id="cb881-3"><a href="feature-selection.html#cb881-3"></a><span class="kw">points</span>(var.fit<span class="op">$</span>mean[chosen.genes.index], var.fit<span class="op">$</span>var[chosen.genes.index], <span class="dt">col=</span><span class="st">&quot;orange&quot;</span>)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plot_var_trend_HVGtop20-1.png" width="672" /></p>
+<p>Rather than choosing a fixed number of top genes, one may define ‘HVGs’ as genes with a positive biological component, ie whose variance is higher than the fitted value for the corresponding mean expression.</p>
+<p>Select and show these ‘HVGs’ on the plot displaying the variance against the mean expression:</p>
+<div class="sourceCode" id="cb882"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb882-1"><a href="feature-selection.html#cb882-1"></a>hvgBool &lt;-<span class="st"> </span>dec.sce<span class="op">$</span>bio <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span></span>
+<span id="cb882-2"><a href="feature-selection.html#cb882-2"></a><span class="kw">table</span>(hvgBool)</span></code></pre></div>
+<pre><code>## hvgBool
+## FALSE  TRUE 
+##  7301  9328</code></pre>
+<div class="sourceCode" id="cb884"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb884-1"><a href="feature-selection.html#cb884-1"></a>hvg.index &lt;-<span class="st"> </span><span class="kw">which</span>(hvgBool)</span>
+<span id="cb884-2"><a href="feature-selection.html#cb884-2"></a><span class="kw">plot</span>(var.fit<span class="op">$</span>mean, var.fit<span class="op">$</span>var)</span>
+<span id="cb884-3"><a href="feature-selection.html#cb884-3"></a><span class="kw">curve</span>(var.fit<span class="op">$</span><span class="kw">trend</span>(x), <span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dt">lwd=</span><span class="dv">2</span>, <span class="dt">add=</span><span class="ot">TRUE</span>)</span>
+<span id="cb884-4"><a href="feature-selection.html#cb884-4"></a><span class="kw">points</span>(var.fit<span class="op">$</span>mean[hvg.index], var.fit<span class="op">$</span>var[hvg.index], <span class="dt">col=</span><span class="st">&quot;orange&quot;</span>)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plot_var_trend_HVGbioCompPos-1.png" width="672" /></p>
+<p>Save objects to file</p>
+<div class="sourceCode" id="cb885"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb885-1"><a href="feature-selection.html#cb885-1"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_featSel.Rds&quot;</span>,</span>
+<span id="cb885-2"><a href="feature-selection.html#cb885-2"></a>         projDir, outDirBit, setName, setSuf)</span>
+<span id="cb885-3"><a href="feature-selection.html#cb885-3"></a><span class="kw">saveRDS</span>(<span class="kw">list</span>(<span class="st">&quot;dec.sce&quot;</span>=dec.sce,<span class="st">&quot;hvg.index&quot;</span>=hvg.index), tmpFn)</span>
+<span id="cb885-4"><a href="feature-selection.html#cb885-4"></a><span class="kw">rm</span>(var.fit, hvgBool, hvg.index)</span></code></pre></div>
+<p>HVGs may be driven by outlier cells. So let’s plot the distribution of expression values for the genes with the largest biological components.</p>
+<p>First, get gene names to replace ensembl IDs on plot.</p>
+<div class="sourceCode" id="cb886"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb886-1"><a href="feature-selection.html#cb886-1"></a><span class="co"># the count matrix rows are named with ensembl gene IDs. Let&#39;s label gene with their name instead:</span></span>
+<span id="cb886-2"><a href="feature-selection.html#cb886-2"></a><span class="co"># row indices of genes in rowData(sce)</span></span>
+<span id="cb886-3"><a href="feature-selection.html#cb886-3"></a>tmpInd &lt;-<span class="st"> </span><span class="kw">which</span>(<span class="kw">rowData</span>(sce)<span class="op">$</span>ensembl_gene_id <span class="op">%in%</span><span class="st"> </span><span class="kw">rownames</span>(dec.sce)[chosen.genes.index])</span>
+<span id="cb886-4"><a href="feature-selection.html#cb886-4"></a><span class="co"># check:</span></span>
+<span id="cb886-5"><a href="feature-selection.html#cb886-5"></a><span class="kw">rowData</span>(sce)[tmpInd,<span class="kw">c</span>(<span class="st">&quot;ensembl_gene_id&quot;</span>,<span class="st">&quot;external_gene_name&quot;</span>)]</span></code></pre></div>
+<pre><code>## DataFrame with 20 rows and 2 columns
+##                 ensembl_gene_id external_gene_name
+##                     &lt;character&gt;        &lt;character&gt;
+## ENSG00000143546 ENSG00000143546             S100A8
+## ENSG00000211592 ENSG00000211592               IGKC
+## ENSG00000145335 ENSG00000145335               SNCA
+## ENSG00000170180 ENSG00000170180               GYPA
+## ENSG00000019582 ENSG00000019582               CD74
+## ...                         ...                ...
+## ENSG00000206177 ENSG00000206177                HBM
+## ENSG00000188536 ENSG00000188536               HBA2
+## ENSG00000206172 ENSG00000206172               HBA1
+## ENSG00000169877 ENSG00000169877               AHSP
+## ENSG00000090013 ENSG00000090013              BLVRB</code></pre>
+<div class="sourceCode" id="cb888"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb888-1"><a href="feature-selection.html#cb888-1"></a><span class="co"># store names:</span></span>
+<span id="cb888-2"><a href="feature-selection.html#cb888-2"></a>tmpName &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce)[tmpInd,<span class="st">&quot;external_gene_name&quot;</span>]</span>
+<span id="cb888-3"><a href="feature-selection.html#cb888-3"></a><span class="co"># the gene name may not be known, so keep the ensembl gene ID in that case:</span></span>
+<span id="cb888-4"><a href="feature-selection.html#cb888-4"></a>tmpName[tmpName<span class="op">==</span><span class="st">&quot;&quot;</span>] &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce)[tmpInd,<span class="st">&quot;ensembl_gene_id&quot;</span>][tmpName<span class="op">==</span><span class="st">&quot;&quot;</span>]</span>
+<span id="cb888-5"><a href="feature-selection.html#cb888-5"></a>tmpName[<span class="kw">is.na</span>(tmpName)] &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce)[tmpInd,<span class="st">&quot;ensembl_gene_id&quot;</span>][<span class="kw">is.na</span>(tmpName)]</span>
+<span id="cb888-6"><a href="feature-selection.html#cb888-6"></a><span class="kw">rm</span>(tmpInd)</span></code></pre></div>
+<p>Now show a violin plot for each gene, using plotExpression() and label genes with their name:</p>
+<div class="sourceCode" id="cb889"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb889-1"><a href="feature-selection.html#cb889-1"></a>g &lt;-<span class="st"> </span><span class="kw">plotExpression</span>(sce, <span class="kw">rownames</span>(dec.sce)[chosen.genes.index], </span>
+<span id="cb889-2"><a href="feature-selection.html#cb889-2"></a>    <span class="dt">point_alpha=</span><span class="fl">0.05</span>, <span class="dt">jitter=</span><span class="st">&quot;jitter&quot;</span>) <span class="op">+</span><span class="st"> </span>fontsize</span>
+<span id="cb889-3"><a href="feature-selection.html#cb889-3"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">scale_x_discrete</span>(<span class="dt">breaks=</span><span class="kw">rownames</span>(dec.sce)[chosen.genes.index],</span>
+<span id="cb889-4"><a href="feature-selection.html#cb889-4"></a>        <span class="dt">labels=</span>tmpName)</span>
+<span id="cb889-5"><a href="feature-selection.html#cb889-5"></a>g</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plot_count_HVGtop20-1.png" width="672" /></p>
+<div class="sourceCode" id="cb890"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb890-1"><a href="feature-selection.html#cb890-1"></a><span class="kw">rm</span>(tmpName)</span></code></pre></div>
+<p>Another few genes:</p>
+<div class="sourceCode" id="cb891"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb891-1"><a href="feature-selection.html#cb891-1"></a>chosen.genes.index &lt;-<span class="st"> </span>o[<span class="dv">21</span><span class="op">:</span><span class="dv">40</span>]</span>
+<span id="cb891-2"><a href="feature-selection.html#cb891-2"></a></span>
+<span id="cb891-3"><a href="feature-selection.html#cb891-3"></a>tmpInd &lt;-<span class="st"> </span><span class="kw">which</span>(<span class="kw">rowData</span>(sce)<span class="op">$</span>ensembl_gene_id <span class="op">%in%</span><span class="st"> </span><span class="kw">rownames</span>(dec.sce)[chosen.genes.index])</span>
+<span id="cb891-4"><a href="feature-selection.html#cb891-4"></a><span class="co"># check:</span></span>
+<span id="cb891-5"><a href="feature-selection.html#cb891-5"></a><span class="kw">rowData</span>(sce)[tmpInd,<span class="kw">c</span>(<span class="st">&quot;ensembl_gene_id&quot;</span>,<span class="st">&quot;external_gene_name&quot;</span>)]</span></code></pre></div>
+<pre><code>## DataFrame with 20 rows and 2 columns
+##                 ensembl_gene_id external_gene_name
+##                     &lt;character&gt;        &lt;character&gt;
+## ENSG00000117632 ENSG00000117632              STMN1
+## ENSG00000163220 ENSG00000163220             S100A9
+## ENSG00000196154 ENSG00000196154             S100A4
+## ENSG00000136732 ENSG00000136732               GYPC
+## ENSG00000250361 ENSG00000250361               GYPB
+## ...                         ...                ...
+## ENSG00000013306 ENSG00000013306           SLC25A39
+## ENSG00000171223 ENSG00000171223               JUNB
+## ENSG00000167815 ENSG00000167815              PRDX2
+## ENSG00000198692 ENSG00000198692             EIF1AY
+## ENSG00000169575 ENSG00000169575             VPREB1</code></pre>
+<div class="sourceCode" id="cb893"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb893-1"><a href="feature-selection.html#cb893-1"></a><span class="co"># store names:</span></span>
+<span id="cb893-2"><a href="feature-selection.html#cb893-2"></a>tmpName &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce)[tmpInd,<span class="st">&quot;external_gene_name&quot;</span>]</span>
+<span id="cb893-3"><a href="feature-selection.html#cb893-3"></a><span class="co"># the gene name may not be known, so keep the ensembl gene ID in that case:</span></span>
+<span id="cb893-4"><a href="feature-selection.html#cb893-4"></a>tmpName[tmpName<span class="op">==</span><span class="st">&quot;&quot;</span>] &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce)[tmpInd,<span class="st">&quot;ensembl_gene_id&quot;</span>][tmpName<span class="op">==</span><span class="st">&quot;&quot;</span>]</span>
+<span id="cb893-5"><a href="feature-selection.html#cb893-5"></a>tmpName[<span class="kw">is.na</span>(tmpName)] &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce)[tmpInd,<span class="st">&quot;ensembl_gene_id&quot;</span>][<span class="kw">is.na</span>(tmpName)]</span>
+<span id="cb893-6"><a href="feature-selection.html#cb893-6"></a><span class="kw">rm</span>(tmpInd)</span>
+<span id="cb893-7"><a href="feature-selection.html#cb893-7"></a></span>
+<span id="cb893-8"><a href="feature-selection.html#cb893-8"></a>g &lt;-<span class="st"> </span><span class="kw">plotExpression</span>(sce, <span class="kw">rownames</span>(dec.sce)[chosen.genes.index], </span>
+<span id="cb893-9"><a href="feature-selection.html#cb893-9"></a>    <span class="dt">point_alpha=</span><span class="fl">0.05</span>, <span class="dt">jitter=</span><span class="st">&quot;jitter&quot;</span>) <span class="op">+</span><span class="st"> </span>fontsize</span>
+<span id="cb893-10"><a href="feature-selection.html#cb893-10"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">scale_x_discrete</span>(<span class="dt">breaks=</span><span class="kw">rownames</span>(dec.sce)[chosen.genes.index],</span>
+<span id="cb893-11"><a href="feature-selection.html#cb893-11"></a>        <span class="dt">labels=</span>tmpName)</span>
+<span id="cb893-12"><a href="feature-selection.html#cb893-12"></a>g</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plot_count_HVGtop20_2-1.png" width="672" /></p>
+<div class="sourceCode" id="cb894"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb894-1"><a href="feature-selection.html#cb894-1"></a><span class="kw">rm</span>(tmpName)</span></code></pre></div>
+<p><strong>Challenge</strong>: Show violin plots for the 20 genes with the lowest biological component. How do they compare to the those for HVGs chosen above?</p>
+<div class="sourceCode" id="cb895"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb895-1"><a href="feature-selection.html#cb895-1"></a>chosen.genes.index.tmp &lt;-<span class="st"> </span><span class="kw">order</span>(dec.sce<span class="op">$</span>bio, <span class="dt">decreasing=</span><span class="ot">FALSE</span>)[<span class="dv">1</span><span class="op">:</span><span class="dv">20</span>]</span>
+<span id="cb895-2"><a href="feature-selection.html#cb895-2"></a>tmpInd &lt;-<span class="st"> </span>(<span class="kw">which</span>(<span class="kw">rowData</span>(sce)<span class="op">$</span>ensembl_gene_id <span class="op">%in%</span><span class="st"> </span><span class="kw">rownames</span>(dec.sce)[chosen.genes.index.tmp]))</span>
+<span id="cb895-3"><a href="feature-selection.html#cb895-3"></a><span class="co"># check:</span></span>
+<span id="cb895-4"><a href="feature-selection.html#cb895-4"></a><span class="kw">rowData</span>(sce)[tmpInd,<span class="kw">c</span>(<span class="st">&quot;ensembl_gene_id&quot;</span>,<span class="st">&quot;external_gene_name&quot;</span>)]</span></code></pre></div>
+<pre><code>## DataFrame with 20 rows and 2 columns
+##                 ensembl_gene_id external_gene_name
+##                     &lt;character&gt;        &lt;character&gt;
+## ENSG00000142676 ENSG00000142676              RPL11
+## ENSG00000187514 ENSG00000187514               PTMA
+## ENSG00000174748 ENSG00000174748              RPL15
+## ENSG00000232112 ENSG00000232112               TMA7
+## ENSG00000104529 ENSG00000104529              EEF1D
+## ...                         ...                ...
+## ENSG00000105640 ENSG00000105640             RPL18A
+## ENSG00000105372 ENSG00000105372              RPS19
+## ENSG00000063177 ENSG00000063177              RPL18
+## ENSG00000142534 ENSG00000142534              RPS11
+## ENSG00000170889 ENSG00000170889               RPS9</code></pre>
+<div class="sourceCode" id="cb897"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb897-1"><a href="feature-selection.html#cb897-1"></a><span class="co"># store names:</span></span>
+<span id="cb897-2"><a href="feature-selection.html#cb897-2"></a>tmpName &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce)[tmpInd,<span class="st">&quot;external_gene_name&quot;</span>]</span>
+<span id="cb897-3"><a href="feature-selection.html#cb897-3"></a><span class="co"># the gene name may not be known, so keep the ensembl gene ID in that case:</span></span>
+<span id="cb897-4"><a href="feature-selection.html#cb897-4"></a>tmpName[tmpName<span class="op">==</span><span class="st">&quot;&quot;</span>] &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce)[tmpInd,<span class="st">&quot;ensembl_gene_id&quot;</span>][tmpName<span class="op">==</span><span class="st">&quot;&quot;</span>]</span>
+<span id="cb897-5"><a href="feature-selection.html#cb897-5"></a>tmpName[<span class="kw">is.na</span>(tmpName)] &lt;-<span class="st"> </span><span class="kw">rowData</span>(sce)[tmpInd,<span class="st">&quot;ensembl_gene_id&quot;</span>][<span class="kw">is.na</span>(tmpName)]</span>
+<span id="cb897-6"><a href="feature-selection.html#cb897-6"></a><span class="kw">rm</span>(tmpInd)</span>
+<span id="cb897-7"><a href="feature-selection.html#cb897-7"></a>g &lt;-<span class="st"> </span><span class="kw">plotExpression</span>(sce, <span class="kw">rownames</span>(dec.sce)[chosen.genes.index.tmp], </span>
+<span id="cb897-8"><a href="feature-selection.html#cb897-8"></a>            <span class="dt">point_alpha=</span><span class="fl">0.05</span>, <span class="dt">jitter=</span><span class="st">&quot;jitter&quot;</span>) <span class="op">+</span><span class="st"> </span>fontsize</span>
+<span id="cb897-9"><a href="feature-selection.html#cb897-9"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">scale_x_discrete</span>(<span class="dt">breaks=</span><span class="kw">rownames</span>(dec.sce)[chosen.genes.index.tmp],</span>
+<span id="cb897-10"><a href="feature-selection.html#cb897-10"></a>        <span class="dt">labels=</span>tmpName)</span>
+<span id="cb897-11"><a href="feature-selection.html#cb897-11"></a>g</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/plot_count_violoin_HVGbot20-1.png" width="672" /></p>
+<div class="sourceCode" id="cb898"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb898-1"><a href="feature-selection.html#cb898-1"></a><span class="kw">rm</span>(chosen.genes.index.tmp, tmpName)</span></code></pre></div>
+<div class="sourceCode" id="cb899"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb899-1"><a href="feature-selection.html#cb899-1"></a><span class="kw">rm</span>(dec.sce)</span>
+<span id="cb899-2"><a href="feature-selection.html#cb899-2"></a><span class="kw">rm</span>(dec.pois.sce)</span>
+<span id="cb899-3"><a href="feature-selection.html#cb899-3"></a><span class="kw">rm</span>(sce)</span></code></pre></div>
+</div>
+</div>
+<div id="session-information-7" class="section level2">
+<h2><span class="header-section-number">11.3</span> Session information</h2>
+<div class="sourceCode" id="cb900"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb900-1"><a href="feature-selection.html#cb900-1"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
+<pre><code>## R version 4.0.3 (2020-10-10)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: CentOS Linux 8
+## 
+## Matrix products: default
+## BLAS:   /opt/R/R-4.0.3/lib64/R/lib/libRblas.so
+## LAPACK: /opt/R/R-4.0.3/lib64/R/lib/libRlapack.so
+## 
+## locale:
+##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [8] methods   base     
+## 
+## other attached packages:
+##  [1] ggfortify_0.4.11            BiocSingular_1.6.0         
+##  [3] scuttle_1.0.4               robustbase_0.93-7          
+##  [5] mixtools_1.2.0              dplyr_1.0.5                
+##  [7] DT_0.18                     irlba_2.3.3                
+##  [9] biomaRt_2.46.3              Matrix_1.2-18              
+## [11] igraph_1.2.6                DropletUtils_1.10.3        
+## [13] scater_1.18.6               ggplot2_3.3.3              
+## [15] scran_1.18.7                SingleCellExperiment_1.12.0
+## [17] SummarizedExperiment_1.20.0 Biobase_2.50.0             
+## [19] GenomicRanges_1.42.0        GenomeInfoDb_1.26.7        
+## [21] IRanges_2.24.1              S4Vectors_0.28.1           
+## [23] BiocGenerics_0.36.1         MatrixGenerics_1.2.1       
+## [25] matrixStats_0.58.0          knitr_1.32                 
+## 
+## loaded via a namespace (and not attached):
+##   [1] ggbeeswarm_0.6.0          colorspace_2.0-0         
+##   [3] ellipsis_0.3.1            bluster_1.0.0            
+##   [5] XVector_0.30.0            BiocNeighbors_1.8.2      
+##   [7] rstudioapi_0.13           bit64_4.0.5              
+##   [9] AnnotationDbi_1.52.0      fansi_0.4.2              
+##  [11] xml2_1.3.2                splines_4.0.3            
+##  [13] R.methodsS3_1.8.1         sparseMatrixStats_1.2.1  
+##  [15] cachem_1.0.4              jsonlite_1.7.2           
+##  [17] kernlab_0.9-29            dbplyr_2.0.0             
+##  [19] R.oo_1.24.0               HDF5Array_1.18.1         
+##  [21] readr_1.4.0               compiler_4.0.3           
+##  [23] httr_1.4.2                dqrng_0.2.1              
+##  [25] assertthat_0.2.1          fastmap_1.1.0            
+##  [27] limma_3.46.0              htmltools_0.5.1.1        
+##  [29] prettyunits_1.1.1         tools_4.0.3              
+##  [31] rsvd_1.0.3                gtable_0.3.0             
+##  [33] glue_1.4.2                GenomeInfoDbData_1.2.4   
+##  [35] rappdirs_0.3.1            Rcpp_1.0.6               
+##  [37] jquerylib_0.1.3           vctrs_0.3.7              
+##  [39] rhdf5filters_1.2.0        DelayedMatrixStats_1.12.3
+##  [41] xfun_0.22                 stringr_1.4.0            
+##  [43] beachmat_2.6.4            lifecycle_1.0.0          
+##  [45] statmod_1.4.35            XML_3.99-0.5             
+##  [47] DEoptimR_1.0-8            edgeR_3.32.1             
+##  [49] MASS_7.3-53               zlibbioc_1.36.0          
+##  [51] scales_1.1.1              hms_1.0.0                
+##  [53] rhdf5_2.34.0              curl_4.3                 
+##  [55] yaml_2.2.1                memoise_2.0.0            
+##  [57] gridExtra_2.3             sass_0.3.1               
+##  [59] segmented_1.3-3           stringi_1.5.3            
+##  [61] RSQLite_2.2.6             BiocParallel_1.24.1      
+##  [63] rlang_0.4.10              pkgconfig_2.0.3          
+##  [65] bitops_1.0-6              evaluate_0.14            
+##  [67] lattice_0.20-41           purrr_0.3.4              
+##  [69] Rhdf5lib_1.12.1           htmlwidgets_1.5.3        
+##  [71] bit_4.0.4                 tidyselect_1.1.0         
+##  [73] magrittr_2.0.1            bookdown_0.21            
+##  [75] R6_2.5.0                  generics_0.1.0           
+##  [77] DelayedArray_0.16.3       DBI_1.1.1                
+##  [79] pillar_1.6.0              withr_2.4.2              
+##  [81] survival_3.2-7            RCurl_1.98-1.3           
+##  [83] tibble_3.1.1              crayon_1.4.1             
+##  [85] utf8_1.2.1                BiocFileCache_1.14.0     
+##  [87] rmarkdown_2.7             viridis_0.5.1            
+##  [89] progress_1.2.2            locfit_1.5-9.4           
+##  [91] grid_4.0.3                blob_1.2.1               
+##  [93] digest_0.6.27             tidyr_1.1.3              
+##  [95] R.utils_2.10.1            openssl_1.4.3            
+##  [97] munsell_0.5.0             beeswarm_0.2.3           
+##  [99] viridisLite_0.3.0         vipor_0.4.5              
+## [101] bslib_0.2.4               askpass_1.1</code></pre>
 
-https://www.nature.com/articles/s41568-020-0276-8
-https://www.sciencedirect.com/science/article/pii/S1934590920302034
-
-https://scinapse.io/papers/2955045010
-(https://www.nature.com/articles/nm.4505)
-https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4273416/
-https://www.nature.com/articles/s41375-018-0127-8
--->
-<p>Four type of samples are considered:</p>
-<ul>
-<li>eight patients:
-<ul>
-<li>six B-ALL</li>
-<li>two T-ALL</li>
-</ul></li>
-<li>three healthy pediatric controls</li>
-<li>eight healthy adult controls, publicly available</li>
-</ul>
-<p>As the study aims at identifying cell populations, large numbers of cells were sequenced with the droplet-based 10X Chromium assay.</p>
-</div>
-<div id="the-plan" class="section level2">
-<h2><span class="header-section-number">1.2</span> The plan</h2>
-<p>We will follow several steps:</p>
-<ul>
-<li>sequencing quality check</li>
-<li>alignment of reads to the human genome (GRCh38) with 10X software cellranger</li>
-<li>quality control (cell calls, cells and genes filtering) <!-- mention doublet detection --></li>
-<li>count normalisation</li>
-<li>data set integration</li>
-<li>feature selection</li>
-<li>dimensionality reduction</li>
-<li>clustering</li>
-<li>marker gene identification</li>
-<li>cell type annotation</li>
-<li>cell cycle assignment</li>
-<li>trajectory analysis</li>
-</ul>
-<!--
-TODO: add analysis flowchart?
--->
-</div>
-<div id="the-analyses" class="section level2">
-<h2><span class="header-section-number">1.3</span> The analyses</h2>
-<p>This report includes:</p>
-<ul>
-<li><strong>Sequence Quality</strong> is good (see <a href="SeqQualTop.html#SeqQualTop">2</a>) <!-- seqQual.Rmd --></li>
-<li><strong>cellranger</strong> output suggests the data sets are good quality (see <a href="AliFeatCountTop.html#AliFeatCountTop">3</a>) <!-- cellRanger.Rmd --></li>
-<li><strong>Quality control</strong> - a first glance at the RNA data set comprising all droplets deemed to contain at leat one cell, to check the data quality and biological signal (eg. do we observe cell types we expect?) (see <a href="PreProcAllCellsTop.html#PreProcAllCellsTop">4</a> for the ‘all-cells’ analysis and <a href="PreProcTop.html#PreProcTop">5</a> for the analysis of the downsampled data set to use in the course) <!-- preProcAllCells.Rmd and preProc.Rmd --></li>
-<li>an annotation of RNA clusters using known PBMC marker genes (see <a href="#AllDropletsCellTypeAnnotTop"><strong>??</strong></a>) <!-- .Rmd --></li>
-</ul>
-</div>
-<div id="overall-summary" class="section level2">
-<h2><span class="header-section-number">1.4</span> Overall summary</h2>
-<!-- seurat3Adt_glanceAtGex.Rmd -->
-<ul>
-<li></li>
-</ul>
-<!-- seurat3Adt_10x3kPbmcMarkers.Rmd -->
-<ul>
-<li></li>
-</ul>
-<!-- seurat3Hto.Rmd -->
-<ul>
-<li></li>
-</ul>
-</div>
-<div id="conclusion" class="section level2">
-<h2><span class="header-section-number">1.5</span> Conclusion</h2>
-</div>
-<div id="abbreviations" class="section level2">
-<h2><span class="header-section-number">1.6</span> Abbreviations</h2>
-<ul>
-<li>BMMC: Bone Marrow Mononuclear Cell</li>
-<li>HCA: Human Cell Atlas</li>
-<li>PCA: Principal Component Analysis</li>
-<li>UMI: Unique Molecular Identifier</li>
-</ul>
-
-<!--
-TODO:
--->
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="index.html#cb2-1"></a><span class="co">#projDirOsx &lt;- &quot;/Users/baller01/MyMount/clust1a/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
-<span id="cb2-2"><a href="index.html#cb2-2"></a><span class="co">#projDir &lt;- &quot;/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
-<span id="cb2-3"><a href="index.html#cb2-3"></a><span class="co">#projDir &lt;- &quot;/home/ubuntu/Course_Materials/scRNAseq&quot;</span></span>
-<span id="cb2-4"><a href="index.html#cb2-4"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
-<span id="cb2-5"><a href="index.html#cb2-5"></a>projDirLink &lt;-<span class="st"> &quot;/Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
-<span id="cb2-6"><a href="index.html#cb2-6"></a>inpDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>inpDirBit</span>
-<span id="cb2-7"><a href="index.html#cb2-7"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="index.html#cb3-1"></a><span class="kw">library</span>(DT)</span></code></pre></div>
 </div>
 </div>
             </section>
@@ -1061,8 +1331,8 @@ TODO:
           </div>
         </div>
       </div>
+<a href="identifying-confounding-factors-caron-set.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 
-<a href="SeqQualTop.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
@@ -1093,7 +1363,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/rstudio/bookdown-demo/edit/master/index.Rmd",
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/featSelec.Rmd",
 "text": "Edit"
 },
 "history": {

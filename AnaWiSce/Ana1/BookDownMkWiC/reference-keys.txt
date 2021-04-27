@@ -171,7 +171,7 @@ log-cpm-1
 scran-1
 sctransform-4
 session-information-4
-dimensionality-reduction-for-visualisation
+dimRedForVizTop
 principal-component-analysis
 description
 example-2
@@ -186,3 +186,9 @@ umap
 session-information-5
 identifying-confounding-factors---caron-set
 session-information-6
+feature-selection
+load-data-1
+feature-selection-with-scran
+modelling-and-removing-technical-noise
+choosing-some-hvgs
+session-information-7
