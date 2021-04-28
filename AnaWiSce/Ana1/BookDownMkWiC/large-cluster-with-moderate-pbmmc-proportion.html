@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 19 large cluster with moderate PBMMC proportion: | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
+  <meta name="description" content="A report for all analyses (bookdown::gitbook)." />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 19 large cluster with moderate PBMMC proportion: | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="A report for all analyses (bookdown::gitbook)." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 19 large cluster with moderate PBMMC proportion: | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  
+  <meta name="twitter:description" content="A report for all analyses (bookdown::gitbook)." />
+  
+
+<meta name="author" content="Stephane Ballereau, Zeynep Kalender Atak" />
+
+
+<meta name="date" content="2021-04-28" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"/>
+<link rel="next" href="cluster-marker-genes.html"/>
+<script src="libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<script src="libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding-0.18/datatables.js"></script>
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.10.20/js/jquery.dataTables.min.js"></script>
+<link href="libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
+
+<script>
+/* ========================================================================
+ * Bootstrap: transition.js v3.3.7
+ * http://getbootstrap.com/javascript/#transitions
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      WebkitTransition : 'webkitTransitionEnd',
+      MozTransition    : 'transitionend',
+      OTransition      : 'oTransitionEnd otransitionend',
+      transition       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+
+    return false // explicit for ie8 (  ._.)
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false
+    var $el = this
+    $(this).one('bsTransitionEnd', function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+
+    if (!$.support.transition) return
+
+    $.event.special.bsTransitionEnd = {
+      bindType: $.support.transition.end,
+      delegateType: $.support.transition.end,
+      handle: function (e) {
+        if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
+      }
+    }
+  })
+
+}(jQuery);
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: collapse.js v3.3.7
+ * http://getbootstrap.com/javascript/#collapse
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+/* jshint latedef: false */
+
++function ($) {
+  'use strict';
+
+  // COLLAPSE PUBLIC CLASS DEFINITION
+  // ================================
+
+  var Collapse = function (element, options) {
+    this.$element      = $(element)
+    this.options       = $.extend({}, Collapse.DEFAULTS, options)
+    this.$trigger      = $('[data-toggle="collapse"][href="#' + element.id + '"],' +
+                           '[data-toggle="collapse"][data-target="#' + element.id + '"]')
+    this.transitioning = null
+
+    if (this.options.parent) {
+      this.$parent = this.getParent()
+    } else {
+      this.addAriaAndCollapsedClass(this.$element, this.$trigger)
+    }
+
+    if (this.options.toggle) this.toggle()
+  }
+
+  Collapse.VERSION  = '3.3.7'
+
+  Collapse.TRANSITION_DURATION = 350
+
+  Collapse.DEFAULTS = {
+    toggle: true
+  }
+
+  Collapse.prototype.dimension = function () {
+    var hasWidth = this.$element.hasClass('width')
+    return hasWidth ? 'width' : 'height'
+  }
+
+  Collapse.prototype.show = function () {
+    if (this.transitioning || this.$element.hasClass('in')) return
+
+    var activesData
+    var actives = this.$parent && this.$parent.children('.panel').children('.in, .collapsing')
+
+    if (actives && actives.length) {
+      activesData = actives.data('bs.collapse')
+      if (activesData && activesData.transitioning) return
+    }
+
+    var startEvent = $.Event('show.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    if (actives && actives.length) {
+      Plugin.call(actives, 'hide')
+      activesData || actives.data('bs.collapse', null)
+    }
+
+    var dimension = this.dimension()
+
+    this.$element
+      .removeClass('collapse')
+      .addClass('collapsing')[dimension](0)
+      .attr('aria-expanded', true)
+
+    this.$trigger
+      .removeClass('collapsed')
+      .attr('aria-expanded', true)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse in')[dimension]('')
+      this.transitioning = 0
+      this.$element
+        .trigger('shown.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    var scrollSize = $.camelCase(['scroll', dimension].join('-'))
+
+    this.$element
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)[dimension](this.$element[0][scrollSize])
+  }
+
+  Collapse.prototype.hide = function () {
+    if (this.transitioning || !this.$element.hasClass('in')) return
+
+    var startEvent = $.Event('hide.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    var dimension = this.dimension()
+
+    this.$element[dimension](this.$element[dimension]())[0].offsetHeight
+
+    this.$element
+      .addClass('collapsing')
+      .removeClass('collapse in')
+      .attr('aria-expanded', false)
+
+    this.$trigger
+      .addClass('collapsed')
+      .attr('aria-expanded', false)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.transitioning = 0
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse')
+        .trigger('hidden.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    this.$element
+      [dimension](0)
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)
+  }
+
+  Collapse.prototype.toggle = function () {
+    this[this.$element.hasClass('in') ? 'hide' : 'show']()
+  }
+
+  Collapse.prototype.getParent = function () {
+    return $(this.options.parent)
+      .find('[data-toggle="collapse"][data-parent="' + this.options.parent + '"]')
+      .each($.proxy(function (i, element) {
+        var $element = $(element)
+        this.addAriaAndCollapsedClass(getTargetFromTrigger($element), $element)
+      }, this))
+      .end()
+  }
+
+  Collapse.prototype.addAriaAndCollapsedClass = function ($element, $trigger) {
+    var isOpen = $element.hasClass('in')
+
+    $element.attr('aria-expanded', isOpen)
+    $trigger
+      .toggleClass('collapsed', !isOpen)
+      .attr('aria-expanded', isOpen)
+  }
+
+  function getTargetFromTrigger($trigger) {
+    var href
+    var target = $trigger.attr('data-target')
+      || (href = $trigger.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+
+    return $(target)
+  }
+
+
+  // COLLAPSE PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('bs.collapse')
+      var options = $.extend({}, Collapse.DEFAULTS, $this.data(), typeof option == 'object' && option)
+
+      if (!data && options.toggle && /show|hide/.test(option)) options.toggle = false
+      if (!data) $this.data('bs.collapse', (data = new Collapse(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  var old = $.fn.collapse
+
+  $.fn.collapse             = Plugin
+  $.fn.collapse.Constructor = Collapse
+
+
+  // COLLAPSE NO CONFLICT
+  // ====================
+
+  $.fn.collapse.noConflict = function () {
+    $.fn.collapse = old
+    return this
+  }
+
+
+  // COLLAPSE DATA-API
+  // =================
+
+  $(document).on('click.bs.collapse.data-api', '[data-toggle="collapse"]', function (e) {
+    var $this   = $(this)
+
+    if (!$this.attr('data-target')) e.preventDefault()
+
+    var $target = getTargetFromTrigger($this)
+    var data    = $target.data('bs.collapse')
+    var option  = data ? 'toggle' : $this.data()
+
+    Plugin.call($target, option)
+  })
+
+}(jQuery);
+</script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.sourceCode, pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan');
+  rCodeBlocks.each(function() {
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    if (show)
+      div.addClass('in');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (show ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs code-folding-btn pull-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-target', '#' + id)
+        .attr('aria-expanded', show)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // update state of button on show/hide
+    div.on('hidden.bs.collapse', function () {
+      showCodeText.text('Code');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+    });
+  });
+
+}
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: dropdown.js v3.3.7
+ * http://getbootstrap.com/javascript/#dropdowns
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // DROPDOWN CLASS DEFINITION
+  // =========================
+
+  var backdrop = '.dropdown-backdrop'
+  var toggle   = '[data-toggle="dropdown"]'
+  var Dropdown = function (element) {
+    $(element).on('click.bs.dropdown', this.toggle)
+  }
+
+  Dropdown.VERSION = '3.3.7'
+
+  function getParent($this) {
+    var selector = $this.attr('data-target')
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && /#[A-Za-z]/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+    }
+
+    var $parent = selector && $(selector)
+
+    return $parent && $parent.length ? $parent : $this.parent()
+  }
+
+  function clearMenus(e) {
+    if (e && e.which === 3) return
+    $(backdrop).remove()
+    $(toggle).each(function () {
+      var $this         = $(this)
+      var $parent       = getParent($this)
+      var relatedTarget = { relatedTarget: this }
+
+      if (!$parent.hasClass('open')) return
+
+      if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return
+
+      $parent.trigger(e = $.Event('hide.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this.attr('aria-expanded', 'false')
+      $parent.removeClass('open').trigger($.Event('hidden.bs.dropdown', relatedTarget))
+    })
+  }
+
+  Dropdown.prototype.toggle = function (e) {
+    var $this = $(this)
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    clearMenus()
+
+    if (!isActive) {
+      if ('ontouchstart' in document.documentElement && !$parent.closest('.navbar-nav').length) {
+        // if mobile we use a backdrop because click events don't delegate
+        $(document.createElement('div'))
+          .addClass('dropdown-backdrop')
+          .insertAfter($(this))
+          .on('click', clearMenus)
+      }
+
+      var relatedTarget = { relatedTarget: this }
+      $parent.trigger(e = $.Event('show.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this
+        .trigger('focus')
+        .attr('aria-expanded', 'true')
+
+      $parent
+        .toggleClass('open')
+        .trigger($.Event('shown.bs.dropdown', relatedTarget))
+    }
+
+    return false
+  }
+
+  Dropdown.prototype.keydown = function (e) {
+    if (!/(38|40|27|32)/.test(e.which) || /input|textarea/i.test(e.target.tagName)) return
+
+    var $this = $(this)
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    if (!isActive && e.which != 27 || isActive && e.which == 27) {
+      if (e.which == 27) $parent.find(toggle).trigger('focus')
+      return $this.trigger('click')
+    }
+
+    var desc = ' li:not(.disabled):visible a'
+    var $items = $parent.find('.dropdown-menu' + desc)
+
+    if (!$items.length) return
+
+    var index = $items.index(e.target)
+
+    if (e.which == 38 && index > 0)                 index--         // up
+    if (e.which == 40 && index < $items.length - 1) index++         // down
+    if (!~index)                                    index = 0
+
+    $items.eq(index).trigger('focus')
+  }
+
+
+  // DROPDOWN PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this = $(this)
+      var data  = $this.data('bs.dropdown')
+
+      if (!data) $this.data('bs.dropdown', (data = new Dropdown(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  var old = $.fn.dropdown
+
+  $.fn.dropdown             = Plugin
+  $.fn.dropdown.Constructor = Dropdown
+
+
+  // DROPDOWN NO CONFLICT
+  // ====================
+
+  $.fn.dropdown.noConflict = function () {
+    $.fn.dropdown = old
+    return this
+  }
+
+
+  // APPLY TO STANDARD DROPDOWN ELEMENTS
+  // ===================================
+
+  $(document)
+    .on('click.bs.dropdown.data-api', clearMenus)
+    .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle)
+    .on('keydown.bs.dropdown.data-api', toggle, Dropdown.prototype.keydown)
+    .on('keydown.bs.dropdown.data-api', '.dropdown-menu', Dropdown.prototype.keydown)
+
+}(jQuery);
+</script>
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+.row { display: flex; }
+.collapse { display: none; }
+.in { display:block }
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+.open > .dropdown-menu {
+    display: block;
+}
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "hide");
+});
+</script>
+
+
+<script>
+document.write('<div class="btn-group pull-right" style="position: absolute; top: 20%; right: 2%; z-index: 200"><button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-_extension-text-contrast=""><span>Code</span> <span class="caret"></span></button><ul class="dropdown-menu" style="min-width: 50px;"><li><a id="rmd-show-all-code" href="#">Show All Code</a></li><li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li></ul></div>')
+</script>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">CRUK Functional Genomics Summer School 2020</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Preamble</a><ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#the-study"><i class="fa fa-check"></i><b>1.1</b> The study</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#the-plan"><i class="fa fa-check"></i><b>1.2</b> The plan</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#the-analyses"><i class="fa fa-check"></i><b>1.3</b> The analyses</a></li>
+<li class="chapter" data-level="1.4" data-path="index.html"><a href="index.html#overall-summary"><i class="fa fa-check"></i><b>1.4</b> Overall summary</a></li>
+<li class="chapter" data-level="1.5" data-path="index.html"><a href="index.html#conclusion"><i class="fa fa-check"></i><b>1.5</b> Conclusion</a></li>
+<li class="chapter" data-level="1.6" data-path="index.html"><a href="index.html#abbreviations"><i class="fa fa-check"></i><b>1.6</b> Abbreviations</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="SeqQualTop.html"><a href="SeqQualTop.html"><i class="fa fa-check"></i><b>2</b> Sequence Quality</a><ul>
+<li class="chapter" data-level="2.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#introduction"><i class="fa fa-check"></i><b>2.1</b> Introduction</a></li>
+<li class="chapter" data-level="2.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#caronbourque2020---fastqc"><i class="fa fa-check"></i><b>2.2</b> CaronBourque2020 - fastqc</a></li>
+<li class="chapter" data-level="2.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#caronbourque2020---multiqc"><i class="fa fa-check"></i><b>2.3</b> CaronBourque2020 - MultiQC</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#sample-index-i1"><i class="fa fa-check"></i><b>2.3.1</b> sample index: I1</a></li>
+<li class="chapter" data-level="2.3.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#cell-barcode-umi-r1"><i class="fa fa-check"></i><b>2.3.2</b> cell barcode + UMI: R1</a></li>
+<li class="chapter" data-level="2.3.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#insert-r2"><i class="fa fa-check"></i><b>2.3.3</b> insert: R2</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="SeqQualTop.html"><a href="SeqQualTop.html#hca-adult-bmmc---fastqc"><i class="fa fa-check"></i><b>2.4</b> HCA adult BMMC - fastqc</a></li>
+<li class="chapter" data-level="2.5" data-path="SeqQualTop.html"><a href="SeqQualTop.html#hca-adult-bmmc---multiqc"><i class="fa fa-check"></i><b>2.5</b> HCA adult BMMC - MultiQC</a><ul>
+<li class="chapter" data-level="2.5.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#sample-index-i1-1"><i class="fa fa-check"></i><b>2.5.1</b> sample index: I1</a></li>
+<li class="chapter" data-level="2.5.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#cell-barcode-umi-r1-1"><i class="fa fa-check"></i><b>2.5.2</b> cell barcode + UMI: R1</a></li>
+<li class="chapter" data-level="2.5.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#insert-r2-1"><i class="fa fa-check"></i><b>2.5.3</b> insert: R2</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html"><i class="fa fa-check"></i><b>3</b> Alignment and feature counting</a><ul>
+<li class="chapter" data-level="3.1" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#introduction-1"><i class="fa fa-check"></i><b>3.1</b> Introduction</a></li>
+<li class="chapter" data-level="3.2" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-pipeline-in-brief"><i class="fa fa-check"></i><b>3.2</b> 10X cellranger pipeline in brief</a></li>
+<li class="chapter" data-level="3.3" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#sample-sheet"><i class="fa fa-check"></i><b>3.3</b> sample sheet</a></li>
+<li class="chapter" data-level="3.4" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-reports-for-caronbourque2020"><i class="fa fa-check"></i><b>3.4</b> 10X cellranger reports for CaronBourque2020</a></li>
+<li class="chapter" data-level="3.5" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-reports-for-hcas-adult-bmmcs"><i class="fa fa-check"></i><b>3.5</b> 10X cellranger reports for HCA’s adult BMMCs</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html"><i class="fa fa-check"></i><b>4</b> Quality Control</a><ul>
+<li class="chapter" data-level="4.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#introduction-2"><i class="fa fa-check"></i><b>4.1</b> Introduction</a></li>
+<li class="chapter" data-level="4.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#load-packages"><i class="fa fa-check"></i><b>4.2</b> Load packages</a></li>
+<li class="chapter" data-level="4.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#sample-sheet-1"><i class="fa fa-check"></i><b>4.3</b> Sample sheet</a></li>
+<li class="chapter" data-level="4.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#data-representation"><i class="fa fa-check"></i><b>4.4</b> Data representation</a></li>
+<li class="chapter" data-level="4.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#example"><i class="fa fa-check"></i><b>4.5</b> Example</a></li>
+<li class="chapter" data-level="4.6" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#mapping-qc"><i class="fa fa-check"></i><b>4.6</b> Mapping QC</a><ul>
+<li class="chapter" data-level="4.6.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#gene-body-coverage"><i class="fa fa-check"></i><b>4.6.1</b> Gene body coverage</a></li>
+<li class="chapter" data-level="4.6.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#amplification-rate"><i class="fa fa-check"></i><b>4.6.2</b> Amplification rate</a></li>
+</ul></li>
+<li class="chapter" data-level="4.7" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#cell-calling-for-droplet-data"><i class="fa fa-check"></i><b>4.7</b> Cell calling for droplet data</a><ul>
+<li class="chapter" data-level="4.7.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#mixture-model"><i class="fa fa-check"></i><b>4.7.1</b> Mixture model</a></li>
+<li class="chapter" data-level="4.7.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#barcode-rank-plot"><i class="fa fa-check"></i><b>4.7.2</b> Barcode rank plot</a></li>
+<li class="chapter" data-level="4.7.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#inflection-point"><i class="fa fa-check"></i><b>4.7.3</b> Inflection point</a></li>
+<li class="chapter" data-level="4.7.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#cellranger-v1-and-v2"><i class="fa fa-check"></i><b>4.7.4</b> Cellranger v1 and v2</a></li>
+<li class="chapter" data-level="4.7.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#dropletutils-and-emptydrops"><i class="fa fa-check"></i><b>4.7.5</b> DropletUtils and EmptyDrops</a></li>
+</ul></li>
+<li class="chapter" data-level="4.8" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#load-filtered-matrices"><i class="fa fa-check"></i><b>4.8</b> Load filtered matrices</a></li>
+<li class="chapter" data-level="4.9" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#properties-of-scrna-seq-data"><i class="fa fa-check"></i><b>4.9</b> Properties of scRNA-seq data</a></li>
+<li class="chapter" data-level="4.10" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#quality-control"><i class="fa fa-check"></i><b>4.10</b> Quality control</a><ul>
+<li class="chapter" data-level="4.10.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#qc-metric-distribution"><i class="fa fa-check"></i><b>4.10.1</b> QC metric distribution</a></li>
+</ul></li>
+<li class="chapter" data-level="4.11" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#identification-of-low-quality-cells-with-adaptive-thresholds"><i class="fa fa-check"></i><b>4.11</b> Identification of low-quality cells with adaptive thresholds</a><ul>
+<li class="chapter" data-level="4.11.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#library-size"><i class="fa fa-check"></i><b>4.11.1</b> Library size</a></li>
+<li class="chapter" data-level="4.11.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#number-of-genes"><i class="fa fa-check"></i><b>4.11.2</b> Number of genes</a></li>
+<li class="chapter" data-level="4.11.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#mitochondrial-content"><i class="fa fa-check"></i><b>4.11.3</b> Mitochondrial content</a></li>
+<li class="chapter" data-level="4.11.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#summary"><i class="fa fa-check"></i><b>4.11.4</b> Summary</a></li>
+<li class="chapter" data-level="4.11.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#all-steps-at-once"><i class="fa fa-check"></i><b>4.11.5</b> All steps at once</a></li>
+<li class="chapter" data-level="4.11.6" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#assumptions"><i class="fa fa-check"></i><b>4.11.6</b> Assumptions</a></li>
+</ul></li>
+<li class="chapter" data-level="4.12" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#experimental-factors"><i class="fa fa-check"></i><b>4.12</b> Experimental factors</a><ul>
+<li class="chapter" data-level="4.12.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#identify-poor-quality-batches"><i class="fa fa-check"></i><b>4.12.1</b> Identify poor-quality batches</a><ul>
+<li class="chapter" data-level="4.12.1.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#number-of-genes-detected"><i class="fa fa-check"></i><b>4.12.1.1</b> Number of genes detected</a><ul>
+<li class="chapter" data-level="4.12.1.1.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#mitochondrial-content-1"><i class="fa fa-check"></i><b>4.12.1.1.1</b> Mitochondrial content</a></li>
+</ul></li>
+<li class="chapter" data-level="4.12.1.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#samples-to-check"><i class="fa fa-check"></i><b>4.12.1.2</b> Samples to check</a></li>
+</ul></li>
+<li class="chapter" data-level="4.12.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#qc-metrics-space"><i class="fa fa-check"></i><b>4.12.2</b> QC metrics space</a></li>
+<li class="chapter" data-level="4.12.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#qc-pca"><i class="fa fa-check"></i><b>4.12.3</b> QC PCA</a></li>
+<li class="chapter" data-level="4.12.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#other-diagnostic-plots"><i class="fa fa-check"></i><b>4.12.4</b> Other diagnostic plots</a></li>
+<li class="chapter" data-level="4.12.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#filter-low-quality-cells-out"><i class="fa fa-check"></i><b>4.12.5</b> Filter low-quality cells out</a></li>
+</ul></li>
+<li class="chapter" data-level="4.13" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#novelty"><i class="fa fa-check"></i><b>4.13</b> Novelty</a></li>
+<li class="chapter" data-level="4.14" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#qc-based-on-sparsity"><i class="fa fa-check"></i><b>4.14</b> QC based on sparsity</a><ul>
+<li class="chapter" data-level="4.14.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#remove-genes-that-are-not-expressed-at-all"><i class="fa fa-check"></i><b>4.14.1</b> Remove genes that are not expressed at all</a></li>
+<li class="chapter" data-level="4.14.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#sparsity-plots"><i class="fa fa-check"></i><b>4.14.2</b> Sparsity plots</a></li>
+<li class="chapter" data-level="4.14.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#filters"><i class="fa fa-check"></i><b>4.14.3</b> Filters</a></li>
+<li class="chapter" data-level="4.14.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#separate-caron-and-hca-batches"><i class="fa fa-check"></i><b>4.14.4</b> Separate Caron and Hca batches</a></li>
+<li class="chapter" data-level="4.14.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#caron-only"><i class="fa fa-check"></i><b>4.14.5</b> Caron only</a></li>
+<li class="chapter" data-level="4.14.6" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#hca-only"><i class="fa fa-check"></i><b>4.14.6</b> Hca only</a></li>
+</ul></li>
+<li class="chapter" data-level="4.15" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#subsample-hca-set"><i class="fa fa-check"></i><b>4.15</b> Subsample Hca set</a></li>
+<li class="chapter" data-level="4.16" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#session-information"><i class="fa fa-check"></i><b>4.16</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="PreProcTop.html"><a href="PreProcTop.html"><i class="fa fa-check"></i><b>5</b> Quality Control</a><ul>
+<li class="chapter" data-level="5.1" data-path="PreProcTop.html"><a href="PreProcTop.html#introduction-3"><i class="fa fa-check"></i><b>5.1</b> Introduction</a></li>
+<li class="chapter" data-level="5.2" data-path="PreProcTop.html"><a href="PreProcTop.html#load-packages-1"><i class="fa fa-check"></i><b>5.2</b> Load packages</a></li>
+<li class="chapter" data-level="5.3" data-path="PreProcTop.html"><a href="PreProcTop.html#sample-sheet-2"><i class="fa fa-check"></i><b>5.3</b> Sample sheet</a></li>
+<li class="chapter" data-level="5.4" data-path="PreProcTop.html"><a href="PreProcTop.html#data-representation-1"><i class="fa fa-check"></i><b>5.4</b> Data representation</a></li>
+<li class="chapter" data-level="5.5" data-path="PreProcTop.html"><a href="PreProcTop.html#example-1"><i class="fa fa-check"></i><b>5.5</b> Example</a></li>
+<li class="chapter" data-level="5.6" data-path="PreProcTop.html"><a href="PreProcTop.html#mapping-qc-1"><i class="fa fa-check"></i><b>5.6</b> Mapping QC</a><ul>
+<li class="chapter" data-level="5.6.1" data-path="PreProcTop.html"><a href="PreProcTop.html#gene-body-coverage-1"><i class="fa fa-check"></i><b>5.6.1</b> Gene body coverage</a></li>
+<li class="chapter" data-level="5.6.2" data-path="PreProcTop.html"><a href="PreProcTop.html#amplification-rate-1"><i class="fa fa-check"></i><b>5.6.2</b> Amplification rate</a></li>
+</ul></li>
+<li class="chapter" data-level="5.7" data-path="PreProcTop.html"><a href="PreProcTop.html#cell-calling-for-droplet-data-1"><i class="fa fa-check"></i><b>5.7</b> Cell calling for droplet data</a><ul>
+<li class="chapter" data-level="5.7.1" data-path="PreProcTop.html"><a href="PreProcTop.html#mixture-model-1"><i class="fa fa-check"></i><b>5.7.1</b> Mixture model</a></li>
+<li class="chapter" data-level="5.7.2" data-path="PreProcTop.html"><a href="PreProcTop.html#barcode-rank-plot-1"><i class="fa fa-check"></i><b>5.7.2</b> Barcode rank plot</a></li>
+<li class="chapter" data-level="5.7.3" data-path="PreProcTop.html"><a href="PreProcTop.html#inflection-point-1"><i class="fa fa-check"></i><b>5.7.3</b> Inflection point</a></li>
+<li class="chapter" data-level="5.7.4" data-path="PreProcTop.html"><a href="PreProcTop.html#cellranger-v1-and-v2-1"><i class="fa fa-check"></i><b>5.7.4</b> Cellranger v1 and v2</a></li>
+<li class="chapter" data-level="5.7.5" data-path="PreProcTop.html"><a href="PreProcTop.html#dropletutils-and-emptydrops-1"><i class="fa fa-check"></i><b>5.7.5</b> DropletUtils and EmptyDrops</a></li>
+</ul></li>
+<li class="chapter" data-level="5.8" data-path="PreProcTop.html"><a href="PreProcTop.html#load-filtered-matrices-1"><i class="fa fa-check"></i><b>5.8</b> Load filtered matrices</a></li>
+<li class="chapter" data-level="5.9" data-path="PreProcTop.html"><a href="PreProcTop.html#properties-of-scrna-seq-data-1"><i class="fa fa-check"></i><b>5.9</b> Properties of scRNA-seq data</a></li>
+<li class="chapter" data-level="5.10" data-path="PreProcTop.html"><a href="PreProcTop.html#quality-control-1"><i class="fa fa-check"></i><b>5.10</b> Quality control</a><ul>
+<li class="chapter" data-level="5.10.1" data-path="PreProcTop.html"><a href="PreProcTop.html#qc-metric-distribution-1"><i class="fa fa-check"></i><b>5.10.1</b> QC metric distribution</a></li>
+</ul></li>
+<li class="chapter" data-level="5.11" data-path="PreProcTop.html"><a href="PreProcTop.html#identification-of-low-quality-cells-with-adaptive-thresholds-1"><i class="fa fa-check"></i><b>5.11</b> Identification of low-quality cells with adaptive thresholds</a><ul>
+<li class="chapter" data-level="5.11.1" data-path="PreProcTop.html"><a href="PreProcTop.html#library-size-1"><i class="fa fa-check"></i><b>5.11.1</b> Library size</a></li>
+<li class="chapter" data-level="5.11.2" data-path="PreProcTop.html"><a href="PreProcTop.html#number-of-genes-1"><i class="fa fa-check"></i><b>5.11.2</b> Number of genes</a></li>
+<li class="chapter" data-level="5.11.3" data-path="PreProcTop.html"><a href="PreProcTop.html#mitochondrial-content-2"><i class="fa fa-check"></i><b>5.11.3</b> Mitochondrial content</a></li>
+<li class="chapter" data-level="5.11.4" data-path="PreProcTop.html"><a href="PreProcTop.html#summary-1"><i class="fa fa-check"></i><b>5.11.4</b> Summary</a></li>
+<li class="chapter" data-level="5.11.5" data-path="PreProcTop.html"><a href="PreProcTop.html#all-steps-at-once-1"><i class="fa fa-check"></i><b>5.11.5</b> All steps at once</a></li>
+<li class="chapter" data-level="5.11.6" data-path="PreProcTop.html"><a href="PreProcTop.html#assumptions-1"><i class="fa fa-check"></i><b>5.11.6</b> Assumptions</a></li>
+</ul></li>
+<li class="chapter" data-level="5.12" data-path="PreProcTop.html"><a href="PreProcTop.html#experimental-factors-1"><i class="fa fa-check"></i><b>5.12</b> Experimental factors</a><ul>
+<li class="chapter" data-level="5.12.1" data-path="PreProcTop.html"><a href="PreProcTop.html#identify-poor-quality-batches-1"><i class="fa fa-check"></i><b>5.12.1</b> Identify poor-quality batches</a><ul>
+<li class="chapter" data-level="5.12.1.1" data-path="PreProcTop.html"><a href="PreProcTop.html#number-of-genes-detected-1"><i class="fa fa-check"></i><b>5.12.1.1</b> Number of genes detected</a><ul>
+<li class="chapter" data-level="5.12.1.1.1" data-path="PreProcTop.html"><a href="PreProcTop.html#mitochondrial-content-3"><i class="fa fa-check"></i><b>5.12.1.1.1</b> Mitochondrial content</a></li>
+</ul></li>
+<li class="chapter" data-level="5.12.1.2" data-path="PreProcTop.html"><a href="PreProcTop.html#samples-to-check-1"><i class="fa fa-check"></i><b>5.12.1.2</b> Samples to check</a></li>
+</ul></li>
+<li class="chapter" data-level="5.12.2" data-path="PreProcTop.html"><a href="PreProcTop.html#qc-metrics-space-1"><i class="fa fa-check"></i><b>5.12.2</b> QC metrics space</a></li>
+<li class="chapter" data-level="5.12.3" data-path="PreProcTop.html"><a href="PreProcTop.html#qc-pca-1"><i class="fa fa-check"></i><b>5.12.3</b> QC PCA</a></li>
+<li class="chapter" data-level="5.12.4" data-path="PreProcTop.html"><a href="PreProcTop.html#other-diagnostic-plots-1"><i class="fa fa-check"></i><b>5.12.4</b> Other diagnostic plots</a></li>
+<li class="chapter" data-level="5.12.5" data-path="PreProcTop.html"><a href="PreProcTop.html#filter-low-quality-cells-out-1"><i class="fa fa-check"></i><b>5.12.5</b> Filter low-quality cells out</a></li>
+</ul></li>
+<li class="chapter" data-level="5.13" data-path="PreProcTop.html"><a href="PreProcTop.html#novelty-1"><i class="fa fa-check"></i><b>5.13</b> Novelty</a></li>
+<li class="chapter" data-level="5.14" data-path="PreProcTop.html"><a href="PreProcTop.html#qc-based-on-sparsity-1"><i class="fa fa-check"></i><b>5.14</b> QC based on sparsity</a><ul>
+<li class="chapter" data-level="5.14.1" data-path="PreProcTop.html"><a href="PreProcTop.html#remove-genes-that-are-not-expressed-at-all-1"><i class="fa fa-check"></i><b>5.14.1</b> Remove genes that are not expressed at all</a></li>
+<li class="chapter" data-level="5.14.2" data-path="PreProcTop.html"><a href="PreProcTop.html#sparsity-plots-1"><i class="fa fa-check"></i><b>5.14.2</b> Sparsity plots</a></li>
+<li class="chapter" data-level="5.14.3" data-path="PreProcTop.html"><a href="PreProcTop.html#filters-1"><i class="fa fa-check"></i><b>5.14.3</b> Filters</a></li>
+<li class="chapter" data-level="5.14.4" data-path="PreProcTop.html"><a href="PreProcTop.html#separate-caron-and-hca-batches-1"><i class="fa fa-check"></i><b>5.14.4</b> Separate Caron and Hca batches</a></li>
+<li class="chapter" data-level="5.14.5" data-path="PreProcTop.html"><a href="PreProcTop.html#caron-only-1"><i class="fa fa-check"></i><b>5.14.5</b> Caron only</a></li>
+<li class="chapter" data-level="5.14.6" data-path="PreProcTop.html"><a href="PreProcTop.html#hca-only-1"><i class="fa fa-check"></i><b>5.14.6</b> Hca only</a></li>
+</ul></li>
+<li class="chapter" data-level="5.15" data-path="PreProcTop.html"><a href="PreProcTop.html#session-information-1"><i class="fa fa-check"></i><b>5.15</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html"><i class="fa fa-check"></i><b>6</b> Normalisation</a><ul>
+<li class="chapter" data-level="6.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#caron"><i class="fa fa-check"></i><b>6.1</b> Caron</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#library-size-normalization"><i class="fa fa-check"></i><b>6.1.1</b> Library size normalization</a></li>
+<li class="chapter" data-level="6.1.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#deconvolution"><i class="fa fa-check"></i><b>6.1.2</b> Deconvolution</a></li>
+<li class="chapter" data-level="6.1.3" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#compute-size-factors"><i class="fa fa-check"></i><b>6.1.3</b> Compute size factors</a><ul>
+<li class="chapter" data-level="6.1.3.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#apply-size-factors"><i class="fa fa-check"></i><b>6.1.3.1</b> Apply size factors</a></li>
+<li class="chapter" data-level="6.1.3.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#save-object"><i class="fa fa-check"></i><b>6.1.3.2</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#hca"><i class="fa fa-check"></i><b>6.2</b> Hca</a><ul>
+<li class="chapter" data-level="6.2.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#library-size-normalization-1"><i class="fa fa-check"></i><b>6.2.1</b> Library size normalization</a></li>
+<li class="chapter" data-level="6.2.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#deconvolution-1"><i class="fa fa-check"></i><b>6.2.2</b> Deconvolution</a></li>
+<li class="chapter" data-level="6.2.3" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#compute-size-factors-1"><i class="fa fa-check"></i><b>6.2.3</b> Compute size factors</a><ul>
+<li class="chapter" data-level="6.2.3.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#apply-size-factors-1"><i class="fa fa-check"></i><b>6.2.3.1</b> Apply size factors</a></li>
+<li class="chapter" data-level="6.2.3.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#save-object-1"><i class="fa fa-check"></i><b>6.2.3.2</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#sctransform"><i class="fa fa-check"></i><b>6.3</b> SCTransform</a><ul>
+<li class="chapter" data-level="6.3.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#caron-1"><i class="fa fa-check"></i><b>6.3.1</b> Caron</a></li>
+<li class="chapter" data-level="6.3.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#hca-1"><i class="fa fa-check"></i><b>6.3.2</b> Hca</a></li>
+</ul></li>
+<li class="chapter" data-level="6.4" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#session-information-2"><i class="fa fa-check"></i><b>6.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html"><i class="fa fa-check"></i><b>7</b> Normalisation - Caron set</a><ul>
+<li class="chapter" data-level="7.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#scaling-normalization"><i class="fa fa-check"></i><b>7.1</b> Scaling normalization</a><ul>
+<li class="chapter" data-level="7.1.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#cpm"><i class="fa fa-check"></i><b>7.1.1</b> CPM</a></li>
+<li class="chapter" data-level="7.1.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#deseqs-size-factor"><i class="fa fa-check"></i><b>7.1.2</b> DESeq’s size factor</a></li>
+<li class="chapter" data-level="7.1.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#weighted-trimmed-mean-of-m-values"><i class="fa fa-check"></i><b>7.1.3</b> Weighted Trimmed mean of M-values</a></li>
+<li class="chapter" data-level="7.1.4" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#library-size-normalization-2"><i class="fa fa-check"></i><b>7.1.4</b> Library size normalization</a></li>
+<li class="chapter" data-level="7.1.5" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#deconvolution-2"><i class="fa fa-check"></i><b>7.1.5</b> Deconvolution</a><ul>
+<li class="chapter" data-level="7.1.5.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#cluster-cells"><i class="fa fa-check"></i><b>7.1.5.1</b> Cluster cells</a></li>
+<li class="chapter" data-level="7.1.5.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#compute-size-factors-2"><i class="fa fa-check"></i><b>7.1.5.2</b> Compute size factors</a></li>
+<li class="chapter" data-level="7.1.5.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#apply-size-factors-2"><i class="fa fa-check"></i><b>7.1.5.3</b> Apply size factors</a></li>
+<li class="chapter" data-level="7.1.5.4" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#save-object-2"><i class="fa fa-check"></i><b>7.1.5.4</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#sctransform-1"><i class="fa fa-check"></i><b>7.2</b> SCTransform</a><ul>
+<li class="chapter" data-level="7.2.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#inspect-data"><i class="fa fa-check"></i><b>7.2.1</b> Inspect data</a></li>
+<li class="chapter" data-level="7.2.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#transformation"><i class="fa fa-check"></i><b>7.2.2</b> Transformation</a></li>
+<li class="chapter" data-level="7.2.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#save-sce-object"><i class="fa fa-check"></i><b>7.2.3</b> Save SCE object</a></li>
+</ul></li>
+<li class="chapter" data-level="7.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#visualisation"><i class="fa fa-check"></i><b>7.3</b> Visualisation</a><ul>
+<li class="chapter" data-level="7.3.1" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#log-raw-counts"><i class="fa fa-check"></i><b>7.3.1</b> log raw counts</a></li>
+<li class="chapter" data-level="7.3.2" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#log-cpm"><i class="fa fa-check"></i><b>7.3.2</b> log CPM</a></li>
+<li class="chapter" data-level="7.3.3" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#scran"><i class="fa fa-check"></i><b>7.3.3</b> scran</a></li>
+<li class="chapter" data-level="7.3.4" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#sctransform-2"><i class="fa fa-check"></i><b>7.3.4</b> SCTransform</a></li>
+</ul></li>
+<li class="chapter" data-level="7.4" data-path="normalisation-caron-set.html"><a href="normalisation-caron-set.html#session-information-3"><i class="fa fa-check"></i><b>7.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html"><i class="fa fa-check"></i><b>8</b> Normalisation - GSM3872434 set</a><ul>
+<li class="chapter" data-level="8.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#scaling-normalization-1"><i class="fa fa-check"></i><b>8.1</b> Scaling normalization</a><ul>
+<li class="chapter" data-level="8.1.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#cpm-1"><i class="fa fa-check"></i><b>8.1.1</b> CPM</a></li>
+<li class="chapter" data-level="8.1.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#deseqs-size-factor-1"><i class="fa fa-check"></i><b>8.1.2</b> DESeq’s size factor</a></li>
+<li class="chapter" data-level="8.1.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#weighted-trimmed-mean-of-m-values-1"><i class="fa fa-check"></i><b>8.1.3</b> Weighted Trimmed mean of M-values</a></li>
+<li class="chapter" data-level="8.1.4" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#library-size-factor-distribution"><i class="fa fa-check"></i><b>8.1.4</b> Library size factor distribution</a></li>
+<li class="chapter" data-level="8.1.5" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#deconvolution-3"><i class="fa fa-check"></i><b>8.1.5</b> Deconvolution</a><ul>
+<li class="chapter" data-level="8.1.5.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#cluster-cells-1"><i class="fa fa-check"></i><b>8.1.5.1</b> Cluster cells</a></li>
+<li class="chapter" data-level="8.1.5.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#compute-size-factors-3"><i class="fa fa-check"></i><b>8.1.5.2</b> Compute size factors</a></li>
+<li class="chapter" data-level="8.1.5.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#apply-size-factors-3"><i class="fa fa-check"></i><b>8.1.5.3</b> Apply size factors</a></li>
+<li class="chapter" data-level="8.1.5.4" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#save-object-3"><i class="fa fa-check"></i><b>8.1.5.4</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="8.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#sctransform-3"><i class="fa fa-check"></i><b>8.2</b> SCTransform</a><ul>
+<li class="chapter" data-level="8.2.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#inspect-data-1"><i class="fa fa-check"></i><b>8.2.1</b> Inspect data</a></li>
+<li class="chapter" data-level="8.2.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#transformation-1"><i class="fa fa-check"></i><b>8.2.2</b> Transformation</a></li>
+<li class="chapter" data-level="8.2.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#save-sce-object-1"><i class="fa fa-check"></i><b>8.2.3</b> Save SCE object</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#visualisation-1"><i class="fa fa-check"></i><b>8.3</b> Visualisation</a><ul>
+<li class="chapter" data-level="8.3.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#log-raw-counts-1"><i class="fa fa-check"></i><b>8.3.1</b> log raw counts</a></li>
+<li class="chapter" data-level="8.3.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#log-cpm-1"><i class="fa fa-check"></i><b>8.3.2</b> log CPM</a></li>
+<li class="chapter" data-level="8.3.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#scran-1"><i class="fa fa-check"></i><b>8.3.3</b> scran</a></li>
+<li class="chapter" data-level="8.3.4" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#sctransform-4"><i class="fa fa-check"></i><b>8.3.4</b> SCTransform</a></li>
+</ul></li>
+<li class="chapter" data-level="8.4" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#session-information-4"><i class="fa fa-check"></i><b>8.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html"><i class="fa fa-check"></i><b>9</b> Dimensionality reduction for visualisation</a><ul>
+<li class="chapter" data-level="9.1" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#principal-component-analysis"><i class="fa fa-check"></i><b>9.1</b> Principal Component Analysis</a><ul>
+<li class="chapter" data-level="9.1.1" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#description"><i class="fa fa-check"></i><b>9.1.1</b> Description</a></li>
+<li class="chapter" data-level="9.1.2" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#example-2"><i class="fa fa-check"></i><b>9.1.2</b> Example</a></li>
+</ul></li>
+<li class="chapter" data-level="9.2" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#load-packages-2"><i class="fa fa-check"></i><b>9.2</b> Load packages</a></li>
+<li class="chapter" data-level="9.3" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#load-data"><i class="fa fa-check"></i><b>9.3</b> Load data</a></li>
+<li class="chapter" data-level="9.4" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#pca"><i class="fa fa-check"></i><b>9.4</b> PCA</a><ul>
+<li class="chapter" data-level="9.4.1" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#correlation-between-pcs-and-the-total-number-of-features-detected"><i class="fa fa-check"></i><b>9.4.1</b> Correlation between PCs and the total number of features detected</a></li>
+</ul></li>
+<li class="chapter" data-level="9.5" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#t-sne-t-distributed-stochastic-neighbor-embedding"><i class="fa fa-check"></i><b>9.5</b> t-SNE: t-Distributed Stochastic Neighbor Embedding</a><ul>
+<li class="chapter" data-level="9.5.1" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#perplexity"><i class="fa fa-check"></i><b>9.5.1</b> Perplexity</a></li>
+<li class="chapter" data-level="9.5.2" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#stochasticity"><i class="fa fa-check"></i><b>9.5.2</b> Stochasticity</a></li>
+</ul></li>
+<li class="chapter" data-level="9.6" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#umap"><i class="fa fa-check"></i><b>9.6</b> UMAP</a></li>
+<li class="chapter" data-level="9.7" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#session-information-5"><i class="fa fa-check"></i><b>9.7</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html"><i class="fa fa-check"></i><b>10</b> Identifying confounding factors - Caron set</a><ul>
+<li class="chapter" data-level="10.1" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html#load-object"><i class="fa fa-check"></i><b>10.1</b> Load object</a></li>
+<li class="chapter" data-level="10.2" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html#pca-1"><i class="fa fa-check"></i><b>10.2</b> PCA</a></li>
+<li class="chapter" data-level="10.3" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html#normalised-counts"><i class="fa fa-check"></i><b>10.3</b> Normalised counts</a></li>
+<li class="chapter" data-level="10.4" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html#session-information-6"><i class="fa fa-check"></i><b>10.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="featSelecTop.html"><a href="featSelecTop.html"><i class="fa fa-check"></i><b>11</b> Feature selection</a><ul>
+<li class="chapter" data-level="11.1" data-path="featSelecTop.html"><a href="featSelecTop.html#load-data-1"><i class="fa fa-check"></i><b>11.1</b> Load data</a></li>
+<li class="chapter" data-level="11.2" data-path="featSelecTop.html"><a href="featSelecTop.html#feature-selection-with-scran"><i class="fa fa-check"></i><b>11.2</b> Feature selection with scran</a><ul>
+<li class="chapter" data-level="11.2.1" data-path="featSelecTop.html"><a href="featSelecTop.html#modelling-and-removing-technical-noise"><i class="fa fa-check"></i><b>11.2.1</b> Modelling and removing technical noise</a></li>
+<li class="chapter" data-level="11.2.2" data-path="featSelecTop.html"><a href="featSelecTop.html#choosing-some-hvgs"><i class="fa fa-check"></i><b>11.2.2</b> Choosing some HVGs</a></li>
+</ul></li>
+<li class="chapter" data-level="11.3" data-path="featSelecTop.html"><a href="featSelecTop.html#session-information-7"><i class="fa fa-check"></i><b>11.3</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html"><i class="fa fa-check"></i><b>12</b> batch correction - GSM3872442 set</a><ul>
+<li class="chapter" data-level="12.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#prepare-data"><i class="fa fa-check"></i><b>12.1</b> Prepare data</a></li>
+<li class="chapter" data-level="12.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#normalise-each-separately-and-re-pool"><i class="fa fa-check"></i><b>12.2</b> Normalise each separately and re-pool</a></li>
+<li class="chapter" data-level="12.3" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#normalise-batches-together"><i class="fa fa-check"></i><b>12.3</b> Normalise batches together</a></li>
+<li class="chapter" data-level="12.4" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#batch-correction"><i class="fa fa-check"></i><b>12.4</b> Batch correction</a><ul>
+<li class="chapter" data-level="12.4.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#gaussian-normal-linear-models"><i class="fa fa-check"></i><b>12.4.1</b> Gaussian (normal) linear models</a></li>
+</ul></li>
+<li class="chapter" data-level="12.5" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#sctransform-5"><i class="fa fa-check"></i><b>12.5</b> SCTransform</a><ul>
+<li class="chapter" data-level="12.5.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#batch-only"><i class="fa fa-check"></i><b>12.5.1</b> Batch only</a></li>
+<li class="chapter" data-level="12.5.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#both-library-size-and-batch"><i class="fa fa-check"></i><b>12.5.2</b> Both library size and batch</a></li>
+</ul></li>
+<li class="chapter" data-level="12.6" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#mnncorrect"><i class="fa fa-check"></i><b>12.6</b> mnnCorrect</a><ul>
+<li class="chapter" data-level="12.6.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#check-presence-of-batch-effect"><i class="fa fa-check"></i><b>12.6.1</b> Check presence of batch effect</a></li>
+<li class="chapter" data-level="12.6.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#correct-batch-effect-with-mnncorrect"><i class="fa fa-check"></i><b>12.6.2</b> Correct batch effect with mnnCorrect</a></li>
+</ul></li>
+<li class="chapter" data-level="12.7" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#fastmnn"><i class="fa fa-check"></i><b>12.7</b> fastMNN</a></li>
+<li class="chapter" data-level="12.8" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#harmony"><i class="fa fa-check"></i><b>12.8</b> Harmony</a></li>
+<li class="chapter" data-level="12.9" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#session-information-8"><i class="fa fa-check"></i><b>12.9</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="13" data-path="dimensionality-reduction-for-analysis.html"><a href="dimensionality-reduction-for-analysis.html"><i class="fa fa-check"></i><b>13</b> Dimensionality reduction for analysis</a><ul>
+<li class="chapter" data-level="13.1" data-path="dimensionality-reduction-for-analysis.html"><a href="dimensionality-reduction-for-analysis.html#load-data-2"><i class="fa fa-check"></i><b>13.1</b> Load data</a></li>
+<li class="chapter" data-level="13.2" data-path="dimensionality-reduction-for-analysis.html"><a href="dimensionality-reduction-for-analysis.html#denoising-expression-values-using-pca"><i class="fa fa-check"></i><b>13.2</b> Denoising expression values using PCA</a></li>
+<li class="chapter" data-level="13.3" data-path="dimensionality-reduction-for-analysis.html"><a href="dimensionality-reduction-for-analysis.html#visualise-expression-patterns-of-some-hvgs"><i class="fa fa-check"></i><b>13.3</b> Visualise expression patterns of some HVGs</a></li>
+<li class="chapter" data-level="13.4" data-path="dimensionality-reduction-for-analysis.html"><a href="dimensionality-reduction-for-analysis.html#session-information-9"><i class="fa fa-check"></i><b>13.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="14" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html"><i class="fa fa-check"></i><b>14</b> Data integration</a><ul>
+<li class="chapter" data-level="14.1" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#abbreviations-1"><i class="fa fa-check"></i><b>14.1</b> Abbreviations</a></li>
+<li class="chapter" data-level="14.2" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#motivation"><i class="fa fa-check"></i><b>14.2</b> Motivation</a></li>
+<li class="chapter" data-level="14.3" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#loading-the-data"><i class="fa fa-check"></i><b>14.3</b> Loading the data</a></li>
+<li class="chapter" data-level="14.4" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#diagnosing-batch-effects"><i class="fa fa-check"></i><b>14.4</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="14.5" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#linear-regression"><i class="fa fa-check"></i><b>14.5</b> Linear regression</a></li>
+<li class="chapter" data-level="14.6" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#performing-mnn-correction"><i class="fa fa-check"></i><b>14.6</b> Performing MNN correction</a><ul>
+<li class="chapter" data-level="14.6.1" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#algorithm-overview"><i class="fa fa-check"></i><b>14.6.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="14.6.2" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#application-to-the-data"><i class="fa fa-check"></i><b>14.6.2</b> Application to the data</a></li>
+<li class="chapter" data-level="14.6.3" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#correction-diagnostics"><i class="fa fa-check"></i><b>14.6.3</b> Correction diagnostics</a></li>
+</ul></li>
+<li class="chapter" data-level="14.7" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#preserving-biological-heterogeneity"><i class="fa fa-check"></i><b>14.7</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="14.7.1" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#comparison-to-within-batch-clusters"><i class="fa fa-check"></i><b>14.7.1</b> Comparison to within-batch clusters</a></li>
+<li class="chapter" data-level="14.7.2" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#encouraging-consistency-with-marker-genes"><i class="fa fa-check"></i><b>14.7.2</b> Encouraging consistency with marker genes</a></li>
+</ul></li>
+<li class="chapter" data-level="14.8" data-path="DataIntegrationPbmmcTop.html"><a href="DataIntegrationPbmmcTop.html#session-information-10"><i class="fa fa-check"></i><b>14.8</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="15" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html"><i class="fa fa-check"></i><b>15</b> Data integration</a><ul>
+<li class="chapter" data-level="15.1" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#abbreviations-2"><i class="fa fa-check"></i><b>15.1</b> Abbreviations</a></li>
+<li class="chapter" data-level="15.2" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#motivation-1"><i class="fa fa-check"></i><b>15.2</b> Motivation</a></li>
+<li class="chapter" data-level="15.3" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#load-data-3"><i class="fa fa-check"></i><b>15.3</b> Load data</a></li>
+<li class="chapter" data-level="15.4" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#loading-the-data-1"><i class="fa fa-check"></i><b>15.4</b> Loading the data</a></li>
+<li class="chapter" data-level="15.5" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#diagnosing-batch-effects-1"><i class="fa fa-check"></i><b>15.5</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="15.6" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#linear-regression-1"><i class="fa fa-check"></i><b>15.6</b> Linear regression</a></li>
+<li class="chapter" data-level="15.7" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#performing-mnn-correction-1"><i class="fa fa-check"></i><b>15.7</b> Performing MNN correction</a><ul>
+<li class="chapter" data-level="15.7.1" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#algorithm-overview-1"><i class="fa fa-check"></i><b>15.7.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="15.7.2" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#application-to-the-data-1"><i class="fa fa-check"></i><b>15.7.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="15.8" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#correction-diagnostics-1"><i class="fa fa-check"></i><b>15.8</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="15.8.1" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#mixing-between-batches"><i class="fa fa-check"></i><b>15.8.1</b> Mixing between batches</a></li>
+<li class="chapter" data-level="15.8.2" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#preserving-biological-heterogeneity-1"><i class="fa fa-check"></i><b>15.8.2</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="15.8.2.1" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-after-mnn-correction"><i class="fa fa-check"></i><b>15.8.2.1</b> Comparison between within-batch clusters and across-batch clusters obtained after MNN correction</a></li>
+<li class="chapter" data-level="15.8.2.2" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#coassignment-probabilities"><i class="fa fa-check"></i><b>15.8.2.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="15.8.2.3" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#rand-index"><i class="fa fa-check"></i><b>15.8.2.3</b> Rand index</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="15.9" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#encouraging-consistency-with-marker-genes-1"><i class="fa fa-check"></i><b>15.9</b> Encouraging consistency with marker genes</a></li>
+</ul></li>
+<li class="chapter" data-level="16" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html"><i class="fa fa-check"></i><b>16</b> Data integration</a><ul>
+<li class="chapter" data-level="16.1" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#abbreviations-3"><i class="fa fa-check"></i><b>16.1</b> Abbreviations</a></li>
+<li class="chapter" data-level="16.2" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#motivation-2"><i class="fa fa-check"></i><b>16.2</b> Motivation</a></li>
+<li class="chapter" data-level="16.3" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#load-data-4"><i class="fa fa-check"></i><b>16.3</b> Load data</a></li>
+<li class="chapter" data-level="16.4" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#loading-the-data-2"><i class="fa fa-check"></i><b>16.4</b> Loading the data</a></li>
+<li class="chapter" data-level="16.5" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#diagnosing-batch-effects-2"><i class="fa fa-check"></i><b>16.5</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="16.6" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#linear-regression-2"><i class="fa fa-check"></i><b>16.6</b> Linear regression</a></li>
+<li class="chapter" data-level="16.7" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#performing-mnn-correction-2"><i class="fa fa-check"></i><b>16.7</b> Performing MNN correction</a><ul>
+<li class="chapter" data-level="16.7.1" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#algorithm-overview-2"><i class="fa fa-check"></i><b>16.7.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="16.7.2" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#application-to-the-data-2"><i class="fa fa-check"></i><b>16.7.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="16.8" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#correction-diagnostics-2"><i class="fa fa-check"></i><b>16.8</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="16.8.1" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#mixing-between-batches-1"><i class="fa fa-check"></i><b>16.8.1</b> Mixing between batches</a></li>
+<li class="chapter" data-level="16.8.2" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#preserving-biological-heterogeneity-2"><i class="fa fa-check"></i><b>16.8.2</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="16.8.2.1" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-after-mnn-correction-1"><i class="fa fa-check"></i><b>16.8.2.1</b> Comparison between within-batch clusters and across-batch clusters obtained after MNN correction</a></li>
+<li class="chapter" data-level="16.8.2.2" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#coassignment-probabilities-1"><i class="fa fa-check"></i><b>16.8.2.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="16.8.2.3" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#rand-index-1"><i class="fa fa-check"></i><b>16.8.2.3</b> Rand index</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="16.9" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#encouraging-consistency-with-marker-genes-2"><i class="fa fa-check"></i><b>16.9</b> Encouraging consistency with marker genes</a></li>
+</ul></li>
+<li class="chapter" data-level="17" data-path="data-integration.html"><a href="data-integration.html"><i class="fa fa-check"></i><b>17</b> Data integration</a><ul>
+<li class="chapter" data-level="17.1" data-path="data-integration.html"><a href="data-integration.html#abbreviations-4"><i class="fa fa-check"></i><b>17.1</b> Abbreviations</a></li>
+<li class="chapter" data-level="17.2" data-path="data-integration.html"><a href="data-integration.html#motivation-3"><i class="fa fa-check"></i><b>17.2</b> Motivation</a></li>
+<li class="chapter" data-level="17.3" data-path="data-integration.html"><a href="data-integration.html#load-data-5"><i class="fa fa-check"></i><b>17.3</b> Load data</a></li>
+<li class="chapter" data-level="17.4" data-path="data-integration.html"><a href="data-integration.html#loading-the-data-3"><i class="fa fa-check"></i><b>17.4</b> Loading the data</a></li>
+<li class="chapter" data-level="17.5" data-path="data-integration.html"><a href="data-integration.html#diagnosing-batch-effects-3"><i class="fa fa-check"></i><b>17.5</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="17.6" data-path="data-integration.html"><a href="data-integration.html#linear-regression-3"><i class="fa fa-check"></i><b>17.6</b> Linear regression</a></li>
+<li class="chapter" data-level="17.7" data-path="data-integration.html"><a href="data-integration.html#performing-mnn-correction-3"><i class="fa fa-check"></i><b>17.7</b> Performing MNN correction</a><ul>
+<li class="chapter" data-level="17.7.1" data-path="data-integration.html"><a href="data-integration.html#algorithm-overview-3"><i class="fa fa-check"></i><b>17.7.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="17.7.2" data-path="data-integration.html"><a href="data-integration.html#application-to-the-data-3"><i class="fa fa-check"></i><b>17.7.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="17.8" data-path="data-integration.html"><a href="data-integration.html#correction-diagnostics-3"><i class="fa fa-check"></i><b>17.8</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="17.8.1" data-path="data-integration.html"><a href="data-integration.html#mixing-between-batches-2"><i class="fa fa-check"></i><b>17.8.1</b> Mixing between batches</a></li>
+<li class="chapter" data-level="17.8.2" data-path="data-integration.html"><a href="data-integration.html#preserving-biological-heterogeneity-3"><i class="fa fa-check"></i><b>17.8.2</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="17.8.2.1" data-path="data-integration.html"><a href="data-integration.html#comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-after-mnn-correction-2"><i class="fa fa-check"></i><b>17.8.2.1</b> Comparison between within-batch clusters and across-batch clusters obtained after MNN correction</a></li>
+<li class="chapter" data-level="17.8.2.2" data-path="data-integration.html"><a href="data-integration.html#coassignment-probabilities-2"><i class="fa fa-check"></i><b>17.8.2.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="17.8.2.3" data-path="data-integration.html"><a href="data-integration.html#rand-index-2"><i class="fa fa-check"></i><b>17.8.2.3</b> Rand index</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="17.9" data-path="data-integration.html"><a href="data-integration.html#encouraging-consistency-with-marker-genes-3"><i class="fa fa-check"></i><b>17.9</b> Encouraging consistency with marker genes</a></li>
+</ul></li>
+<li class="chapter" data-level="18" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><i class="fa fa-check"></i><b>18</b> Data integration</a><ul>
+<li class="chapter" data-level="18.1" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#abbreviations-5"><i class="fa fa-check"></i><b>18.1</b> Abbreviations</a></li>
+<li class="chapter" data-level="18.2" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#motivation-4"><i class="fa fa-check"></i><b>18.2</b> Motivation</a></li>
+<li class="chapter" data-level="18.3" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#load-data-6"><i class="fa fa-check"></i><b>18.3</b> Load data</a></li>
+<li class="chapter" data-level="18.4" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#loading-the-data-4"><i class="fa fa-check"></i><b>18.4</b> Loading the data</a></li>
+<li class="chapter" data-level="18.5" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#diagnosing-batch-effects-4"><i class="fa fa-check"></i><b>18.5</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="18.6" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#linear-regression-4"><i class="fa fa-check"></i><b>18.6</b> Linear regression</a></li>
+<li class="chapter" data-level="18.7" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#performing-mnn-correction-4"><i class="fa fa-check"></i><b>18.7</b> Performing MNN correction</a><ul>
+<li class="chapter" data-level="18.7.1" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#algorithm-overview-4"><i class="fa fa-check"></i><b>18.7.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="18.7.2" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#application-to-the-data-4"><i class="fa fa-check"></i><b>18.7.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="18.8" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#correction-diagnostics-4"><i class="fa fa-check"></i><b>18.8</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="18.8.1" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#mixing-between-batches-3"><i class="fa fa-check"></i><b>18.8.1</b> Mixing between batches</a></li>
+<li class="chapter" data-level="18.8.2" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#preserving-biological-heterogeneity-4"><i class="fa fa-check"></i><b>18.8.2</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="18.8.2.1" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-after-mnn-correction-3"><i class="fa fa-check"></i><b>18.8.2.1</b> Comparison between within-batch clusters and across-batch clusters obtained after MNN correction</a></li>
+<li class="chapter" data-level="18.8.2.2" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#coassignment-probabilities-3"><i class="fa fa-check"></i><b>18.8.2.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="18.8.2.3" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#rand-index-3"><i class="fa fa-check"></i><b>18.8.2.3</b> Rand index</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="18.9" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#encouraging-consistency-with-marker-genes-4"><i class="fa fa-check"></i><b>18.9</b> Encouraging consistency with marker genes</a></li>
+<li class="chapter" data-level="18.10" data-path="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html"><a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html#identify-clusters-with-pbmmc-cells"><i class="fa fa-check"></i><b>18.10</b> Identify clusters with PBMMC cells</a></li>
+</ul></li>
+<li class="chapter" data-level="19" data-path="large-cluster-with-moderate-pbmmc-proportion.html"><a href="large-cluster-with-moderate-pbmmc-proportion.html"><i class="fa fa-check"></i><b>19</b> large cluster with moderate PBMMC proportion:</a></li>
+<li class="chapter" data-level="20" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html"><i class="fa fa-check"></i><b>20</b> Cluster marker genes</a><ul>
+<li class="chapter" data-level="20.1" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#learning-objectives"><i class="fa fa-check"></i><b>20.1</b> Learning objectives</a></li>
+<li class="chapter" data-level="20.2" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#load-data-7"><i class="fa fa-check"></i><b>20.2</b> Load data</a></li>
+<li class="chapter" data-level="20.3" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#detecting-genes-differentially-expressed-between-clusters"><i class="fa fa-check"></i><b>20.3</b> Detecting genes differentially expressed between clusters</a><ul>
+<li class="chapter" data-level="20.3.1" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#differential-expression-analysis"><i class="fa fa-check"></i><b>20.3.1</b> Differential expression analysis</a></li>
+<li class="chapter" data-level="20.3.2" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#heatmap"><i class="fa fa-check"></i><b>20.3.2</b> Heatmap</a></li>
+</ul></li>
+<li class="chapter" data-level="20.4" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#using-the-log-fold-change"><i class="fa fa-check"></i><b>20.4</b> Using the log-fold change</a></li>
+<li class="chapter" data-level="20.5" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#finding-cluster-specific-markers"><i class="fa fa-check"></i><b>20.5</b> Finding cluster-specific markers</a></li>
+<li class="chapter" data-level="20.6" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#using-the-wilcoxon-rank-sum-test"><i class="fa fa-check"></i><b>20.6</b> Using the Wilcoxon rank sum test</a></li>
+<li class="chapter" data-level="20.7" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#using-a-binomial-test"><i class="fa fa-check"></i><b>20.7</b> Using a binomial test</a></li>
+<li class="chapter" data-level="20.8" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#combining-multiple-marker-statistics"><i class="fa fa-check"></i><b>20.8</b> Combining multiple marker statistics</a></li>
+<li class="chapter" data-level="20.9" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#invalidity-of-p-values"><i class="fa fa-check"></i><b>20.9</b> Invalidity of p-values</a><ul>
+<li class="chapter" data-level="20.9.1" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#from-data-snooping"><i class="fa fa-check"></i><b>20.9.1</b> 11.5.1 From data snooping</a></li>
+<li class="chapter" data-level="20.9.2" data-path="cluster-marker-genes.html"><a href="cluster-marker-genes.html#nature-of-replication"><i class="fa fa-check"></i><b>20.9.2</b> Nature of replication</a></li>
+</ul></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="large-cluster-with-moderate-pbmmc-proportion" class="section level1">
+<h1><span class="header-section-number">Chapter 19</span> large cluster with moderate PBMMC proportion:</h1>
+<p>Check for clusters with large number of cancer cells and high proportion of PBMMC cells.</p>
+<div class="sourceCode" id="cb1474"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1474-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-1"></a><span class="co"># DEV, hardcoded cluster 2</span></span>
+<span id="cb1474-2"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-2"></a>normNoLog &lt;-<span class="st"> </span>normNoLog <span class="op">%&gt;%</span><span class="st"> </span>tibble<span class="op">::</span><span class="kw">rownames_to_column</span>(<span class="st">&quot;cluster&quot;</span>)</span>
+<span id="cb1474-3"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-3"></a>normNoLog<span class="op">$</span>cluster &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;c&quot;</span>, normNoLog<span class="op">$</span>cluster)</span>
+<span id="cb1474-4"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-4"></a>normNoLog <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(sum <span class="op">&gt;</span><span class="st"> </span><span class="dv">1000</span> <span class="op">&amp;</span><span class="st"> </span>prop <span class="op">&gt;</span><span class="st"> </span><span class="fl">0.5</span>) <span class="co"># ok with 3000 cells per sample</span></span>
+<span id="cb1474-5"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-5"></a></span>
+<span id="cb1474-6"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-6"></a>normNoLog<span class="op">$</span>tmpCluBool &lt;-<span class="st"> </span><span class="kw">ifelse</span>(normNoLog<span class="op">$</span>cluster<span class="op">==</span><span class="st">&quot;c2&quot;</span>, <span class="ot">TRUE</span>, <span class="ot">FALSE</span>)</span>
+<span id="cb1474-7"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-7"></a></span>
+<span id="cb1474-8"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-8"></a><span class="kw">colData</span>(mnn.out) &lt;-<span class="st"> </span><span class="kw">colData</span>(mnn.out) <span class="op">%&gt;%</span></span>
+<span id="cb1474-9"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-9"></a><span class="st">  </span><span class="kw">data.frame</span>() <span class="op">%&gt;%</span></span>
+<span id="cb1474-10"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-10"></a><span class="st">  </span><span class="kw">left_join</span>(normNoLog[<span class="kw">c</span>(<span class="st">&quot;cluster&quot;</span>, <span class="st">&quot;tmpCluBool&quot;</span>)], <span class="dt">by=</span><span class="st">&quot;cluster&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb1474-11"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-11"></a><span class="st">  </span><span class="kw">DataFrame</span>()</span>
+<span id="cb1474-12"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-12"></a></span>
+<span id="cb1474-13"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-13"></a>demo &lt;-<span class="st"> </span>m.out[[<span class="st">&quot;2&quot;</span>]]</span>
+<span id="cb1474-14"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-14"></a></span>
+<span id="cb1474-15"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-15"></a>genex &lt;-<span class="st"> </span><span class="kw">rownames</span>(demo)[<span class="dv">1</span>]</span>
+<span id="cb1474-16"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-16"></a>p &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(mnn.out, <span class="dt">colour_by =</span> genex, <span class="dt">by_exprs_values=</span><span class="st">&quot;reconstructed&quot;</span>)</span>
+<span id="cb1474-17"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-17"></a>p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(</span>
+<span id="cb1474-18"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-18"></a>            <span class="kw">paste</span>(<span class="st">&quot;cluster&quot;</span>, cluToGet, genex,</span>
+<span id="cb1474-19"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-19"></a>            <span class="kw">rowData</span>(uncorrected)[genex,<span class="st">&quot;Symbol&quot;</span>])</span>
+<span id="cb1474-20"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-20"></a>        )</span>
+<span id="cb1474-21"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-21"></a><span class="kw">print</span>(p)</span>
+<span id="cb1474-22"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-22"></a></span>
+<span id="cb1474-23"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1474-23"></a>p <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(<span class="op">~</span>mnn.out<span class="op">$</span>tmpCluBool)</span></code></pre></div>
+<div class="sourceCode" id="cb1475"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1475-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-1"></a><span class="co"># DEV, hardcoded cluster 2</span></span>
+<span id="cb1475-2"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-2"></a>genex &lt;-<span class="st"> </span><span class="kw">rownames</span>(demo)[<span class="dv">5</span>]</span>
+<span id="cb1475-3"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-3"></a>p &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(mnn.out, <span class="dt">colour_by =</span> genex, <span class="dt">by_exprs_values=</span><span class="st">&quot;reconstructed&quot;</span>)</span>
+<span id="cb1475-4"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-4"></a>p &lt;-<span class="st"> </span>p <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(</span>
+<span id="cb1475-5"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-5"></a>            <span class="kw">paste</span>(<span class="st">&quot;cluster&quot;</span>, cluToGet, genex,</span>
+<span id="cb1475-6"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-6"></a>            <span class="kw">rowData</span>(uncorrected)[genex,<span class="st">&quot;Symbol&quot;</span>])</span>
+<span id="cb1475-7"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-7"></a>        )</span>
+<span id="cb1475-8"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-8"></a><span class="kw">print</span>(p)</span>
+<span id="cb1475-9"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-9"></a></span>
+<span id="cb1475-10"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1475-10"></a>p <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(mnn.out<span class="op">$</span>source_name<span class="op">~</span>mnn.out<span class="op">$</span>tmpCluBool)</span></code></pre></div>
+<p>Select cluster to keep.</p>
+<p>Inclusion criteria:
+- proportion of PBMMC cells in cluster is lower than the threshold for the proportion of PBMMC cell in a cluster, eg 50%
+- proportion of cancer cells in cluster lower than 10% of cells of that sample type</p>
+<div class="sourceCode" id="cb1476"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1476-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-1"></a>normNoLog &lt;-<span class="st"> </span>normNoLog <span class="op">%&gt;%</span><span class="st"> </span>tibble<span class="op">::</span><span class="kw">rownames_to_column</span>(<span class="st">&quot;cluster&quot;</span>)</span>
+<span id="cb1476-2"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-2"></a>normNoLog<span class="op">$</span>cluster &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;c&quot;</span>, normNoLog<span class="op">$</span>cluster)</span>
+<span id="cb1476-3"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-3"></a></span>
+<span id="cb1476-4"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-4"></a>otherSplType &lt;-<span class="st"> </span><span class="kw">setdiff</span>(splSetVec, <span class="st">&quot;PBMMC&quot;</span>) <span class="co"># ok for pairs of sample types</span></span>
+<span id="cb1476-5"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-5"></a>thdSize &lt;-<span class="st"> </span><span class="kw">sum</span>(normNoLog[,otherSplType])<span class="op">*</span><span class="fl">0.02</span></span>
+<span id="cb1476-6"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-6"></a>thdPropPbmmc &lt;-<span class="st"> </span><span class="fl">0.5</span></span>
+<span id="cb1476-7"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-7"></a></span>
+<span id="cb1476-8"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-8"></a><span class="co">#propLtDf &lt;- norm2 %&gt;% select(clusters,propLt050) %&gt;% unique()</span></span>
+<span id="cb1476-9"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-9"></a><span class="co">#propLtDf$cluster &lt;- paste0(&quot;c&quot;, propLtDf$clusters)</span></span>
+<span id="cb1476-10"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-10"></a></span>
+<span id="cb1476-11"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-11"></a>propLtDf &lt;-<span class="st"> </span>normNoLog <span class="op">%&gt;%</span></span>
+<span id="cb1476-12"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-12"></a><span class="st">  </span><span class="kw">filter</span>(prop <span class="op">&lt;</span><span class="st"> </span>thdPropPbmmc <span class="op">|</span><span class="st"> </span><span class="op">!!</span><span class="kw">sym</span>(otherSplType) <span class="op">&gt;</span><span class="st"> </span>thdSize)</span>
+<span id="cb1476-13"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-13"></a></span>
+<span id="cb1476-14"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-14"></a>normNoLog &lt;-<span class="st"> </span>normNoLog <span class="op">%&gt;%</span></span>
+<span id="cb1476-15"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-15"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tmpCluBool=</span> <span class="kw">ifelse</span>((prop <span class="op">&lt;</span><span class="st"> </span>thdPropPbmmc <span class="op">|</span><span class="st"> </span><span class="op">!!</span><span class="kw">sym</span>(otherSplType) <span class="op">&gt;</span><span class="st"> </span>thdSize), <span class="ot">TRUE</span>, <span class="ot">FALSE</span>))</span>
+<span id="cb1476-16"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-16"></a></span>
+<span id="cb1476-17"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-17"></a></span>
+<span id="cb1476-18"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-18"></a><span class="kw">colData</span>(mnn.out) &lt;-<span class="st"> </span><span class="kw">colData</span>(mnn.out) <span class="op">%&gt;%</span></span>
+<span id="cb1476-19"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-19"></a><span class="st">  </span><span class="kw">data.frame</span>() <span class="op">%&gt;%</span></span>
+<span id="cb1476-20"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-20"></a><span class="st">  </span><span class="co">#select(-tmpCluBool) %&gt;%</span></span>
+<span id="cb1476-21"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-21"></a><span class="st">  </span><span class="kw">left_join</span>(normNoLog[,<span class="kw">c</span>(<span class="st">&quot;cluster&quot;</span>, <span class="st">&quot;tmpCluBool&quot;</span>)], <span class="dt">by=</span><span class="st">&quot;cluster&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb1476-22"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-22"></a><span class="st">  </span><span class="kw">DataFrame</span>()</span>
+<span id="cb1476-23"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-23"></a></span>
+<span id="cb1476-24"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-24"></a></span>
+<span id="cb1476-25"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-25"></a>norm2 &lt;-<span class="st"> </span>normNoLog <span class="op">%&gt;%</span></span>
+<span id="cb1476-26"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-26"></a><span class="st">  </span><span class="kw">data.frame</span>() <span class="op">%&gt;%</span></span>
+<span id="cb1476-27"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-27"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>sum, <span class="op">-</span>prop) <span class="op">%&gt;%</span></span>
+<span id="cb1476-28"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-28"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span><span class="kw">c</span>(<span class="kw">grep</span>(<span class="st">&quot;propOut&quot;</span>, <span class="kw">colnames</span>(normNoLog), <span class="dt">value=</span><span class="ot">TRUE</span>))) <span class="op">%&gt;%</span></span>
+<span id="cb1476-29"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-29"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span><span class="kw">c</span>(<span class="kw">grep</span>(<span class="st">&quot;propLt&quot;</span>, <span class="kw">colnames</span>(normNoLog), <span class="dt">value=</span><span class="ot">TRUE</span>))) <span class="op">%&gt;%</span></span>
+<span id="cb1476-30"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-30"></a><span class="st">  </span><span class="co">#tibble::rownames_to_column(&quot;clusters&quot;) %&gt;% </span></span>
+<span id="cb1476-31"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-31"></a><span class="st">  </span>tidyr<span class="op">::</span><span class="kw">pivot_longer</span>(<span class="op">!</span><span class="kw">c</span>(cluster,</span>
+<span id="cb1476-32"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-32"></a>                         <span class="kw">grep</span>(<span class="st">&quot;tmpCluBool&quot;</span>, <span class="kw">colnames</span>(normNoLog), <span class="dt">value=</span><span class="ot">TRUE</span>)</span>
+<span id="cb1476-33"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-33"></a>                         ),</span>
+<span id="cb1476-34"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-34"></a>                      <span class="dt">names_to=</span><span class="st">&quot;source_name&quot;</span>,</span>
+<span id="cb1476-35"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-35"></a>                      <span class="dt">values_to=</span><span class="st">&quot;Freq&quot;</span>)</span>
+<span id="cb1476-36"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-36"></a></span>
+<span id="cb1476-37"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-37"></a>norm2<span class="op">$</span>cluster &lt;-<span class="st"> </span><span class="kw">factor</span>(norm2<span class="op">$</span>cluster,</span>
+<span id="cb1476-38"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-38"></a>                        <span class="dt">levels=</span><span class="kw">paste0</span>(<span class="st">&quot;c&quot;</span>, sortVecNames))</span>
+<span id="cb1476-39"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-39"></a></span>
+<span id="cb1476-40"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-40"></a>p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="dt">data=</span>norm2, <span class="kw">aes</span>(<span class="dt">x=</span>cluster,<span class="dt">y=</span>Freq, <span class="dt">fill=</span>source_name)) <span class="op">+</span></span>
+<span id="cb1476-41"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-41"></a><span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x=</span><span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">90</span>, <span class="dt">hjust =</span> <span class="dv">0</span>)) <span class="op">+</span></span>
+<span id="cb1476-42"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-42"></a><span class="st">    </span><span class="kw">geom_col</span>()</span>
+<span id="cb1476-43"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1476-43"></a>p</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/unnamed-chunk-480-1.png" width="672" /></p>
+<div class="sourceCode" id="cb1477"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1477-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1477-1"></a>p <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(norm2<span class="op">$</span>tmpCluBool)</span></code></pre></div>
+<p><img src="MkWiC_files/figure-html/unnamed-chunk-480-2.png" width="672" /></p>
+<div class="sourceCode" id="cb1478"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1478-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1478-1"></a>splSetToGet2 &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;,&quot;</span>, <span class="st">&quot;_&quot;</span>, splSetToGet)</span>
+<span id="cb1478-2"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1478-2"></a><span class="co"># save object?</span></span>
+<span id="cb1478-3"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1478-3"></a>fn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_normNoLog.Rds&quot;</span>,</span>
+<span id="cb1478-4"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1478-4"></a>              projDir,</span>
+<span id="cb1478-5"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1478-5"></a>              outDirBit,</span>
+<span id="cb1478-6"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1478-6"></a>              setName,</span>
+<span id="cb1478-7"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1478-7"></a>              setSuf,</span>
+<span id="cb1478-8"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1478-8"></a>              splSetToGet2) <span class="co"># &#39;dsi&#39; for data set integration</span></span>
+<span id="cb1478-9"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1478-9"></a><span class="kw">saveRDS</span>(normNoLog, <span class="dt">file=</span>fn)</span></code></pre></div>
+
+<!--
+  setSuf: '_allCells'
+source /home/baller01/.local/share/r-miniconda/bin/activate r-reticulate
+source /home/baller01/.local/share/r-miniconda/bin/deactivate r-reticulate
+-->
+<div class="sourceCode" id="cb1479"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1479-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1479-1"></a><span class="co"># OLD</span></span>
+<span id="cb1479-2"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1479-2"></a><span class="co">#projDir &lt;- &quot;/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
+<span id="cb1479-3"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1479-3"></a>projDir &lt;-<span class="st"> &quot;/data/personal/baller01/20200511_FernandesM_ME_crukBiSs2020&quot;</span></span>
+<span id="cb1479-4"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1479-4"></a></span>
+<span id="cb1479-5"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1479-5"></a>outDirBit &lt;-<span class="st"> &quot;AnaWiSce/Attempt3&quot;</span></span>
+<span id="cb1479-6"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1479-6"></a>nbPcToComp &lt;-<span class="st"> </span><span class="dv">50</span></span>
+<span id="cb1479-7"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1479-7"></a>splSetToGet &lt;-<span class="st"> &quot;PBMMC,ETV6-RUNX1&quot;</span> <span class="co"># params may not be read in if knitting book.</span></span>
+<span id="cb1479-8"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1479-8"></a>splSetVec &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">strsplit</span>(splSetToGet, <span class="st">&quot;,&quot;</span>)) <span class="co"># params may not be read in if knitting</span></span></code></pre></div>
+<div class="sourceCode" id="cb1480"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1480-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-1"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb1480-2"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-2"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
+<span id="cb1480-3"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-3"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span>
+<span id="cb1480-4"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-4"></a>cacheBool &lt;-<span class="st"> </span>params<span class="op">$</span>cacheBool</span>
+<span id="cb1480-5"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-5"></a>setName &lt;-<span class="st"> </span>params<span class="op">$</span>setName</span>
+<span id="cb1480-6"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-6"></a>splSetToGet &lt;-<span class="st"> </span>params<span class="op">$</span>splSetToGet</span>
+<span id="cb1480-7"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-7"></a>setSuf &lt;-<span class="st"> </span>params<span class="op">$</span>setSuf</span>
+<span id="cb1480-8"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-8"></a>dsiSuf &lt;-<span class="st"> </span>params<span class="op">$</span>dsiSuf <span class="co"># &#39;dsi&#39; for data set integration</span></span>
+<span id="cb1480-9"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-9"></a><span class="cf">if</span>(params<span class="op">$</span>bookType <span class="op">==</span><span class="st"> &quot;mk&quot;</span>){</span>
+<span id="cb1480-10"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-10"></a>    setName &lt;-<span class="st"> &quot;caron&quot;</span></span>
+<span id="cb1480-11"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-11"></a>    splSetToGet &lt;-<span class="st"> &quot;PBMMC,ETV6-RUNX1&quot;</span></span>
+<span id="cb1480-12"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-12"></a>    setSuf &lt;-<span class="st"> &quot;_5hCellPerSpl&quot;</span></span>
+<span id="cb1480-13"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-13"></a>    dsiSuf &lt;-<span class="st"> &#39;_dsi&#39;</span></span>
+<span id="cb1480-14"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-14"></a>}</span>
+<span id="cb1480-15"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-15"></a></span>
+<span id="cb1480-16"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-16"></a>splSetVec &lt;-<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">strsplit</span>(splSetToGet, <span class="st">&quot;,&quot;</span>)) <span class="co"># params may not be read in if knitting book.</span></span>
+<span id="cb1480-17"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-17"></a>splSetToGet2 &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;,&quot;</span>, <span class="st">&quot;_&quot;</span>, splSetToGet)</span>
+<span id="cb1480-18"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-18"></a>nbPcToComp &lt;-<span class="st"> </span><span class="dv">50</span></span>
+<span id="cb1480-19"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-19"></a>figSize &lt;-<span class="st"> </span><span class="dv">7</span></span>
+<span id="cb1480-20"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-20"></a></span>
+<span id="cb1480-21"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-21"></a>anaStg &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;&#39;%s_%s&#39;&quot;</span>, splSetToGet2, setSuf)</span>
+<span id="cb1480-22"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-22"></a></span>
+<span id="cb1480-23"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-23"></a><span class="co">#displayToUse &lt;- Sys.getenv(&quot;DISPLAY&quot;)</span></span>
+<span id="cb1480-24"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1480-24"></a><span class="co">#Cairo::CairoX11(display=displayToUse);</span></span></code></pre></div>
+<div class="sourceCode" id="cb1481"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1481-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1481-1"></a><span class="kw">capabilities</span>(<span class="st">&quot;cairo&quot;</span>)</span></code></pre></div>
+<pre><code>## cairo 
+##  TRUE</code></pre>
+<div class="sourceCode" id="cb1483"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1483-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1483-1"></a><span class="kw">getOption</span>(<span class="st">&#39;bitmapType&#39;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;cairo&quot;</code></pre>
+<div class="sourceCode" id="cb1485"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1485-1"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1485-1"></a><span class="kw">options</span>(<span class="dt">bitmapType=</span><span class="st">&#39;cairo&#39;</span>)</span>
+<span id="cb1485-2"><a href="large-cluster-with-moderate-pbmmc-proportion.html#cb1485-2"></a><span class="kw">getOption</span>(<span class="st">&#39;bitmapType&#39;</span>)</span></code></pre></div>
+<pre><code>## [1] &quot;cairo&quot;</code></pre>
+
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="dataSetIntegration-PBMMC-ETV6-RUNX1Top.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="cluster-marker-genes.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["MkWiC.pdf", "MkWiC.epub"],
+"toc": {
+"collapse": "subsection",
+"scroll_highlight": true
+},
+"code_folding": "hide"
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
