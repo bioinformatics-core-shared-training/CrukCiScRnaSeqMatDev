@@ -24,7 +24,7 @@ List of chapters:
 
 * index: index.Rmd
 * sequence quality: seqQual.Rmd [temp seqQual chapter](AnaWiSce/Ana1/BookDownMkWoC/SeqQualTop.html)
-* alignmment and feature counting, with cellranger: cellRanger.Rmd
+* alignmment and feature counting, with cellranger: cellRanger.Rmd [temp seqQual chapter](AnaWiSce/Ana1/BookDownMkWoC/SeqQualTop.html)
 * pre-processing - all cells: preProcAllCells.Rmd
 * pre-processing - downsampled sample set, down to 500 cells each: preProc.Rmd
 * normalisation - all cells: normalisation_whole.Rmd

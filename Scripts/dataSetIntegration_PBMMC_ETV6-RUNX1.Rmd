@@ -30,6 +30,8 @@ params:
   setSuf: "_allCells"
 -->
 
+# Data integration {#dataSetIntegration_PBMMC_ETV6-RUNX1Top}
+
 ```{r, eval=FALSE}
 # OLD
 #projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
@@ -84,7 +86,6 @@ library(clustree)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-# Data integration {#dataSetIntegration_PBMMC_ETV6-RUNX1Top}
 
 Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. Its text is reproduced below with few modifications to adapt it to the data set under scrutiny here.
 
@@ -1662,7 +1663,7 @@ print(p + facet_wrap(~mnn.out$propLt050))
 }
 ```
 
-# large cluster with moderate PBMMC proportion:
+<!-- large cluster with moderate PBMMC proportion -->
 
 Check for clusters with large number of cancer cells and high proportion of PBMMC cells.
 

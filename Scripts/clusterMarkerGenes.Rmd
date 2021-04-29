@@ -41,6 +41,12 @@ splSetToGet <- params$splSetToGet
 setName <- params$setName
 setSuf <- params$setSuf
 dsiSuf <- params$dsiSuf # 'dsi' for data set integration
+if(params$bookType == "mk"){
+	setName <- "caron"
+	splSetToGet <- "PBMMC,ETV6-RUNX1"
+	setSuf <- "_5hCellPerSpl"
+	dsiSuf <- '_dsi'
+}
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
@@ -111,6 +117,8 @@ if(!file.exists(tmpFn))
 	knitr::knit_exit()
 }
 mnn.out <- readRDS(tmpFn)
+rm(tmpFn)
+
 mnn.out <- runUMAP(mnn.out, dimred="corrected")
 
 # copy clustering output to uncorrected SCE
@@ -123,6 +131,7 @@ colData(sce) <- colData(uncorrected) %>%
 colData(sce)$cluster <- colData(sce)$leiden
 sce$clusterStg <- factor(paste0("c", sce$cluster),
 			 levels = paste0("c", levels(sce$cluster)))
+rm(uncorrected)
 ```
 
 Number of cells: `r ncol(sce)`.
@@ -214,6 +223,7 @@ tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_%s.tsv",
                  projDir, outDirBit, setName, setSuf, dsiSuf, splSetToGet2, clux)
 print(tmpFn)
 write.table(marker.set, file=tmpFn, sep="\t", quote=FALSE, row.names=FALSE)
+rm(tmpFn)
 ```
 
 Show expression of marker on t-SNE and UMAP:
@@ -252,6 +262,11 @@ gridExtra::grid.arrange(umapy, umap1b, ncol=2)
 
 ```{r, fig.height=0.5*figSize, fig.width=figSize}
 gridExtra::grid.arrange(umapx, umap1, ncol=2)
+```
+
+```{r tidy_dimRed_clusterMarkerGenes}
+rm(tsne1, tsne1b, umap1, umap1b)
+rm(tsnex, tsney, umapx, umapy)
 ```
 
 Gene set enrichment analyses used for bulk RNA-seq may be used to characterise clusters further. 
@@ -329,6 +344,7 @@ pheatmap(tmpData2,
                             name = "RdYlBu")))(length(breaksVec)),
            breaks            = breaksVec
            )
+rm(tmpData2)
 ```
 
 <!--
@@ -347,6 +363,7 @@ mat_cluster_cols <- sort_hclust(mat_cluster_cols)
 #plot(mat_cluster_cols, main = "Sorted Dendrogram", xlab = "", sub = "")
 
 mat_cluster_rows <- sort_hclust(hclust(dist(mat)))
+rm(mat)
 
 pheatmap(tmpData,
            border_color      = NA,
@@ -360,8 +377,6 @@ pheatmap(tmpData,
          )
 ```
 
-
-
 ```{r marker_set_clu1_heatmap_unsorted_recon}
 # select some top genes:
 #top.markers <- rownames(marker.set)[marker.set$Top <= 10]
@@ -370,7 +385,6 @@ top.markers <- marker.set[marker.set$Top <= 10,] %>%
   pull(Symbol)
 
 # have matrix to annotate sample with cluster and sample:
-#tmpData <- logcounts(sce)[top.markers,]
 tmpData3 <- assay(mnn.out) %>%
   as.matrix() %>%
   data.frame() %>%
@@ -413,6 +427,8 @@ pheatmap(tmpData3[,order(colData(sce)$clusterStg)],
            annotation_colors = mat_colors,
            cluster_cols      = FALSE
            )
+rm(tmpData3)
+rm(mnn.out, tmpData)
 ```
 
 To demonstrate how to interpret the results, we will use cluster 9 as our cluster of interest. The relevant DataFrame contains log2-fold changes of expression in cluster 9 over each other cluster, along with several statistics obtained by combining p-values (Simes 1986) across the pairwise comparisons involving cluster 9.
@@ -446,16 +462,18 @@ pheatmap(logFCs, breaks=seq(-5, 5, length.out=101))
 Our previous findMarkers() call considers both up- and downregulated genes to be potential markers. However, downregulated genes are less appealing as markers as it is more difficult to interpret and experimentally validate an absence of expression. To focus on up-regulated markers, we can instead perform a one-sided t-test to identify genes that are upregulated in each cluster compared to the others. This is achieved by setting direction="up" in the findMarkers() call.
 
 ```{r, eval=FALSE}
-markersWoBatch.up <- findMarkers(sce, groups=sce$clusterStg, direction="up")
+markersWoBatch.up <- findMarkers(sce,
+				 groups = sce$clusterStg,
+				 direction = "up")
 ```
 
 ```{r}
-markersWiBatch.up <- findMarkers(x=sce,
-                     groups=sce$clusterStg,
-                     block=sce$block,
-                     direction="up",
+markersWiBatch.up <- findMarkers(x = sce,
+                     groups = sce$clusterStg,
+                     block = sce$block,
+                     direction = "up",
                      #lfc=1,
-                     row.data=rowData(sce)[,
+                     row.data = rowData(sce)[,
                                            #c("Symbol", "ensembl_gene_id"),
                                            ,
                                            drop=FALSE])
@@ -608,8 +626,9 @@ rownames(AUCs) <- rowData(sce)[rownames(AUCs), "Symbol"]
 
 
 library(pheatmap)
-pheatmap(AUCs, breaks=seq(0, 1, length.out=21),
-    color=viridis::viridis(21))
+pheatmap(AUCs,
+	 breaks = seq(0, 1, length.out=21),
+	 color = viridis::viridis(21))
 ```
 
 One practical advantage of the WMW test over the Welch t-test is that it is symmetric with respect to differences in the size of the groups being compared. This means that, all else being equal, the top-ranked genes on each side of a DE comparison will have similar expression profiles regardless of the number of cells in each group. In contrast, the t-test will favor genes where the larger group has the higher relative variance as this increases the estimated degrees of freedom and decreases the resulting p-value. This can lead to unappealing rankings when the aim is to identify genes upregulated in smaller groups. The WMW test is not completely immune to variance effects - for example, it will slightly favor detection of DEGs at low average abundance where the greater number of ties at zero deflates the approximate variance of the rank sum statistic - but this is relatively benign as the selected genes are still fairly interesting.
@@ -693,6 +712,7 @@ marker.type2.w[,] %>%
   data.frame() %>%
   filter(ensembl_gene_id %in% u.type2.w)
 ```
+
 ```{r}
 # Examining all uniquely detected markers in each direction.
 library(scater)
@@ -787,6 +807,7 @@ print(colnames(combined[["c1"]]))
 combined[["c1"]]$Symbol <- rowData(sce)[rownames(combined[["c1"]]), "Symbol"]
 tmpCol <- c("Symbol", colnames(combined[["c1"]])[1:9])
 head(combined[["c1"]][,tmpCol])
+rm(sce)
 ```
 
 In addition, multiMarkerStats() will compute a number of new statistics by combining the per-regime statistics. The combined Top value is obtained by simply taking the largest Top value across all tests for a given gene, while the reported p.value is obtained by taking the largest p-value. Ranking on either metric focuses on genes with robust differences that are highly ranked and detected by each of the individual testing regimes. Of course, this might be considered an overly conservative approach in practice, so it is entirely permissible to re-rank the DataFrame according to the Top or p.value for an individual regime (effectively limiting the use of the other regimes’ statistics to diagnostics only).
@@ -798,6 +819,7 @@ tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_clustMarkCombi.Rds"
                  projDir, outDirBit, setName, setSuf, dsiSuf, splSetToGet2)
 print(tmpFn)
 saveRDS(combined, file=tmpFn)
+rm(combined,tmpFn)
 ```
 
 ## Invalidity of p-values

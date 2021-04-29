@@ -27,13 +27,15 @@ params:
   dsiSuf: '_dummy'
 ---
 
+# Setting up the data {#pseudoTime2Top}
+
 In many situations, one is studying a process where cells change continuously. This includes, for example, many differentiation processes taking place during development: following a stimulus, cells will change from one cell-type to another. Ideally, we would like to monitor the expression levels of an individual cell over time. Unfortunately, such monitoring is not possible with scRNA-seq since the cell is lysed (destroyed) when the RNA is extracted.
 
 Instead, we must sample at multiple time-points and obtain snapshots of the gene expression profiles. Since some of the cells will proceed faster along the differentiation than others, each snapshot may contain cells at varying points along the developmental progression. We use statistical methods to order the cells along one or more trajectories which represent the underlying developmental trajectories, this ordering is referred to as “pseudotime”.
 
 A recent benchmarking paper by [Saelens et al](https://doi.org/10.1038/s41587-019-0071-9) provides a detailed summary of the various computational methods for trajectory inference from single-cell transcriptomics. They discuss 45 tools and evaluate them across various aspects including accuracy, scalability, and usability. They provide [dynverse](https://dynverse.org), an open set of packages to benchmark, construct and interpret single-cell trajectories (currently they have a uniform interface for 60 methods). 
 
-```{r}
+```{r params_pseudotime2}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
@@ -42,13 +44,19 @@ splSetToGet <- params$splSetToGet
 setName <- params$setName
 setSuf <- params$setSuf
 dsiSuf <- params$dsiSuf # 'dsi' for data set integration
+if(params$bookType == "mk"){
+	setName <- "hca"
+ 	splSetToGet <- "dummy"
+ 	setSuf <- "_5kCellPerSpl"
+ 	dsiSuf <- '_dummy'
+}
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r traj2_setup, include=FALSE, echo=FALSE}
+```{r setup_pseudotime2, include=FALSE, echo=FALSE}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -63,9 +71,7 @@ set.seed(123) # for reproducibility
 ```
 
 
-# Setting up the data {#pseudoTime2Top}
-
-```{r}
+```{r library_pseudotime2}
 library(SingleCellExperiment)
 library(scran)
 library(scater)
@@ -84,32 +90,29 @@ library(cellAlign) # https://github.com/shenorrLab/cellAlign
 
 We load the SCE object we have generated previously. This object contains only the T-cells from 8 healthy donors. We will first prepare the data by identifying variable genes, integrating the data across donors and calculating principal components. 
 
-```{r}
+```{r load_pseudotime2}
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_tcell.Rds",
                  projDir, outDirBit, setName, setSuf)
 sce.tcell <- readRDS(file=tmpFn)
-```
-
-```{r}
 sce.tcell
 ```
 
-```{r}
+```{r varModel_pseudotime2}
 dec.tcell <- modelGeneVar(sce.tcell, block=sce.tcell$Sample.Name)
 top.tcell <- getTopHVGs(dec.tcell, n=5000)
 ```
 
-```{r}
+```{r fastMNN_pseudotime2}
 set.seed(1010001)
 merged.tcell <- fastMNN(sce.tcell, batch = sce.tcell$Sample.Name, subset.row = top.tcell)
 reducedDim(sce.tcell, 'MNN') <- reducedDim(merged.tcell, 'corrected')
 ```
 
-```{r}
+```{r dimRed_comp_pseudotime2}
 sce.tcell <- runPCA(sce.tcell, dimred="MNN")
 ```
 
-```{r}
+```{r dimRed_plot_pseudotime2}
 plotPCA(sce.tcell, colour_by="Sample.Name")
 ```
 
@@ -119,8 +122,7 @@ plotPCA(sce.tcell, colour_by="Sample.Name")
 
 For ease of computation, we will perform pseudotime analysis only on one sample, and we will downsample the object to 1000 cells. We will select the sample named `MantonBM1`. 
 
-
-```{r}
+```{r MantonBM1_downSample_pseudotime2}
 # pull the barcodes for MantonBM1 sample & and downsample the set to 1000 genes 
 vec.bc <- colData(sce.tcell) %>%
     data.frame() %>%
@@ -132,49 +134,47 @@ vec.bc <- colData(sce.tcell) %>%
 
 Number of cells in the sample:
 
-```{r}
+```{r MantonBM1_cellNumber_pseudotime2}
 table(colData(sce.tcell)$Barcode %in% vec.bc)
 ```
 
 Subset cells from the main SCE object:
 
-```{r}
+```{r MantonBM1_sce_pseudotime2}
 tmpInd <- which(colData(sce.tcell)$Barcode %in% vec.bc)
-
 sce.tcell.BM1 <- sce.tcell[,tmpInd]
-
 sce.tcell.BM1
 ```
 
 Identify top 500 highly variable genes 
 
-```{r}
+```{r MantonBM1_varModel_pseudotime2}
 dec.tcell.BM1 <- modelGeneVar(sce.tcell.BM1)
 top.tcell.BM1 <- getTopHVGs(dec.tcell.BM1, n=500)
 ```
 
 We will extract normalized counts for HVG to use in pseudotime alignment
 
-```{r}
-tcell.BM1_counts<-logcounts(sce.tcell.BM1)
-tcell.BM1_counts<-t(as.matrix(tcell.BM1_counts[top.tcell.BM1,]))
+```{r MantonBM1_getCounts_pseudotime2}
+tcell.BM1_counts <- logcounts(sce.tcell.BM1)
+tcell.BM1_counts <- t(as.matrix(tcell.BM1_counts[top.tcell.BM1,]))
 cellLabels <- sce.tcell.BM1$Barcode
 rownames(tcell.BM1_counts) <- cellLabels
 ```
 
-```{r}
+```{r MantonBM1_showCounts_pseudotime2}
 tcell.BM1_counts[1:4,1:4]
 ```
 
 And finally, we can run pseudotime alignment with destiny 
 
-```{r}
+```{r MantonBM1_diffusMap_comp_pseudotime2}
 dm_tcell_BM1 <- DiffusionMap(tcell.BM1_counts,n_pcs = 50)
 ```
 
 Plot diffusion component 1 vs diffusion component 2 (DC1 vs DC2). 
 
-```{r}
+```{r MantonBM1_diffusMap_plot_pseudotime2}
 tmp <- data.frame(DC1 = eigenvectors(dm_tcell_BM1)[, 1],
                   DC2 = eigenvectors(dm_tcell_BM1)[, 2])
 
@@ -185,20 +185,18 @@ ggplot(tmp, aes(x = DC1, y = DC2)) +
     theme_classic()
 ```
 
-
 Stash diffusion components to SCE object
 
-```{r}
-sce.tcell.BM1$pseudotime_destiny_1<-eigenvectors(dm_tcell_BM1)[, 1]
-sce.tcell.BM1$pseudotime_destiny_2<-eigenvectors(dm_tcell_BM1)[, 2]
+```{r MantonBM1_diffusMap_store_pseudotime2}
+sce.tcell.BM1$pseudotime_destiny_1 <- eigenvectors(dm_tcell_BM1)[, 1]
+sce.tcell.BM1$pseudotime_destiny_2 <- eigenvectors(dm_tcell_BM1)[, 2]
 ```
-
 
 ## Find temporally expressed genes
 
 After running destiny, an interesting next step may be to find genes that change their expression over the course of time We demonstrate one possible method for this type of analysis on the 500 most variable genes. We will regress each gene on the pseudotime variable we have generated, using a general additive model (GAM). This allows us to detect non-linear patterns in gene expression. We are going to use HVG we identified in the previous step, but this analysis can also be done using the whole transcriptome. 
 
-```{r}
+```{r MantonBM1_tempExprGenes_comp_pseudotime2}
 # Only look at the 500 most variable genes when identifying temporally expressesd genes.
 # Identify the variable genes by ranking all genes by their variance.
 # We will use the first diffusion components as a measure of pseudotime 
@@ -217,14 +215,14 @@ gam.pval <- apply(Y, 1, function(z){
 
 Select top 30 genes for visualization
 
-```{r}
+```{r MantonBM1_tempExprGenes_top_pseudotime2}
 # Identify genes with the most significant time-dependent model fit.
 topgenes <- names(sort(gam.pval, decreasing = FALSE))[1:30]  
 ```
 
 Visualize these genes in a heatmap
 
-```{r}
+```{r MantonBM1_tempExprGenes_heatmap_pseudotime2}
 heatmapdata <- Y[topgenes,]
 heatmapdata <- heatmapdata[,order(t, na.last = NA)]
 t_ann<-as.data.frame(t)
@@ -236,15 +234,17 @@ __Visualize how some of the temporally expressed genes change in time__
 
 Following individual genes is very helpful for identifying genes that play an important role in the differentiation process. We illustrate the procedure using the GZMA gene. We have added the pseudotime values computed with destiny to the colData slot of the SCE object. Having done that, the full plotting capabilities of the scater package can be used to investigate relationships between gene expression, cell populations and pseudotime. 
 
-```{r}
-plotExpression(sce.tcell.BM1, "GZMA", x = "pseudotime_destiny_1", 
+```{r MantonBM1_tempExprGenes_GZMA_pseudotime2}
+plotExpression(sce.tcell.BM1,
+	       "GZMA",
+	       x = "pseudotime_destiny_1", 
                show_violin = TRUE,
                show_smooth = TRUE)
 ```
 
 ### Pseudotime analysis for another HCA sample
 
-```{r}
+```{r MantonBM2_preProc_pseudotime2}
 # pull barcodes for MantonBM2 
 vec.bc <- colData(sce.tcell) %>%
     data.frame() %>%
@@ -277,13 +277,16 @@ ggplot(tmp, aes(x = DC1, y = DC2)) +
     xlab("Diffusion component 1") + 
     ylab("Diffusion component 2") +
     theme_classic()
+
+# tidy
+rm(sce.tcell)
 ```
 
-# Challenge 1
+# Exercise 1
 
 Obtain pseudotime for one of the Caron samples. 
 
-```{r}
+```{r PRET1_prep_pseudotime2}
 #sce.PRET1<-readRDS("~/Course_Materials/scRNAseq/pseudotime/sce_caron_PRET1.RDS")
 setName <- "caron"
 setSuf <- "_allCells"
@@ -300,7 +303,7 @@ spl.x <- colData(x) %>%
 
 We will use `r spl.x`:
 
-```{r}
+```{r PRET1_downSample_pseudotime2}
 # downsample by randomly choosing 1000 cells:
 vec.bc <- colData(x) %>%
   data.frame() %>%
@@ -312,13 +315,13 @@ vec.bc <- colData(x) %>%
 
 Number of cells in the sample:
 
-```{r}
+```{r PRET1_cellNumber_pseudotime2}
 table(colData(x)$Barcode %in% vec.bc)
 ```
 
 Subset cells from the main SCE object:
 
-```{r}
+```{r PRET1_sce_pseudotime2}
 tmpInd <- which(colData(x)$Barcode %in% vec.bc)
 sce.PRET1 <- x[,tmpInd]
 rownames(sce.PRET1) <- uniquifyFeatureNames(rowData(sce.PRET1)$ensembl_gene_id,
@@ -335,8 +338,8 @@ You need to perform:
 * run destiny 
 * visualize diffusion components
 
-```{r}
-# Identift HVG
+```{r PRET1_analysis_pseudotime2}
+# Identify HVG
 dec.caron.PRET1 <- modelGeneVar(sce.PRET1)
 top.caron.PRET1 <- getTopHVGs(dec.caron.PRET1, n=500)
 
@@ -358,10 +361,10 @@ ggplot(tmp, aes(x = DC1, y = DC2)) +
     theme_classic()
 ```
 
-```{r}
-Y<-log2(counts(sce.PRET1)+1)
+```{r PRET1_tempExprGenes_comp_pseudotime2}
+Y <- log2(counts(sce.PRET1)+1)
 colnames(Y) <- cellLabels
-Y<-Y[top.caron.PRET1,]
+Y <- Y[top.caron.PRET1,]
 # Fit GAM for each gene using pseudotime as independent variable.
 t <- eigenvectors(dm_caron.PRET1)[, 1]
 gam.pval <- apply(Y, 1, function(z){
@@ -374,14 +377,14 @@ gam.pval <- apply(Y, 1, function(z){
 
 Select top 30 genes for visualization
 
-```{r}
+```{r PRET1_tempExprGenes_top_pseudotime2}
 # Identify genes with the most significant time-dependent model fit.
 topgenes <- names(sort(gam.pval, decreasing = FALSE))[1:30]  
 ```
 
 Visualize these genes in a heatmap
 
-```{r}
+```{r PRET1_tempExprGenes_heatmap_pseudotime2}
 heatmapdata <- Y[topgenes,]
 heatmapdata <- heatmapdata[,order(t, na.last = NA)]
 t_ann<-as.data.frame(t)
@@ -406,7 +409,7 @@ Molecular Signatures Database contains 8 major collections:
 
 We are going to use hallmark gene sets (`H`) and perform a hypergeometric test with our top 30 genes for all HALLMARK sets.
 
-```{r}
+```{r PRET1_tempExprGenes_enricherH_pseudotime2}
 msigdb_hallmark <- msigdbr(species = "Homo sapiens",
                          category = "H")  %>%
   dplyr::select(gs_name, gene_symbol)
@@ -417,7 +420,7 @@ head(em)[,"qvalue",drop=F]
 
 Let's also check the 'oncogenic signatures' gene sets (`C6`) and perform a hypergeometric test with our top 30 genes for all these gene sets.
 
-```{r}
+```{r PRET1_tempExprGenes_enricherC6_pseudotime2}
 msigdb_c6 <- msigdbr(species = "Homo sapiens",
                          category = "C6")  %>%
   dplyr::select(gs_name, gene_symbol)
@@ -426,10 +429,9 @@ em <- enricher(topgenes,
 head(em)[,"qvalue",drop=F]
 ```
 
-
 Let's write to file for future use the normalised counts for the highly variables genes:
 
-```{r}
+```{r saveRDS_pseudotime2}
 setName <- "hca"
 setSuf <- "_5kCellPerSpl"
 
@@ -451,10 +453,18 @@ tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_%s.Rds",
 saveRDS(caron.PRET1_counts, file=tmpFn)
 ```
 
-# Ackowledgements
+```{r tidy_pseudotime2}
+rm(sce.tcell.BM1, sce.tcell.BM2, sce.tcell.PRET1)
+rm(tcell.BM1_counts, tcell.BM2_counts, caron.PRET1_counts)
+```
+
+## Ackowledgements
+
 This notebook uses material from [SVI course](https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/index.html), [OSCA Book](https://osca.bioconductor.org), [Broad Institute Workshop](https://broadinstitute.github.io/2020_scWorkshop/) and  [Hemberg Group Course](https://scrnaseq-course.cog.sanger.ac.uk/website/index.html). 
 
-```{r}
+## Session information
+
+```{r sessionInfo_pseudotime2}
 sessionInfo()
 ```
 

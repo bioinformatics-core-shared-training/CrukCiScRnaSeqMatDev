@@ -51,19 +51,29 @@ projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
-splSetToGet <- params$splSetToGet
 setName <- params$setName
+splSetToGet <- params$splSetToGet
 setSuf <- params$setSuf
 dsiSuf <- params$dsiSuf # 'dsi' for data set integration
+if(params$bookType == "mk"){
+	setName <- "caron"
+	splSetToGet <- "PBMMC,ETV6-RUNX1"
+	setSuf <- "_5hCellPerSpl"
+	dsiSuf <- '_dsi'
+}
+
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting book.
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 
 anaStg <- sprintf("'%s_%s'", splSetToGet2, setSuf)
+
+#displayToUse <- Sys.getenv("DISPLAY")
+#Cairo::CairoX11(display=displayToUse);
 ```
 
-```{r, include=FALSE, echo=FALSE}
+```{r, dev="CairoPNG"}
 #```{r setup, include=FALSE, echo=FALSE}
 	# removing chunk name for now because would need to make it dynamic, eg {{anaStg}} and expand
 	# TODO do that later
@@ -71,13 +81,21 @@ anaStg <- sprintf("'%s_%s'", splSetToGet2, setSuf)
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(eval = TRUE) 
-options(stringsAsFactors = FALSE)
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE) 
+opts_chunk$set(dev="CairoPNG")
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
-options(bitmapType='cairo')
+#opts_chunk$set(dev = c("png"))
+#options(bitmapType='cairo')
+options(stringsAsFactors = FALSE)
 set.seed(123) # for reproducibility
+```
+
+```{r debug1_clusteringPostDsi}
+capabilities("cairo")
+getOption('bitmapType')
+options(bitmapType='cairo')
+getOption('bitmapType')
 ```
 
 ```{r, warning=FALSE, message=FALSE}
@@ -96,7 +114,7 @@ fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=
 # Clustering with '`r sprintf("'%s'", splSetToGet)`' and '`r setSuf`' {#clustering`r anaStg`Top}
 
 <!-- TODO: get image file
-<img src="../../Images/Andrews2017_Fig1.png" style="margin:auto; display:block" />
+<img src="../Images/Andrews2017_Fig1.png" style="margin:auto; display:block" />
 -->
 
 Source: [clustering methods](https://hemberg-lab.github.io/scRNA.seq.course/biological-analysis.html##clustering-methods) in the Hemberg group material and [its 'biocellgen variant'](https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/clustering-and-cell-annotation.html#clustering-methods.), with some of its text copied with few edits only. Also see the [OSCA chapter on clustering](https://osca.bioconductor.org/clustering.html) and a [benchmark study](https://f1000research.com/articles/7-1297#ref-2).
@@ -167,20 +185,20 @@ There are two types of strategies:
 * Divisive (top-down): all observations start in one cluster, and splits are performed recursively as one moves down the hierarchy.
 
 <!--
-<img src="../../Images/bioCellGenHierar1.png" style="margin:auto; display:block" />
-<img src="../../Images/bioCellGenHierar2.png" style="margin:auto; display:block" />
+<img src="../Images/bioCellGenHierar1.png" style="margin:auto; display:block" />
+<img src="../Images/bioCellGenHierar2.png" style="margin:auto; display:block" />
 -->
 
 The raw data:
 
 ```{r clust-hierarch-raw, out.width = '30%', fig.align='center'}
-knitr::include_graphics("../../Images/bioCellGenHierar1.png")
+knitr::include_graphics("../Images/bioCellGenHierar1.png")
 ```
 
 The hierarchical clustering dendrogram:
 
 ```{r clust-hierarch-dendr, out.width = '50%', fig.align='center'}
-knitr::include_graphics("../../Images/bioCellGenHierar2.png")
+knitr::include_graphics("../Images/bioCellGenHierar2.png")
 ```
 
 * Pros:
@@ -236,6 +254,7 @@ Cell counts for each cluster (rows) and each sample (columns):
 # per sample
 table(hc.clusters, sce$Sample.Name)
 ```
+
 ```{r}
 tmpTab <- table(hc.clusters, sce$Sample.Name)
 rownames(tmpTab) = paste("hc", rownames(tmpTab), sep = "_")
@@ -310,8 +329,11 @@ clust.col <- scater:::.get_palette("tableau10medium") # hidden scater colours
 sil.cols <- clust.col[ifelse(sil[,3] > 0, sil[,1], sil[,2])]
 sil.cols <- sil.cols[order(-sil[,1], sil[,3])]
 # plot:
-plot(sil, main = paste(length(unique(hc.clusters)), "clusters"), 
-	border=sil.cols, col=sil.cols, do.col.sort=FALSE) 
+plot(sil,
+     main = paste(length(unique(hc.clusters)), "clusters"),
+     border = sil.cols,
+     col = sil.cols,
+     do.col.sort = FALSE) 
 ```
 
 The plot shows cells with negative silhouette indicating that too many clusters may have been defined.
@@ -331,7 +353,7 @@ The aim is to minimise within-cluster variation and maximise between-cluster var
 * compute the total variation within clusters,
 * assign new centroids and repeat steps above
 
-<img src="../../Images/bioCellGenKmean.png" style="margin:auto; display:block" />
+<img src="../Images/bioCellGenKmean.png" style="margin:auto; display:block" />
 
 * Pros:
     + fast
@@ -388,8 +410,6 @@ Split by sample type:
 ```{r plot_tSNE_kmeans_k6_split, fig.width=10, fig.height=10}
 p2 + facet_wrap(~ sce$source_name)
 ```
-
-`r #knitr::knit_exit()`
 
 To find the most appropriate number of clusters, one performs the analysis for a series of values for k and for each k value computes a 'measure of fit' of the clusters defined. Several metrics exist. We will look at:
 * within-cluster sum-of-squares
@@ -638,7 +658,7 @@ Graph-based clustering entails building a nearest-neighbour (NN) graph using cel
 
 The plot below shows the same data set as a network built using three different numbers of neighbours: 5, 15 and 25 (from [here](https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/clustering-and-cell-annotation.html#clustering-methods.)).
 
-<img src="../../Images/bioCellGenGraphDeng.png" style="margin:auto; display:block" />
+<img src="../Images/bioCellGenGraphDeng.png" style="margin:auto; display:block" />
 
 We will:
 
@@ -897,7 +917,7 @@ legend('bottomright',
 
 With the Louvain method, nodes are also first assigned their own community. This hierarchical agglomerative method then progresses in two-step iterations: 1) nodes are re-assigned one at a time to the community for which they increase modularity the most, if any, 2) a new, 'aggregate' network is built where nodes are the communities formed in the previous step. This is repeated until modularity stops increasing. The diagram below is copied from [this article](https://www.nature.com/articles/s41598-019-41695-z#Fig1).
 
-<img src="../../Images/leiden_Fig1_HTML.png" style="margin:auto; display:block" />
+<img src="../Images/leiden_Fig1_HTML.png" style="margin:auto; display:block" />
 
 <!-- BIBREF https://www.nature.com/articles/s41598-019-41695-z#Fig1 -->
 
@@ -980,7 +1000,7 @@ p + facet_wrap(~ sce$source_name)
 
 The Leiden method improves on the Louvain method by garanteeing that at each iteration clusters are connected and well-separated. The method includes an extra step in the iterations: after nodes are moved (step 1), the resulting partition is refined (step2) and only then the new aggregate network made, and refined (step 3). The diagram below is copied from [this article](https://www.nature.com/articles/s41598-019-41695-z#Fig3).
 
-<img src="../../Images/leiden_Fig3_HTML.png" style="margin:auto; display:block" />
+<img src="../Images/leiden_Fig3_HTML.png" style="margin:auto; display:block" />
 
 <!-- BIBREF https://www.nature.com/articles/s41598-019-41695-z#Fig3 -->
 
@@ -1217,7 +1237,7 @@ Having identified clusters, we now display the level of expression of cell type 
 
 Example with B cell marker genes MS4A1 and CD79A:
 
-```{r, fig.height=6, fig.width=8}
+```{r exprKnownMarkers_plot1_clusteringPostDsi, fig.height=6, fig.width=8}
 rownames(sce) <- scater::uniquifyFeatureNames(
   rowData(sce)$ensembl_gene_id,
   rowData(sce)$Symbol)
