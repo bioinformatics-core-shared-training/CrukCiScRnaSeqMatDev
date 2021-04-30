@@ -29,7 +29,7 @@ params:
   dsiSuf: '_dummy'
 ---
 
-```{r batch_GSM3872442.knitr_options, include=FALSE, echo=FALSE}
+```{r batch_GSM3872442.knitr_options, include=FALSE, echo=FALSE, dev="CairoPNG"}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -37,8 +37,9 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```
 

@@ -20,6 +20,7 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
   splSetToGet: "dummy"
   setName: "GSM3872434"
@@ -29,13 +30,15 @@ params:
 
 # Normalisation - GSM3872434 set {#NormalisationGSM3872434Top}
 
-```{r norm_GSM3872434.knitr_options, echo=FALSE, results="hide", message=FALSE}
+```{r norm_GSM3872434.knitr_options, echo=FALSE, results="hide", message=FALSE, dev="CairoPNG"}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
+set.seed(123) # for reproducibility
 ```
 
 
@@ -607,7 +610,7 @@ p <- plotPCA(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_pca_logRaw_GSM3872434_allCells}
@@ -632,7 +635,7 @@ p <- plotRLE(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
                  projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_rle_logRaw_GSM3872434_allCells, eval=FALSE, include=FALSE}
@@ -668,7 +671,7 @@ p <- plotPCA(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_pca_logCpm_GSM3872434_allCells}
@@ -692,7 +695,7 @@ p <- plotRLE(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_rle_logCpm_GSM3872434_allCells, eval=FALSE, include=FALSE}
@@ -730,7 +733,7 @@ p <- plotPCA(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_pca_deconv_GSM3872434_allCells}
@@ -763,7 +766,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_tsne_deconv_GSM3872434_allCells}
@@ -798,7 +801,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_umap_deconv_GSM3872434_allCells, eval=FALSE, include=FALSE}
@@ -821,7 +824,7 @@ p <- plotRLE(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_rle_deconv_GSM3872434_allCells, eval=FALSE, include=FALSE}
@@ -856,7 +859,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_pca_sct_GSM3872434_allCells}
@@ -889,7 +892,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_tsne_sct_GSM3872434_allCells}
@@ -924,7 +927,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_umap_sct_GSM3872434_allCells, eval=FALSE, include=FALSE}
@@ -945,7 +948,7 @@ p <- plotRLE(
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 projDir, outDirBit, normPlotDirBit, setName, setSuf, typeNorm)
 print("DEV"); print(getwd()); print(tmpFn)
-##ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_rle_sct_GSM3872434_allCells}

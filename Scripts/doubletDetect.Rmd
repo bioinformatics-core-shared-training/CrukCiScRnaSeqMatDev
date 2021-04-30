@@ -21,6 +21,7 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE  
   splSetToGet: "dummy"
   setName: "caron"
@@ -28,7 +29,7 @@ params:
   dsiSuf: '_dummy'
 ---
 
-# Doublet detection
+# Doublet detection {#doubletDetectionTop}
 
 Source: [Doublet detection](https://osca.bioconductor.org/doublet-detection.html) chapter of the OSCA book (with only few edits of its text).
 
@@ -40,7 +41,7 @@ In this section we will learn how to identify droplets that may include more tha
 
 Let's set some variables (eg path to files) and load R packages.
 
-```{r}
+```{r variable_doubletDetect}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
@@ -62,18 +63,18 @@ nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r doubletDetect_setup, include=FALSE, echo=FALSE}
+```{r doubletDetect_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(eval = TRUE) 
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
-#opts_chunk$set(fig.width=7, fig.height=7) 
 ```
 
 We will load:
@@ -83,7 +84,7 @@ We will load:
 * scater, for UMI count normalisation
 * scran, here for doublet detection 
 
-```{r, message=FALSE}
+```{r library_doubletDetect, message=FALSE}
 library(ggplot2)
 library(scater) # for logNormCounts
 library(scran)
@@ -97,14 +98,14 @@ fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=
 
 We will load the R file keeping the SCE object with the normalised counts (no cell subsampling).
 
-```{r}
+```{r inputFile_doubletDetect}
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", # or Qc
                  projDir, outDirBit, setName, setSuf)
 ```
 
 Input file: `r tmpFn`.
 
-```{r}
+```{r load_doubletDetect}
 if(!file.exists(tmpFn))
 {
 	knitr::knit_exit()
@@ -139,7 +140,7 @@ We see the function in action below. To speed up the density calculations, `comp
 
 We will get data for one sample, e.g. the first PRE-T sample. 
 
-```{r}
+```{r preProc_doubletDetect}
 spl.x <- colData(sce) %>%
     data.frame() %>%
     filter(source_name == "PRE-T") %>%
@@ -169,16 +170,19 @@ sce$clusterStg <- factor(paste0("c", sce$cluster),
 			 levels = paste0("c", levels( sce$cluster)) )
 ```
 
-We also plot the t-SNE showing clusters, which are not used for the doublet detection by simulation used here, but help visualise cells with different expression profiles.
+We also plot the t-SNE showing clusters, which are not used for the doublet
+detection by simulation used here, but help visualise cells with different
+expression profiles.
 
-```{r}
+```{r tsne_plotCluster_doubletDetect}
 colLabels(sce) <- sce$clusterStg
 plotTSNE(sce, colour_by="clusterStg")
 ```
 
-Let us run `computeDoubletDensity()` and display moments of the distribution of the doublet scores returned:
+Let us run `computeDoubletDensity()` and display moments of the distribution
+of the doublet scores returned:
 
-```{r}
+```{r computeDoubletDensity_doubletDetect}
 set.seed(100)
 
 # Setting up the parameters for consistency with denoisePCA();
@@ -189,16 +193,24 @@ dbl.dens <- computeDoubletDensity(sce,
 summary(dbl.dens)
 ```
 
-The t-SNE plot below help identify any cluster with high number of cell with a high score.
+The t-SNE plot below help identify any cluster with high number of cell
+with a high score.
 
-```{r}
+```{r tsne_plotDoubletScore_doubletDetect}
 sce$DoubletScore <- log10(dbl.dens+1)
 plotTSNE(sce, colour_by="DoubletScore")
 ```
 
-The violin plot below shows the distribution of score across clusters identified in the whole data set. Clusters with a large fraction of high-scoring cells are worth checking. Comparing marker genes for these clusters to other, 'doublet-free' clusters may inform on the type of cells involved. If the 'source' clusters are not related biologically these high-scoring cells should be discarded. If on the other hand the 'source' clusters are two well defined steps along a differentiation path, the high-scoring cells may represent an intermediary state.
+The violin plot below shows the distribution of score across clusters
+identified in the whole data set. Clusters with a large fraction of high-scoring
+cells are worth checking. Comparing marker genes for these clusters to other,
+'doublet-free' clusters may inform on the type of cells involved.
+If the 'source' clusters are not related biologically these high-scoring cells
+should be discarded. If on the other hand the 'source' clusters are two well
+defined steps along a differentiation path, the high-scoring cells may represent
+an intermediary state.
 
-```{r}
+```{r violin_plotDoubletScore_doubletDetect}
 plotColData(sce, y = "DoubletScore", x = "clusterStg", 
    colour_by = "DoubletScore")
 ```
@@ -218,3 +230,21 @@ Doublet detection procedures should only be applied to libraries generated in th
 It is also difficult to interpret doublet predictions in data containing cellular trajectories. By definition, cells in the middle of a trajectory are always intermediate between other cells and are liable to be incorrectly detected as doublets. Some protection is provided by the non-linear nature of many real trajectories, which reduces the risk of simulated doublets coinciding with real cells in doubletCells(). One can also put more weight on the relative library sizes in doubletCluster() instead of relying solely on N, under the assumption that sudden spikes in RNA content are unlikely in a continuous biological process.
 
 The best solution to the doublet problem is experimental - that is, to avoid generating them in the first place. This should be a consideration when designing scRNA-seq experiments, where the desire to obtain large numbers of cells at minimum cost should be weighed against the general deterioration in data quality and reliability when doublets become more frequent.
+
+<!--
+## Ackowledgements
+
+This notebook uses material from [](https:),
+[OSCA Book](https://osca.bioconductor.org),
+[]()
+and [Hemberg Group Course](https://scrnaseq-course.cog.sanger.ac.uk/website/index.html).
+
+See 'Source' above
+-->
+
+## Session information
+
+```{r sessionInfo_doubletDetect}
+sessionInfo()
+```
+

@@ -20,6 +20,7 @@ params:
   projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
 ---
 
@@ -30,14 +31,15 @@ TODO:
 -->
 
 
-```{r cellranger.knitr_options, echo=FALSE, results="hide", message=FALSE}
+```{r cellranger.knitr_options, echo=FALSE, results="hide", message=FALSE, dev="CairoPNG"}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
-opts_chunk$set(fig.width=7, fig.height=7) 
+opts_chunk$set(fig.width=7, fig.height=7)
+knitr::opts_chunk$set(dev="CairoPNG")
 ```
 
-```{r}
+```{r library_cellRanger}
 library(dplyr)
 ```
 
@@ -56,7 +58,7 @@ Sequencing quality was assessed and visualised using fastQC and MultiQC.
 
 Reads were aligned against GRCh38 and features counted using cellranger (v3.1.0).
 
-```{r}
+```{r variables_cellRanger}
 #wrkDir <- "/mnt/scratchb/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300"
 #setwd(wrkDir)
 projDir <- params$projDir

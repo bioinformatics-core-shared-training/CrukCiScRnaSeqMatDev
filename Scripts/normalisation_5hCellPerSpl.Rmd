@@ -25,13 +25,15 @@ params:
   bookType: "mk"
 ---
 
-```{r norm_{{setNameUpp}}.knitr_options, echo=FALSE, results="hide", message=FALSE}
+```{r norm_{{setNameUpp}}.knitr_options, echo=FALSE, results="hide", message=FALSE, dev="CairoPNG"}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
-options(bitmapType='cairo')
+#opts_chunk$set(dev = c("png"))
+#options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
+set.seed(123) # for reproducibility
 ```
 
 # Normalisation - `r "{{setNameUpp}}"` set
@@ -613,7 +615,7 @@ p <- plotPCA(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_pca_logRaw_{{setNameUpp}}_5hCellPerSpl}
@@ -637,7 +639,7 @@ p <- plotRLE(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_rle_logRaw_{{setNameUpp}}_5hCellPerSpl}
@@ -673,7 +675,7 @@ p <- plotPCA(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_pca_logCpm_{{setNameUpp}}_5hCellPerSpl}
@@ -695,7 +697,7 @@ p <- plotRLE(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_rle_logCpm_{{setNameUpp}}_5hCellPerSpl}
@@ -733,7 +735,7 @@ p <- plotPCA(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_pca_deconv_{{setNameUpp}}_5hCellPerSpl}
@@ -766,7 +768,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_tsne_deconv_{{setNameUpp}}_5hCellPerSpl}
@@ -799,7 +801,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_umap_deconv_{{setNameUpp}}_5hCellPerSpl}
@@ -821,7 +823,7 @@ p <- plotRLE(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_rle_deconv_{{setNameUpp}}_5hCellPerSpl}
@@ -856,7 +858,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sPca.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_pca_sct_{{setNameUpp}}_5hCellPerSpl}
@@ -889,7 +891,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sTsne.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_tsne_sct_{{setNameUpp}}_5hCellPerSpl}
@@ -922,7 +924,7 @@ p <- plotReducedDim(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sUmap.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_umap_sct_{{setNameUpp}}_5hCellPerSpl}
@@ -944,7 +946,7 @@ p <- plotRLE(
 # write plot to file:
 tmpFn <- sprintf("%s/%s/%s/%s_sce_nz_postQc%s_%sRle.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf, typeNorm)
-ggsave(filename=tmpFn, plot=p)
+ggsave(filename=tmpFn, plot=p, type="cairo-png")
 ```
 
 ```{r show_rle_sct_{{setNameUpp}}_5hCellPerSpl}

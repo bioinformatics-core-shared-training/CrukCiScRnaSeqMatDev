@@ -20,9 +20,12 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"  
   cacheBool: FALSE  
   splSetToGet: "ETV6-RUNX1"
 ---
+
+# Data integration - ETV6-RUNX1 {#dataSetIntegration_ETV6-RUNX1Top}
 
 ```{r}
 projDir <- params$projDir
@@ -37,7 +40,7 @@ if(params$bookType == "mk"){
 }
 ```
 
-```{r dataSetIntegration_ETV6-RUNX1_setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_ETV6-RUNX1_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -45,8 +48,9 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```
 
@@ -61,8 +65,6 @@ library(pheatmap)
 library(clustree)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
-
-# Data integration {#dataSetIntegration_ETV6-RUNX1Top}
 
 Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. Its text is reproduced below with few modifications to adapt it to the data set under scrutiny here.
 
@@ -1253,7 +1255,7 @@ p + facet_wrap(~colData(mnn.out)$batch)
 
 We suggest limiting the use of per-gene corrected values to visualization, e.g., when coloring points on a t-SNE plot by per-cell expression. This can be more aesthetically pleasing than uncorrected expression values that may contain large shifts on the colour scale between cells in different batches. Use of the corrected values in any quantitative procedure should be treated with caution, and should be backed up by similar results from an analysis on the uncorrected values.
 
-```{r}
+```{r save_mnnout_dataSetIntegration_ETV6-RUNX1}
 # save object?
 #fn <- sprintf("dataSetIntegration_%s.Rdata", splSetToGet)
 fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s.Rdata",
@@ -1264,3 +1266,20 @@ fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s.Rdata",
               splSetToGet) # 'dsi' for data set integration
 saveRDS(mnn.out, file=fn)
 ```
+
+<!--
+## Ackowledgements
+
+This notebook uses material from [](https:),
+[OSCA Book](https://osca.bioconductor.org)
+and [Hemberg Group Course](https://scrnaseq-course.cog.sanger.ac.uk/website/index.html).
+
+See 'Source' above.
+-->
+
+## Session information
+
+```{r sessionInfo_dataSetIntegration_ETV6-RUNX1}
+sessionInfo()
+```
+

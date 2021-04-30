@@ -19,22 +19,24 @@ params:
   projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
   setName: "caron"
   setSuf: "_allCells"
   dirRel: ".."
 ---
 
-```{r preProc_allCells.knitr_options, echo=FALSE, results="hide", message=FALSE}
+# Quality Control - with 2-5k cells per sample {#PreProcAllCellsTop}
+
+```{r preProc_allCells.knitr_options, echo=FALSE, results="hide", message=FALSE, dev="CairoPNG"}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
-options(bitmapType='cairo')
+#opts_chunk$set(dev = c("png"))
+#options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
 ```
-
-# Quality Control {#PreProcAllCellsTop}
 
 ## Introduction
 
@@ -68,6 +70,13 @@ We will then:
 <!-- TODO:
 - add references and/or links
 - add code used to fetch the data or point to script or have chapter for retrieval+QC and for cellranger
+-->
+
+
+<!--
+for HCA ABMMC: see HCAData and OSCA chapter 'HCA human bone marrow (10X Genomics)',
+drawing on OSCA chapter 'Dealing with big data'
+https://bioconductor.org/books/release/OSCA/hca-human-bone-marrow-10x-genomics.html
 -->
 
 ## Load packages
@@ -782,7 +791,7 @@ The higher the overall expression the lower the proportion of cells.
 # y-axis: fraction of cells expressing the gene
 tmpFn <- sprintf("%s/%s/%s/corelLibSizePropCellExpress%s.png",
 		 projDir, outDirBit, qcPlotDirBit, setSuf)
-png(tmpFn)
+CairoPNG(tmpFn)
 plot(
      # x-axis: nb UMI per gene across all cells
      countsRowSums,
@@ -810,7 +819,7 @@ ggExtra::ggMarginal(sp)
 tmpFn <- sprintf("%s/%s/%s/corelLibSizePropCellExpress%s_2.png",
 		 projDir, outDirBit, qcPlotDirBit, setSuf)
 tmpFn
-#ggsave(ggExtra::ggMarginal(sp), file=tmpFn)
+ggsave(ggExtra::ggMarginal(sp), file=tmpFn, type="cairo-png")
 rm(tmpFn)
 ```
 
@@ -1007,7 +1016,7 @@ sce$setName <- ifelse(grepl("ABMMC", sce$source_name), "Hca", "Caron")
 # better set levels to have PBMMC last and use ggplot with colours.
 tmpFn <- sprintf("%s/%s/%s/qc_metricDistrib_plotColData2%s.png",
 		projDir, outDirBit, qcPlotDirBit, setSuf)
-png(tmpFn)
+CairoPNG(tmpFn)
 # violin plots
 gridExtra::grid.arrange(
     plotColData(sce, x="block", y="sum",
@@ -1182,7 +1191,7 @@ table(reasons$discard, batch.reasons$discard)
 # see chunks below for each of the metric separately
 tmpFn <- sprintf("%s/%s/%s/qc_metricDistrib_plotColDataBatch%s.png",
 		 projDir, outDirBit, qcPlotDirBit, setSuf)
-png(tmpFn)
+CairoPNG(tmpFn)
 gridExtra::grid.arrange(
     plotColData(sce, x="block", y="sum", colour_by="discard",
         other_fields="setName") +
@@ -1489,8 +1498,8 @@ p
 
 tmpFn <- sprintf("%s/%s/%s/novelty_scat%s.png",
 		 projDir, outDirBit, qcPlotDirBit, setSuf)
-print("DEV"); print(getwd()); print(tmpFn)
-##ggsave(plot=p, file=tmpFn)
+#print("DEV"); print(getwd()); print(tmpFn)
+ggsave(plot=p, file=tmpFn, type="cairo-png")
 
 # Novelty
 # the number of genes per UMI for each cell,
@@ -1511,8 +1520,8 @@ p
 
 tmpFn <- sprintf("%s/%s/%s/novelty_dens%s.png",
 		 projDir, outDirBit, qcPlotDirBit, setSuf)
-print("DEV"); print(getwd()); print(tmpFn)
-##ggsave(plot=p, file=tmpFn)
+#print("DEV"); print(getwd()); print(tmpFn)
+ggsave(plot=p, file=tmpFn, type="cairo-png")
 ```
 
 ```{r rm_sce_preProcAllCells}
@@ -1605,13 +1614,13 @@ The gene sparsity plot shows that a large number of genes are almost never detec
 # plot
 tmpFn <- sprintf("%s/%s/%s/sparsity%s.png",
 		 projDir, outDirBit, qcPlotDirBit, setSuf)
-print("DEV"); print(getwd()); print(tmpFn)
-##png(tmpFn)
-##par(mfrow=c(1, 2))
-##hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
-##hist(gene_sparsity, breaks=50, col="grey80", xlab="Gene sparsity", main="")
-##abline(v=40, lty=2, col='purple')
-##dev.off()
+#print("DEV"); print(getwd()); print(tmpFn)
+CairoPNG(tmpFn)
+par(mfrow=c(1, 2))
+hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
+hist(gene_sparsity, breaks=50, col="grey80", xlab="Gene sparsity", main="")
+abline(v=40, lty=2, col='purple')
+dev.off()
 ```
 
 ```{r sparsity_show_allCells, out.width="80%"}
@@ -1732,7 +1741,7 @@ gene_sparsity <- tmpList$rowData$gene_sparsity
 # plot
 tmpFn <- sprintf("%s/%s/%s/%s_sparsity%s.png",
 		 projDir, outDirBit, qcPlotDirBit, setName, setSuf)
-png(tmpFn)
+CairoPNG(tmpFn)
 par(mfrow=c(1, 2))
 hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
 hist(gene_sparsity, breaks=50, col="grey80", xlab="Gene sparsity", main="")
@@ -1827,13 +1836,13 @@ gene_sparsity <- tmpList$rowData$gene_sparsity
 # plot
 tmpFn <- sprintf("%s/%s/%s/%s_sparsity%s.png",
                  projDir, outDirBit, qcPlotDirBit, setName, setSuf)
-print("DEV"); print(getwd()); print(tmpFn)
-##png(tmpFn)
-##par(mfrow=c(1, 2))
-##hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
-##hist(gene_sparsity, breaks=50, col="grey80", xlab="Gene sparsity", main="")
-##abline(v=40, lty=2, col='purple')
-##dev.off()
+#print("DEV"); print(getwd()); print(tmpFn)
+CairoPNG(tmpFn)
+par(mfrow=c(1, 2))
+hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
+hist(gene_sparsity, breaks=50, col="grey80", xlab="Gene sparsity", main="")
+abline(v=40, lty=2, col='purple')
+dev.off()
 ```
 
 ```{r Hca_sparsity_show_allCells, out.width="80%"}

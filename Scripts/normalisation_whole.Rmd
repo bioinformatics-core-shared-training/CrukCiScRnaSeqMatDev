@@ -21,6 +21,7 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
   splSetToGet: "dummy"
   setName: "dummy"
@@ -28,15 +29,17 @@ params:
   dsiSuf: 'dummy'
 ---
 
-# Normalisation {#NormalisationAllCellsTop}
+# Normalisation - with 2-5k cells per sample {#NormalisationAllCellsTop}
 
-```{r norm.knitr_options, echo=FALSE, results="hide", message=FALSE}
+```{r norm.knitr_options, echo=FALSE, results="hide", message=FALSE, dev="CairoPNG"}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
+set.seed(123) # for reproducibility
 ```
 
 Why normalise?

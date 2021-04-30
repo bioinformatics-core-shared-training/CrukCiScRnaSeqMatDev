@@ -20,11 +20,14 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE  
   setName: "caron"
   splSetToGet: "PRE-T"
   setSuf: "_allCells"
 ---
+
+# Data integration - PRE-T {#DataIntegrationPretTop}
 
 ```{r}
 projDir <- params$projDir
@@ -43,7 +46,7 @@ if(params$bookType == "mk"){
 }
 ```
 
-```{r dataSetIntegration_PRE-T_setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_PRE-T_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -51,8 +54,9 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```
 
@@ -67,8 +71,6 @@ library(pheatmap)
 library(clustree)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
-
-# Data integration
 
 Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. Its text is reproduced below with few modifications to adapt it to the data set under scrutiny here.
 
@@ -1261,3 +1263,10 @@ fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s.Rdata",
               setSuf,
               splSetToGet) # 'dsi' for data set integration
 ```
+
+## Session information
+
+```{r sessionInfo_dataSetIntegration_PRE-T}
+sessionInfo()
+```
+

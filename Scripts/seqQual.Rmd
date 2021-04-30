@@ -20,6 +20,7 @@ params:
   projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
 ---
 
@@ -27,14 +28,17 @@ params:
 TODO:
 -->
 
-```{r seqQual.knitr_options, echo=FALSE, results="hide", message=FALSE}
+# Sequence Quality {#SeqQualTop}
+
+```{r seqQual.knitr_options, echo=FALSE, results="hide", message=FALSE, dev="CairoPNG"}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 opts_chunk$set(fig.width=7, fig.height=7) 
+knitr::opts_chunk$set(dev="CairoPNG")
 ```
 
-```{r}
+```{r variables_seqQual}
 #projDirOsx <- "/Users/baller01/MyMount/clust1a/20200511_FernandesM_ME_crukBiSs2020"
 #projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
 #projDir <- "/home/ubuntu/Course_Materials/scRNAseq"
@@ -44,11 +48,10 @@ inpDirBit <- params$inpDirBit
 outDirBit <- params$outDirBit
 ```
 
-```{r}
+```{r libraries_seqQual}
 library(DT)
 ```
 
-# Sequence Quality {#SeqQualTop}
 
 ## Introduction
 

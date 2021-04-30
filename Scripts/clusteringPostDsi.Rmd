@@ -22,6 +22,7 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE  
   setName: "caron"
   splSetToGet: "PBMMC,ETV6-RUNX1"
@@ -86,7 +87,7 @@ opts_chunk$set(eval = TRUE)
 opts_chunk$set(dev="CairoPNG")
 opts_chunk$set(fig.width=7, fig.height=7)
 #opts_chunk$set(dev = c("png"))
-#options(bitmapType='cairo')
+options(bitmapType='cairo')
 options(stringsAsFactors = FALSE)
 set.seed(123) # for reproducibility
 ```

@@ -21,6 +21,7 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE  
   splSetToGet: "dummy"
   setName: "hca"

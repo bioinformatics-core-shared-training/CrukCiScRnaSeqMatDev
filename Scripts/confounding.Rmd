@@ -21,10 +21,15 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
 ---
 
 # Identifying confounding factors - `r "{{setNameUpp}}"` set
+
+```{r {{setNameUpp}}_confound_setup, cache=FALSE, dev="CairoPNG"}
+knitr::opts_chunk$set(dev="CairoPNG")
+```
 
 ```{r {{setNameUpp}}_confound_variables, cache=FALSE}
 normPlotDirBit <- "Plots/Norm" # "ConfoundPlots"

@@ -19,22 +19,27 @@ params:
   projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
   setName: "caron"
   setSuf: "_allCells"
   dirRel: "../.."
 ---
 
-```{r preProc.knitr_options, echo=FALSE, results="hide", message=FALSE}
+# Quality Control - with 500 cells per sample {#PreProcTop}
+
+```{r preProc.knitr_options, echo=FALSE, results="hide", message=FALSE, dev="CairoPNG"}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
-options(bitmapType='cairo')
+#opts_chunk$set(dev = c("png"))
+#options(bitmapType='cairo')
+#options(bitmapType='cairo-png')
+#opts_chunk$set(dev.args = list(type = "cairo"))
+opts_chunk$set(dev="CairoPNG")
+set.seed(123) # for reproducibility
 ```
-
-# Quality Control  {#PreProcTop}
 
 ## Introduction
 
@@ -101,7 +106,7 @@ dir.create(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit),
 print(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit))
 ```
 
-```{r libraries, include=FALSE, cache=FALSE}
+```{r libraries_preProc, include=FALSE, cache=FALSE}
 library(scran)
 library(scater)
 library(DropletUtils)
@@ -113,6 +118,7 @@ library(biomaRt)
 library(irlba)
 library(DT)
 library(dplyr)
+library(Cairo)
 ```
 
 ```{r}
@@ -124,7 +130,7 @@ dir.create(sprintf("%s/%s/Robjects", projDir, outDirBit),
 
 We will load both the Caron and Hca data sets.
 
-```{r sampleSheet}
+```{r sampleSheet_preProc}
 # CaronBourque2020
 cb_sampleSheetFn <- file.path(projDir, "Data/CaronBourque2020/SraRunTable.txt")
 # Human Cell Atlas
@@ -929,7 +935,7 @@ p
 
 ```{r qc_metricDistrib_plotColData_write, eval=runAll}
 tmpFn <- sprintf("%s/%s/%s/qc_metricDistrib_plotColData2.png", projDir, outDirBit, qcPlotDirBit)
-png(tmpFn)
+CairoPNG(tmpFn)
 # violin plots
 gridExtra::grid.arrange(
     plotColData(sce, x="block", y="sum",
@@ -1314,7 +1320,7 @@ p
 
 tmpFn <- sprintf("%s/%s/%s/novelty_scat.png",
 		 projDir, outDirBit, qcPlotDirBit)
-ggsave(plot=p, file=tmpFn)
+ggsave(plot=p, file=tmpFn, type = "cairo-png")
 
 # Novelty
 # the number of genes per UMI for each cell,
@@ -1334,7 +1340,7 @@ p
 
 tmpFn <- sprintf("%s/%s/%s/novelty_dens.png",
 		 projDir, outDirBit, qcPlotDirBit)
-ggsave(plot=p, file=tmpFn)
+ggsave(plot=p, file=tmpFn, type='cairo-png')
 ```
 
 ```{r rm_sce_preProc}
@@ -1532,7 +1538,7 @@ gene_sparsity <- tmpList$rowData$gene_sparsity
 # plot
 tmpFn <- sprintf("%s/%s/%s/%s_sparsity.png",
 		 projDir, outDirBit, qcPlotDirBit, setName)
-png(tmpFn)
+CairoPNG(tmpFn)
 par(mfrow=c(1, 2))
 hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
 hist(gene_sparsity, breaks=50, col="grey80", xlab="Gene sparsity", main="")
@@ -1623,7 +1629,7 @@ gene_sparsity <- tmpList$rowData$gene_sparsity
 # plot
 tmpFn <- sprintf("%s/%s/%s/%s_sparsity.png",
 		 projDir, outDirBit, qcPlotDirBit, setName)
-png(tmpFn)
+CairoPNG(tmpFn)
 par(mfrow=c(1, 2))
 hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
 hist(gene_sparsity, breaks=50, col="grey80", xlab="Gene sparsity", main="")

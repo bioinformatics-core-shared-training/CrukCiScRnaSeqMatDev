@@ -51,15 +51,16 @@ if(params$bookType == "mk") {
 nbPcToComp <- 50
 ```
 
-```{r setup_dimRedForAna, include=FALSE, echo=FALSE}
+```{r setup_dimRedForAna, include=FALSE, echo=FALSE, dev="CairoPNG"}
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility 
 ```
 
@@ -158,7 +159,7 @@ dec.sce %>%
 	data.frame() %>%
 	tibble::rownames_to_column("ensembl_gene_id") %>%
 	right_join(data.frame(rowData(sce)[chosen.genes.index,]), by="ensembl_gene_id") %>%
-	select(ensembl_gene_id, Symbol, bio, FDR) %>%
+	dplyr::select(ensembl_gene_id, Symbol, bio, FDR) %>%
 	arrange(-bio)
 rm(dec.sce)
 ```

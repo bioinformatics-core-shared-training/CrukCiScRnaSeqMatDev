@@ -20,6 +20,7 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE  
   setName: "caron"
   setSuf: "_5hCellPerSpl"
@@ -30,7 +31,7 @@ params:
   setSuf: "_allCells"
 -->
 
-# Data integration {#dataSetIntegration_PBMMC_ETV6-RUNX1Top}
+# Data integration - PBMMC + ETV6-RUNX {#dataSetIntegration_PBMMC_ETV6-RUNX1Top}
 
 ```{r, eval=FALSE}
 # OLD
@@ -61,7 +62,7 @@ nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r dataSetIntegration_PBMMC_ETV6-RUNX1_setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_PBMMC_ETV6-RUNX1_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -69,8 +70,9 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```
 
@@ -1772,6 +1774,12 @@ fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_normNoLog.Rds",
               setSuf,
               splSetToGet2) # 'dsi' for data set integration
 saveRDS(normNoLog, file=fn)
+```
+
+## Session information
+
+```{r sessionInfo_dataSetIntegration_PBMMC_ETV6-RUNX1}
+sessionInfo()
 ```
 
 

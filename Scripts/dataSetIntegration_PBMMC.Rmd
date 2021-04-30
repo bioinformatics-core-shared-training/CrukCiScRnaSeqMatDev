@@ -20,8 +20,11 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE  
 ---
+
+# Data integration - PBMMC {#DataIntegrationPbmmcTop}
 
 ```{r}
 projDir <- params$projDir
@@ -37,7 +40,7 @@ if(params$bookType == "mk"){
 
 ```
 
-```{r dataSetIntegration_PBMMC_setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_PBMMC_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -45,8 +48,9 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility 
 ```
 
@@ -57,8 +61,6 @@ library(scran)
 library(dplyr)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
-
-# Data integration {#DataIntegrationPbmmcTop}
 
 Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. Its text is reproduced below with few modifications to adapt it to the data set under scrutiny here.
 
@@ -924,6 +926,6 @@ plotExpression(uncorrected, x=I(factor(clusters.mnn)),
 
 ## Session information
 
-```{r}
+```{r sessionInfo_dataSetIntegration_PBMMC}
 sessionInfo()
 ```

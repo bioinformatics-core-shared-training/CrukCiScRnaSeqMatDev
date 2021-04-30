@@ -21,6 +21,7 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE  
   splSetToGet: "PBMMC,ETV6-RUNX1"
   setName: "caron"
@@ -34,7 +35,7 @@ outDirBit <- "AnaWiSce/Attempt1"
 nbPcToComp <- 50
 ```
 
-```{r}
+```{r variables_cellCyclePhases}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
@@ -56,7 +57,7 @@ nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r cellCyclePhases_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
+```{r setup_cellCyclePhases, include=FALSE, echo=FALSE, dev="CairoPNG"}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -65,7 +66,7 @@ knitr::opts_chunk$set(eval = TRUE)
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
 ##opts_chunk$set(dev = c("png"))
-##options(bitmapType='cairo')
+options(bitmapType='cairo')
 knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```

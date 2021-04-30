@@ -27,7 +27,7 @@ params:
   dsiSuf: '_dummy'
 ---
 
-```{r}
+```{r params_pseudotime3}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
@@ -42,21 +42,22 @@ nbPcToComp <- 50
 figSize <- 7
 ```
 
-```{r traj3_setup, include=FALSE, echo=FALSE}
+```{r setup_pseudotime3, include=FALSE, echo=FALSE, dev="CairoPNG"}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(eval = TRUE) 
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
-options(bitmapType='cairo')
+#opts_chunk$set(dev = c("png"))
+#options(bitmapType='cairo')
+opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 #opts_chunk$set(fig.width=7, fig.height=7) 
 ```
 
-```{r}
+```{r library_pseudotime3}
 library(SingleCellExperiment)
 library(scran)
 library(scater)
@@ -88,7 +89,7 @@ The first step is to interpolate the data along the trajectory to represent the 
 
 We will use the samples analysed in the previous session: two ABMMC and one PRE-T:
 
-```{r}
+```{r loadCounts_pseudotime3}
 
 # HCA ABMMCs:
 setName <- "hca"
@@ -114,33 +115,32 @@ caron.PRET1_counts <- readRDS(tmpFn)
 
 ```{r}
 dm_tcell_BM1 <- DiffusionMap(tcell.BM1_counts,n_pcs = 50)
-interGlobal_hcaBM1 <- cellAlign::interWeights(expDataBatch = t(tcell.BM1_counts), 
+interGlobal_hcaBM1 <- interWeights(expDataBatch = t(tcell.BM1_counts), 
                                                     trajCond = eigenvectors(dm_tcell_BM1)[, 1], 
                                                     winSz = 0.1, numPts=200)
 
 dm_tcell_BM2 <- DiffusionMap(tcell.BM2_counts,n_pcs = 50)
-interGlobal_hcaBM2 <- cellAlign::interWeights(expDataBatch = t(tcell.BM2_counts), 
+interGlobal_hcaBM2 <- interWeights(expDataBatch = t(tcell.BM2_counts), 
                                                     trajCond = eigenvectors(dm_tcell_BM2)[, 1], 
                                                     winSz = 0.1, numPts=200)
 
 dm_caron.PRET1 <- DiffusionMap(caron.PRET1_counts,n_pcs = 50)
-interGlobal_caronPRET1 <- cellAlign::interWeights(expDataBatch = t(caron.PRET1_counts), 
+interGlobal_caronPRET1 <- interWeights(expDataBatch = t(caron.PRET1_counts), 
                                                     trajCond = eigenvectors(dm_caron.PRET1)[, 1], 
                                                     winSz = 0.1, numPts=200)
 ```
 
 Scale the expression matrix 
 
-```{r}
+```{r scaleExp_pseudotime3}
 interGlobal_caronPRET1_scaled = scaleInterpolate(interGlobal_caronPRET1)
-interGlobal_hcaBM1_scaled = cellAlign::scaleInterpolate(interGlobal_hcaBM1)
-interGlobal_hcaBM2_scaled = cellAlign::scaleInterpolate(interGlobal_hcaBM2)
+interGlobal_hcaBM1_scaled = scaleInterpolate(interGlobal_hcaBM1)
+interGlobal_hcaBM2_scaled = scaleInterpolate(interGlobal_hcaBM2)
 ```
-
 
 Identify the shared genes across datasets
 
-```{r}
+```{r sharedGenes_pseudotime3}
 sharedMarkers = Reduce(intersect,
                        list(rownames(interGlobal_caronPRET1$interpolatedVals),
                           rownames(interGlobal_hcaBM1$interpolatedVals),
@@ -157,15 +157,15 @@ Finally, there is the alignment step. CellAlign operates much like sequence alig
 
 Intuitively, the optimal alignment runs along a "valley" within the dissimilarity matrix.
 
-```{r}
+```{r align_caronPRET1_pseudotime3}
 A <- calcDistMat(interGlobal_caronPRET1_scaled$scaledData[sharedMarkers,],
-              interGlobal_hcaBM1_scaled$scaledData[sharedMarkers,],
-              dist.method = 'Euclidean')
+		 interGlobal_hcaBM1_scaled$scaledData[sharedMarkers,],
+		 dist.method = 'Euclidean')
 alignment = globalAlign(A)
 plotAlign(alignment)
 ```
 
-```{r}
+```{r align_hcaBM2_pseudotime3}
 B <- calcDistMat(interGlobal_hcaBM1_scaled$scaledData[sharedMarkers,],
                  interGlobal_hcaBM2_scaled$scaledData[sharedMarkers,],
                  dist.method = 'Euclidean')
@@ -173,11 +173,13 @@ alignment = globalAlign(B)
 plotAlign(alignment)
 ```
 
-# Ackowledgements
+## Ackowledgements
 
 This notebook uses material from [cellAlign](https://github.com/shenorrLab/cellAlign) vignette. 
 
-```{r}
+## Session information
+
+```{r sessionInfo_pseudotime3}
 sessionInfo()
 ```
 

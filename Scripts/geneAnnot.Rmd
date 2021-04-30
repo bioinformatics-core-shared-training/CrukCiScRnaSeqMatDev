@@ -19,10 +19,11 @@ params:
   projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
 ---
 
-```{r preProc.knitr_options, echo=FALSE, results="hide", message=FALSE}
+```{r geneAnnot.knitr_options, echo=FALSE, results="hide", message=FALSE}
 cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -94,7 +95,7 @@ sampleSheet %>%
 
 We will load the data for the first sample in the sample sheet: SRR9264343.
 
-```{r example_load}
+```{r geneAnnot_example_load}
 i <- 1
 sample.path <- sprintf("%s/%s/%s/outs/raw_feature_bc_matrix/",
                        wrkDir,
@@ -109,7 +110,7 @@ sce.raw
 <!-- SRR9264343 -->
 <!-- raw or filtered: same genes --> 
 
-```{r raw_annot, eval=biomartBool}
+```{r geneAnnot_raw_annot, eval=biomartBool}
 # retrieve the feature information
 gene.info <- rowData(sce.raw)
 
@@ -154,14 +155,14 @@ rowData(sce.raw)[1:10,] %>%
 ```
 
 
-```{r qc_annot_writeRds, eval=biomartBool}
+```{r geneAnnot_writeRds, eval=biomartBool}
 # slow
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sceRaw_postBiomart.Rds", projDir, outDirBit)
 saveRDS(sce.raw, tmpFn)
 ```
 
-```{r qc_annot_readRds, eval=!biomartBool}
+```{r geneAnnot_readRds, eval=!biomartBool}
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sceRaw_postBiomart.Rds", projDir, outDirBit)
 sce.raw <- readRDS(tmpFn)

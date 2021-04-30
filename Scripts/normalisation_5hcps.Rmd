@@ -21,8 +21,14 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE
 ---
+
+```{r setup_norm_5hcps, include=FALSE, echo=FALSE, dev="CairoPNG"}
+options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
+```
 
 ```{r variables_norm_5hcps}
 #qcPlotDirBit <- "NormPlots"

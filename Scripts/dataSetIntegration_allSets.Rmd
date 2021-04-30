@@ -21,6 +21,7 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
+  bookType: "mk"
   cacheBool: FALSE  
   splSetToGet: "PBMMC,ETV6-RUNX1"
   setName: "caron"
@@ -32,6 +33,11 @@ params:
   setSuf: "_5hCellPerSpl"
 -->
   
+# Data integration - all Caron sample types {#dataSetIntegration_allSetsTop}
+
+**CODE NEEDS UPDATING**
+**as were other daya set integration chapters with fewr sample types** 
+
 ```{r, eval=FALSE}
 projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
 outDirBit <- "AnaWiSce/Attempt1"
@@ -58,9 +64,12 @@ splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if k
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
+
+library(BiocParallel)
+bpp <- MulticoreParam(8)
 ```
 
-```{r dataSetIntegration_allSets_setup, include=FALSE, echo=FALSE}
+```{r dataSetIntegration_allSets_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
 # First, set some variables:
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
@@ -68,23 +77,21 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-opts_chunk$set(dev = c("png"))
+#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
+knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```
 
-```{r, include=FALSE}
+```{r library_dataSetIntegration_allSets, include=FALSE}
 library(ggplot2)
 library(scater)
 library(scran)
 library(dplyr)
+library(BiocNeighbors)
+library(bluster)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
-
-# Data integration {#dataSetIntegration_allSetsTop}
-
-**CODE NEEDS UPDATING**
-**as were other daya set integration chapters with fewr sample types** 
 
 Source: [Integrating Datasets](https://osca.bioconductor.org/integrating-datasets.html) of the OSCA book and the [fastMNN manual](https://rdrr.io/github/LTLA/batchelor/man/fastMNN.html).
 
@@ -246,7 +253,7 @@ To prepare for the batch correction, we need to:
 * rescale each batch to adjust for differences in sequencing depth between batches
 * perform feature selection by averaging the variance components across all batches  
 
-We subset all batches to the common “universe” of features. In this case, it is straightforward as both batches use Ensembl gene annotation.
+We subset all batches to the common “universe” of features. In this case, it is straightforward as batches use Ensembl gene annotation.
 
 ```{r}
 allNames <- unlist(lapply(all.sce, function(x){rownames(x)}))
@@ -314,9 +321,13 @@ uncorrected <- runPCA(
 
 We use graph-based clustering on the components to obtain a summary of the population structure. As our each sample group is represented by at least two replicates, each cluster should ideally consist of cells from several batches. This is the case for some but not all clusters. Some clusters comprise of cells from a single sample. This may indicate that cells of the same type are artificially separated due to technical differences between batches. They may also be cancer cell population private to samples. 
 
-```{r}
-nSteps <- 4 # waltrap default
-if(ncol(uncorrected)>10000){nSteps <- 20} # or else get 63 clusters with caron allCells
+```{r diagBatch_cluster_dataSetIntegration_allSets, eval=FALSE}
+# 30+ min run
+nSteps <- 4 # walktrap default
+if(ncol(uncorrected) > 10000){
+	nSteps <- 20 # or else get 63 clusters with caron allCells
+}
+
 library(scran)
 snn.gr <- buildSNNGraph(uncorrected, use.dimred="PCA")
 clusters <- igraph::cluster_walktrap(snn.gr, steps=nSteps)$membership
@@ -324,8 +335,35 @@ tab <- table(Cluster=clusters, Batch=uncorrected$batch)
 tab
 ```
 
-```{r}
+```{r diagBatch_heatmap_dataSetIntegration_allSets, eval=FALSE}
 pheatmap::pheatmap(tab,
+           border_color      = NA,
+           drop_levels       = TRUE,
+           cluster_cols      = FALSE
+           )
+```
+
+```{r diagBatch_blustercluster_dataSetIntegration_allSets}
+# NNGraphParam k?
+# k is for makeSNNGraph: nearest neighbors to consider during graph construction
+
+set.seed(1000)
+nSteps <- 4 # walktrap default
+clusters <- clusterRows(reducedDim(uncorrected, "PCA"),
+				      TwoStepParam(KmeansParam(centers=2000,iter.max=30),
+						   NNGraphParam(
+								shared = TRUE,
+								k=5,
+								cluster.fun = "walktrap",
+								cluster.args = list(steps=nSteps)
+								)))
+
+tab2 <- table(Cluster=clusters, Batch=uncorrected$batch)
+tab2
+```
+
+```{r diagBatch_blusterHeatmap_dataSetIntegration_allSets}
+pheatmap::pheatmap(tab2,
            border_color      = NA,
            drop_levels       = TRUE,
            cluster_cols      = FALSE
@@ -336,13 +374,24 @@ We can also visualize the corrected coordinates using a t-SNE plot. The strong s
 
 ```{r}
 set.seed(1111001)
-uncorrected <- runTSNE(uncorrected, dimred="PCA")
+#uncorrected <- runTSNE(uncorrected, dimred="PCA")
+uncorrected <- runTSNE(uncorrected, dimred="PCA",
+    external_neighbors=TRUE, 
+    BNPARAM=AnnoyParam(),
+    BPPARAM=bpp,
+    n_threads=bpnworkers(bpp))
+
 plotTSNE(uncorrected, colour_by="batch")
 ```
 
 ```{r}
 set.seed(1111001)
-uncorrected <- runUMAP(uncorrected, dimred="PCA")
+#uncorrected <- runUMAP(uncorrected, dimred="PCA")
+uncorrected <- runUMAP(uncorrected, dimred="PCA",
+    external_neighbors=TRUE, 
+    BNPARAM=AnnoyParam(),
+    BPPARAM=bpp,
+    n_threads=bpnworkers(bpp))
 plotUMAP(uncorrected, colour_by="batch")
 ```
 
@@ -386,7 +435,11 @@ pheatmap::pheatmap(tab.resc,
 <!-- and/or barplots -->
 
 ```{r, fig.height=0.5*figSize, fig.width=1.2*figSize}
-rescaled.rb <- runTSNE(rescaled.rb, dimred="PCA")
+rescaled.rb <- runTSNE(rescaled.rb, dimred="PCA",
+    external_neighbors=TRUE, 
+    BNPARAM=AnnoyParam(),
+    BPPARAM=bpp,
+    n_threads=bpnworkers(bpp))
 rescaled.rb$batch <- factor(rescaled.rb$batch)
 p.batch <- plotTSNE(rescaled.rb, colour_by="batch")
 p.clu <- plotTSNE(rescaled.rb, colour_by="clusters.resc")
@@ -471,12 +524,16 @@ pheatmap::pheatmap(tab.mnn,
            )
 ```
 
-We can also visualize the corrected coordinates using a t-SNE plot. The presence of visual clusters containing cells from both batches provides a comforting illusion that the correction was successful.
+We can also visualize the corrected coordinates using a t-SNE plot. The presence of visual clusters containing cells from batches provides a comforting illusion that the correction was successful.
 
 ```{r, fig.height=0.5*figSize, fig.width=1.2*figSize}
 library(scater)
 set.seed(0010101010)
-mnn.out <- runTSNE(mnn.out, dimred="corrected")
+mnn.out <- runTSNE(mnn.out, dimred="corrected",
+    external_neighbors=TRUE, 
+    BNPARAM=AnnoyParam(),
+    BPPARAM=bpp,
+    n_threads=bpnworkers(bpp))
 plotTSNE(mnn.out, colour_by="batch")
 p.batch <- plotTSNE(mnn.out, colour_by="batch")
 p.clu <- plotTSNE(mnn.out, colour_by="clusters.mnn")
@@ -614,7 +671,11 @@ mnn.out2 <- fastMNN(
 A quick inspection indicates that the original within-batch structure is indeed preserved in the corrected data. This highlights the utility of a marker-based feature set for integrating datasets that have already been characterized separately in a manner that preserves existing interpretations of each dataset. We note that some within-batch clusters have merged, most likely due to the lack of robust separation in the first place, though this may also be treated as a diagnostic on the appropriateness of the integration depending on the context.
 
 ```{r}
-mnn.out2 <- runTSNE(mnn.out2, dimred="corrected")
+mnn.out2 <- runTSNE(mnn.out2, dimred="corrected",
+    external_neighbors=TRUE, 
+    BNPARAM=AnnoyParam(),
+    BPPARAM=bpp,
+    n_threads=bpnworkers(bpp))
 batchVec <- levels(mnn.out$batch)
 gridExtra::grid.arrange(
     plotTSNE(mnn.out2[,mnn.out2$batch==batchVec[1]], colour_by=I(colLabels(rescaled.mbn[[1]]))) + ggtitle(batchVec[1]),
@@ -708,7 +769,11 @@ pheatmap::pheatmap(tab.mnn,
 ```{r, fig.height=0.5*figSize, fig.width=1.2*figSize}
 library(scater)
 set.seed(0010101010)
-mnn.out <- runTSNE(mnn.out, dimred="corrected")
+mnn.out <- runTSNE(mnn.out, dimred="corrected",
+    external_neighbors=TRUE, 
+    BNPARAM=AnnoyParam(),
+    BPPARAM=bpp,
+    n_threads=bpnworkers(bpp))
 
 p.batch <- plotTSNE(mnn.out, colour_by="batch")
 p.clu <- plotTSNE(mnn.out, colour_by="clusters.mnn")
