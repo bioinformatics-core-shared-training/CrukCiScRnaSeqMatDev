@@ -20,6 +20,8 @@ Two data sets:
 * 'HCA': adult BMMCs obtained from the Human Cell Atlas (HCA)
   * (here downsampled from 25000 to 5000 cells per sample)
 
+
+<!--
 List of chapters:
 
 * index: index.Rmd
@@ -46,8 +48,14 @@ List of chapters:
 * differential expression between conditions (last year's)
 * trajectory analysis (last year's)
 * doublet detection (last year's)
+-->
+
+To open the bookdown:
+
+* clone the repository.
+* open AnaWiSce/Ana1/BookDownMkWiC_incPseudoTimeIn3Parts/index.html **Work in progress**
 
 TODO HERE:
 
-* add bookdown and link to it
+<!-- * add bookdown and link to it -->
 * add code to render bookdown
