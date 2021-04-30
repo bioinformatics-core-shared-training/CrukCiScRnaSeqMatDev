@@ -246,6 +246,7 @@ comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-afte
 coassignment-probabilities
 rand-index
 encouraging-consistency-with-marker-genes-1
+session-information-11
 dataSetIntegration_HHDTop
 abbreviations-3
 motivation-2
@@ -263,6 +264,7 @@ comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-afte
 coassignment-probabilities-1
 rand-index-1
 encouraging-consistency-with-marker-genes-2
+session-information-12
 DataIntegrationPretTop
 abbreviations-4
 motivation-3
@@ -280,6 +282,7 @@ comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-afte
 coassignment-probabilities-2
 rand-index-2
 encouraging-consistency-with-marker-genes-3
+session-information-13
 dataSetIntegration_PBMMC_ETV6-RUNX1Top
 abbreviations-5
 motivation-4
@@ -298,6 +301,7 @@ coassignment-probabilities-3
 rand-index-3
 encouraging-consistency-with-marker-genes-4
 identify-clusters-with-pbmmc-cells
+session-information-14
 dataSetIntegration_allSetsTop
 motivation-5
 load-data-7
@@ -312,7 +316,7 @@ comparison-to-within-batch-clusters-1
 encouraging-consistency-with-marker-genes-5
 using-the-corrected-values
 challenge-same-but-with-an-ordered-merging
-session-information-11
+session-information-15
 clustering-with-pbmmcetv6-runx1-and-_5hcellperspl-clusteringpbmmc_etv6-runx1__5hcellperspltop
 load-data-8
 clustering-cells-into-putative-subpopulations
@@ -336,7 +340,7 @@ choose-the-number-of-clusters
 comparing-two-sets-of-clusters
 expression-of-known-marker-genes
 save-data
-session-information-12
+session-information-16
 cluster-marker-genes
 learning-objectives
 load-data-9
@@ -375,7 +379,7 @@ differential-abundance-between-conditions
 overview
 handling-composition-effects
 background
-session-information-13
+session-information-17
 pseudoTime1Top
 variance-modeling
 data-integration
@@ -384,11 +388,22 @@ clustering-1
 cell-type-classification
 extract-t-cells
 ackowledgements
-session-information-14
+session-information-18
 pseudoTime2Top
 trajectory-inference-with-destiny
 find-temporally-expressed-genes
 pseudotime-analysis-for-another-hca-sample
 exercise-1
 ackowledgements-1
-session-information-15
+session-information-19
+pseudoTime3Top
+ackowledgements-2
+session-information-20
+doubletDetectionTop
+learning-objectives-1
+set-up-analysis
+load-data-11
+overview-1
+doublet-detection-by-simulation
+further-comments
+session-information-21
