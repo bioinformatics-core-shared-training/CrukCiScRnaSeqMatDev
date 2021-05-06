@@ -1,6 +1,7 @@
-# CRUK_CI_Summer_School_2021_ScRnaSeq
+# CrukCiScRnaSeqMatDev
 
 <!--
+# CRUK_CI_Summer_School_2021_ScRnaSeq
 Introduction to single-cell RNA-seq analysis at the CRUK Summer School 2021
 -->
 
@@ -8,7 +9,11 @@ Collection of course materials for an 'Introduction to single-cell RNA-seq analy
 
 ## Aim
 
-The repo so far aims to gather in a single place the various analyses performed to develop the materials. Not all analyses will be included in the final document used by students during the course. Analyses of the whole data set for example take too long. Once all analyses are compiled, the bookdown will serve as a source to derive another version to share with students, where some chapters are clearly labelled 'exercise', e.g. data set integration, and/or where whole-data-set analyses were excluded or available as annexes.  
+The repo so far aims to gather in a single place the various analyses performed to develop the materials.
+
+**Not all analyses will be included in the final document used by students during the course.**
+
+Analyses of the whole data set for example take too long. Once all analyses are compiled, the bookdown will serve as a source to derive another version to share with students, where some chapters are clearly labelled 'exercise', e.g. data set integration, and/or where whole-data-set analyses were excluded or available as annexes.  
 
 ## Data sets
 
