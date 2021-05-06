@@ -1,0 +1,35 @@
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> rmarkdown::find_pandoc(cache = FALSE, dir = "/usr/lib/rstudio-server/bin/pandoc"); bookdown::render_book('index.Rmd', 'bookdown::gitbook', config_file = '_bookdown_KmWiC.yml', new_session=TRUE, output_dir='../BookDownKmWiC', params=list(cacheBool=TRUE, bookType = 'km', inpDirBit = 'AnaWiSce/AnaKmWiC', outDirBit = 'AnaWiSce/AnaKmWiC'))
+$version
+[1] ‘2.7.3’
+
+$dir
+[1] "/usr/lib/rstudio-server/bin/pandoc"
+
+Error in bookdown::render_book("index.Rmd", "bookdown::gitbook", config_file = "_bookdown_KmWiC.yml",  : 
+  No input R Markdown files found from the current directory /ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/AnaWiSce/AnaKmWiC or in the rmd_files field of _bookdown.yml
+In addition: Warning message:
+In file.rename(config_file, "_bookdown.yml") :
+  cannot rename file '_bookdown_KmWiC.yml' to '_bookdown.yml', reason 'No such file or directory'
+Execution halted
+Warning message:
+In file.rename("_bookdown.yml", config_file) :
+  cannot rename file '_bookdown.yml' to '_bookdown_KmWiC.yml', reason 'No such file or directory'
