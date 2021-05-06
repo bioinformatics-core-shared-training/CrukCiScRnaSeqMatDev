@@ -100,10 +100,8 @@ saveRds <- TRUE # overwrite existing Rds files
 dir.create(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit),
            showWarnings = FALSE,
            recursive = TRUE)
-```
-
-```{r}
-print(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit))
+dir.create(sprintf("%s/%s/Robjects", projDir, outDirBit),
+	   showWarnings = FALSE)
 ```
 
 ```{r libraries_preProc, include=FALSE, cache=FALSE}
@@ -119,11 +117,6 @@ library(irlba)
 library(DT)
 library(dplyr)
 library(Cairo)
-```
-
-```{r}
-dir.create(sprintf("%s/%s/Robjects", projDir, outDirBit),
-	   showWarnings = FALSE)
 ```
 
 ## Sample sheet

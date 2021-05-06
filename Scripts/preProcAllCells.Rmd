@@ -139,6 +139,8 @@ runAll <- FALSE # TRUE
 dir.create(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit),
            showWarnings = FALSE,
            recursive = TRUE)
+dir.create(sprintf("%s/%s/Robjects", projDir, outDirBit),
+	   showWarnings = FALSE)
 ```
 
 ```{r libraries_allCells, include=FALSE}
@@ -153,6 +155,7 @@ library(biomaRt)
 library(irlba)
 library(DT)
 library(dplyr)
+library(Cairo)
 ```
 
 ## Sample sheet

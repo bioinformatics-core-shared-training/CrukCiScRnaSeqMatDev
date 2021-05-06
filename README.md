@@ -22,12 +22,12 @@ Two data sets:
 * 'CaronBourque2020': pediatric leukemia, with four sample types, including:
   * pediatric Bone Marrow Mononuclear Cells (PBMMCs)
   * three tumour types: ETV6-RUNX1, HHD, PRE-T and  
-* 'HCA': adult BMMCs obtained from the Human Cell Atlas (HCA)
+* 'HCA': adult BMMCs (ABMMCs) obtained from the Human Cell Atlas (HCA)
   * (here downsampled from 25000 to 5000 cells per sample)
 
 ## Bookdown
 
-The various steps are bundled into a bookdown.
+The various analysis steps are bundled into a bookdown.
 
 Creating a bookdown can be done in two ways:
 
@@ -36,11 +36,17 @@ Creating a bookdown can be done in two ways:
 
 I prefer the 'knit-merge' way as each chapter is rendered separately, each in a different session. I also like to skip unnecessary re-running during development and so use caching. That however sometimes creates issues when a cached chunk uses an object updated elsewhere (another chunk) since the last caching. I ended up in such a situation and decided to use the 'merge-knit' method instead, with no caching, which also offers the possibility to render chapters one at a time. Which is fine, until parameters are added to a chapter that are not listed in the index template which is the only one used with this single-session method (as far as I understand. But I have not yet checked that by editing index.Rmd).
 
+**To open the bookdown:**
+
+* clone the repository.
+* open AnaWiSce/AnaKmWiC/BookDownKmWiC/index.html **Work in progress**
+
+
 ## List of chapters:
 
 * index: index.Rmd
-* sequence quality: seqQual.Rmd [temp seqQual chapter](AnaWiSce/Ana1/BookDownMkWoC/SeqQualTop.html)
-* alignmment and feature counting, with cellranger: cellRanger.Rmd [temp AliFeatCount chapter](AnaWiSce/Ana1/BookDownMkWoC/AliFeatCountTop.html)
+* sequence quality: seqQual.Rmd <!-- [temp seqQual chapter](AnaWiSce/Ana1/BookDownMkWoC/SeqQualTop.html) -->
+* alignmment and feature counting, with cellranger: cellRanger.Rmd <!-- [temp AliFeatCount chapter](AnaWiSce/Ana1/BookDownMkWoC/AliFeatCountTop.html) -->
 * pre-processing - all cells: preProcAllCells.Rmd
 * pre-processing - downsampled sample set, down to 500 cells each: preProc.Rmd
 * normalisation - all cells: normalisation_whole.Rmd
@@ -62,11 +68,6 @@ I prefer the 'knit-merge' way as each chapter is rendered separately, each in a 
 * differential expression between conditions - multiSplComp.Rmd
 * trajectory analysis - pseudoTime.Rmd
 * doublet detection - doubletDetect.Rmd and doubletDetect_chal1.Rmd
-
-To open the bookdown:
-
-* clone the repository.
-* open AnaWiSce/Ana1/BookDownMkWiC_incPseudoTimeIn3Parts/index.html **Work in progress**
 
 ## TODO
 
