@@ -39,13 +39,13 @@ library(knitr)
 ```{r confoundingCaron.knitr_options, include=FALSE, echo=FALSE, dev="CairoPNG"}
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(eval = TRUE) 
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
 #opts_chunk$set(dev = c("png"))
-options(bitmapType='cairo')
-knitr::opts_chunk$set(dev="CairoPNG")
+#options(bitmapType='cairo')
+opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```
 

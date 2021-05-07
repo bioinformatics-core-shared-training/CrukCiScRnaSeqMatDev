@@ -47,10 +47,14 @@ knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```
 
-```{r}
+```{r variables_dimRedForViz}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
+```
+
+```{r library_dimRedForViz}
+library(Cairo)
 ```
 
 In part 1 we gathered the data, aligned reads, checked quality, and normalised read counts. We will now identify genes to focus on, use visualisation to explore the data, collapse the data set, cluster cells by their expression profile and identify genes that best characterise these cell populations. These main steps are shown below [@ANDREWS2018114]. 

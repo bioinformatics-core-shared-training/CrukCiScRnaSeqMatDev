@@ -62,6 +62,7 @@ library(scran)
 library(ggplot2)
 library(dplyr)
 library(BiocSingular)
+library(Cairo)
 ```
 
 `r #knitr::knit_exit()`

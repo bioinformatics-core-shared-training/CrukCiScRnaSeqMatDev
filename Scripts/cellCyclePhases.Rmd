@@ -76,6 +76,7 @@ library(ggplot2)
 library(scater)
 library(scran)
 library(dplyr)
+library(Cairo)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 

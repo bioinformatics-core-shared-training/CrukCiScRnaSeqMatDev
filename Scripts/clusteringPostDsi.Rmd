@@ -108,6 +108,7 @@ library(dynamicTreeCut)
 library(cluster) # for silhouette
 library(igraph) # for graph-based clustering and plotting networks 
 library(leiden) # for community detection
+library(Cairo)
 
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```

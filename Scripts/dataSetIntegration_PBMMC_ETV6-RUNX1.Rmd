@@ -85,6 +85,8 @@ library(bluster)
 library(dplyr)
 library(pheatmap)
 library(clustree)
+library(Cairo)
+
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 

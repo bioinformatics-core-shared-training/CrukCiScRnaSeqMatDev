@@ -35,6 +35,7 @@ params:
 library(ggplot2)
 library(scater)
 library(scran)
+library(Cairo)
 ```
 
 ```{r params_featSelec}
