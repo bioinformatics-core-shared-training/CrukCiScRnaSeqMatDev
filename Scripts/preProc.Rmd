@@ -93,7 +93,7 @@ wrkDir <- sprintf("%s/CaronBourque2020/grch38300", projDir)
 outDirBit <- params$outDirBit # "AnaWiSeurat/Attempt1"
 qcPlotDirBit <- "Plots/Qc"
 poolBool <- TRUE # FALSE # whether to read each sample in and pool them and write object to file, or just load that file.
-biomartBool <- FALSE # TRUE # biomaRt sometimes fails, do it once, write to file and use that copy. See geneAnnot.Rmd
+biomartBool <- TRUE # FALSE # biomaRt sometimes fails, do it once, write to file and use that copy. See geneAnnot.Rmd
 addQcBool <- TRUE
 runAll <- TRUE
 saveRds <- TRUE # overwrite existing Rds files
@@ -156,10 +156,8 @@ We will use a [SingleCellExperiment](https://bioconductor.org/packages/SingleCel
 
 ```{r tenxLibStructureV3, out.width="80%"}
 tmpFn <- sprintf("%s/Images/tenxLibStructureV3.png", "..")
-print(getwd())
-print(tmpFn)
-print(file.exists(tmpFn))
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
+rm(tmpFn)
 ```
 
 ## Example
@@ -220,6 +218,7 @@ The plot below show the average coverage (y-axis) along the body of genes (x-axi
 ```{r geneBodyCoverage, out.width="80%"}
 tmpFn <- sprintf("%s/Images/1_AAACCTGAGACTTTCG-1.rseqcGeneBodyCovCheck.txt.geneBodyCoverage.curves.png", "..")
 knitr::include_graphics(tmpFn, auto_pdf = TRUE)
+rm(tmpFn)
 ```
 
 ### Amplification rate
@@ -231,8 +230,12 @@ We will use the information stored in the 'molecule info' file to count the numb
 ##mol.info <- read10xMolInfo(mol.info.file)
 # or mol.info object if issue with H5Fopen
 i <- 1
-mol.info.file <- sprintf("%s/%s/%s/outs/molecule_info_h5.Rds", wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
+mol.info.file <- sprintf("%s/%s/%s/outs/molecule_info_h5.Rds",
+			 wrkDir,
+			 sampleSheet[i,"Run"],
+			 sampleSheet[i,"Run"])
 mol.info <- readRDS(mol.info.file)
+rm(mol.info.file)
 ```
 
 ```{r amplification}
@@ -370,7 +373,9 @@ plot(barcode_rank, log10_lib_size, xlim=c(1,10000))
 The plot above shows that the majority of droplets have fewer than 100 UMIs, e.g. droplets with rank greater than 4000. We will redraw the plot to focus on droplets with lower ranks, by using the log10 scale for the x-axis.
 
 ```{r cellCall_barcodeRankPlot_logScale2}
-plot(log10(barcode_rank), log10_lib_size, xlim=log10(c(1,10000)))
+plot(log10(barcode_rank),
+     log10_lib_size,
+     xlim=log10(c(1,10000)))
 ```
 
 The point on the curve where it drops sharply may be used as the split point. Before that point library sizes are high, because droplets carry a cell. After that point, library sizes are far smaller because droplets do not carry a cell, only ambient RNA (... or do they?).
@@ -530,11 +535,15 @@ sce.ed
 rm(sce.ed)
 ```
 
-Cell calling in cellranger v3 uses a method similar to emptyDrops() and a 'filtered matrix' is generated that only keeps droplets deemed to contain a cell (or more). We will load these filtered matrices now.
+Cell calling in cellranger v3 uses a method similar to emptyDrops()
+and a 'filtered matrix' is generated that only keeps droplets deemed to contain
+a cell (or more). We will load these filtered matrices now.
 
 ## Load filtered matrices
 
-Each sample was analysed with cellranger separately. We load filtered matrices one sample at a time, showing for each the name and number of features and cells.
+Each sample was analysed with cellranger separately.
+We load filtered matrices one sample at a time,
+showing for each the name and number of features and cells.
 
 ```{r dataSets_load, eval=poolBool, cache.lazy = FALSE}
 # load data:
@@ -574,7 +583,13 @@ for (i in 2:nrow(sampleSheet))
 }
 ```
 
-A cell barcode comprises the actual sequence and a 'group ID', e.g. AAACCTGAGAAACCAT-1. The latter helps distinguish cells with identical barcode sequence but come from different samples. As each sample was analysed separately, the group ID is set to 1 in all data sets. To pool these data sets we first need to change group IDs so cell barcodes are unique across all samples. We will use the position of the sample in the sample sheet.
+A cell barcode comprises the actual sequence and a 'group ID', e.g. AAACCTGAGAAACCAT-1.
+The latter helps distinguish cells with identical barcode sequence but come from
+different samples. As each sample was analysed separately, the group ID is set
+to 1 in all data sets. To pool these data sets we first need to change group IDs
+so cell barcodes are unique across all samples. We will use the position of the
+sample in the sample sheet. We also downsample to 2000 cells maximum per sample
+for faster computation during the course.
 
 ```{r dataSets_cbind, eval=poolBool}
 # subset 2000 cells:
@@ -622,6 +637,7 @@ colData(sce) <- colData(sce) %>%
   left_join(sampleSheet[,splShtColToKeep], "Run") %>%
   relocate() %>%
   DataFrame
+rm(tmpVec)
 ```
 
 Let's save the object for future reference.
@@ -631,6 +647,7 @@ Let's save the object for future reference.
 tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds",
 		 projDir, outDirBit)
 saveRDS(sce, tmpFn)
+rm(tmpFn)
 ```
 
 ```{r dataSets_readRds, eval=!poolBool}
@@ -638,9 +655,12 @@ saveRDS(sce, tmpFn)
 tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds",
 		 projDir, outDirBit)
 sce <- readRDS(tmpFn)
+rm(tmpFn)
 ```
 
 ## Properties of scRNA-seq data
+
+<!-- TODO add text -->
 
 ```{r amplification_2, eval=FALSE, include=FALSE}
 # a bit slow
@@ -753,6 +773,7 @@ boxplot( as.matrix(t(rel_expression[names(most_expressed),])),
 	xlab="% total count per cell",
 	col=scales::hue_pal()(20)[20:1],
 	horizontal=TRUE)
+rm(rel_expression, most_expressed)
 ```
 
 Mind that we have combined two data sets here. It may be interesting to count non-expressed genes in each set separately.
@@ -803,7 +824,11 @@ gene_symbol <- getBM(attributes=c('ensembl_gene_id',
                      values=gene.info[, 1])
 
 # create a new data frame of the feature information
-gene.merge <- merge(gene_symbol, gene.info, by.x=c('ensembl_gene_id'), by.y=c('ID'), all.y=TRUE)
+gene.merge <- merge(gene_symbol,
+		    gene.info,
+		    by.x=c('ensembl_gene_id'),
+		    by.y=c('ID'),
+		    all.y=TRUE)
 rownames(gene.merge) <- gene.merge$ensembl_gene_id
 
 # set the order for the same as the original gene information
@@ -811,6 +836,8 @@ gene.merge <- gene.merge[gene.info[, 1], ]
 
 # reset the rowdata on the SCE object to contain all of this information
 rowData(sce) <- gene.merge
+
+rm(gene_symbol, gene.merge)
 ```
 
 ```{r qc_annot_writeRds, eval=biomartBool}
@@ -819,6 +846,7 @@ rowData(sce) <- gene.merge
 tmpFn <- sprintf("%s/%s/Robjects/sce_postBiomart.Rds",
 		 projDir, outDirBit)
 saveRDS(sce, tmpFn)
+rm(tmpFn)
 ```
 
 ```{r qc_annot_readRds, eval=!biomartBool}
@@ -826,6 +854,7 @@ saveRDS(sce, tmpFn)
 tmpFn <- sprintf("%s/%s/Robjects/sce_postBiomart.Rds",
 		 projDir, outDirBit)
 sce <- readRDS(tmpFn)
+rm(tmpFn)
 ```
 
 Number of genes per chromosome, inc. 13 on the mitochondrial genome:
@@ -833,15 +862,16 @@ Number of genes per chromosome, inc. 13 on the mitochondrial genome:
 ```{r qc_mitoGenes}
 # number of genes per chromosome
 table(rowData(sce)$chromosome_name) %>%
-as.data.frame() %>%
-dplyr::rename(Chromosome=Var1, NbGenes=Freq) %>%
-datatable(rownames = FALSE)
+	as.data.frame() %>%
+	dplyr::rename(Chromosome=Var1, NbGenes=Freq) %>%
+	datatable(rownames = FALSE)
 
 # mitochondrial genes
 is.mito <- which(rowData(sce)$chromosome_name=="MT")
 ```
 
-Calculate and store QC metrics for genes with addPerFeatureQC() and for cells with addPerCellQC().
+Calculate and store QC metrics for genes with addPerFeatureQC() and for cells
+with addPerCellQC().
 
 ```{r qc_addPerFeatureQC, eval=addQcBool}
 # long
@@ -871,6 +901,7 @@ head(colData(sce)) %>%
 tmpFn <- sprintf("%s/%s/Robjects/sce_postAddQc.Rds",
 		 projDir, outDirBit)
 saveRDS(sce, tmpFn)
+rm(tmpFn)
 ```
 
 ```{r qc_addQc_readRds, eval=!addQcBool}
@@ -878,6 +909,7 @@ saveRDS(sce, tmpFn)
 tmpFn <- sprintf("%s/%s/Robjects/sce_postAddQc.Rds",
 		 projDir, outDirBit)
 sce <- readRDS(tmpFn)
+rm(tmpFn)
 ```
 
 ### QC metric distribution
@@ -886,8 +918,16 @@ Overall:
 
 ```{r qc_metricDistrib_twoHist}
 par(mfrow=c(1, 2))
-hist(log10(sce$sum), breaks=20, col="grey80", xlab="Log-total UMI count", main="")
-hist(sce$subsets_Mito_percent, breaks=20, col="grey80", xlab="Proportion of reads in mitochondrial genes", main="")
+hist(log10(sce$sum),
+     breaks=20,
+     col="grey80",
+     xlab="Log-total UMI count",
+     main="")
+hist(sce$subsets_Mito_percent,
+     breaks=20,
+     col="grey80",
+     xlab="Proportion of reads in mitochondrial genes",
+     main="")
 abline(v=20, lty=2, col='purple')
 ```
 
@@ -974,14 +1014,14 @@ For a given metric, an outlier value is one that lies over some number of MADs a
 
 For the library size we use the log scale to avoid negative values for lower part of the distribution.
 
-```{r adapThres_libSize}
+```{r adapThresTab_libSize}
 qc.lib2 <- isOutlier(sce$sum, log=TRUE, type="lower")
 table(qc.lib2)
 ```
 
 Threshold values:
 
-```{r}
+```{r adapThresVal_libSize}
 attr(qc.lib2, "thresholds")
 ```
 
@@ -989,14 +1029,14 @@ attr(qc.lib2, "thresholds")
 
 For the number of genes detected we also use the log scale to avoid negative values for lower part of the distribution.
 
-````{r adapThres_detected}
+````{r adapThresTab_detected}
 qc.nexprs2 <- isOutlier(sce$detected, log=TRUE, type="lower")
 table(qc.nexprs2)
 ```
 
 Threshold values:
 
-```{r}
+```{r adapThresVal_detected}
 attr(qc.nexprs2, "thresholds")
 ```
 
@@ -1004,14 +1044,14 @@ attr(qc.nexprs2, "thresholds")
 
 For the mitochondrial content the exclusion zone is in the higher part of the distribution.
 
-```{r adapThres_mito}
+```{r adapThresTab_mito}
 qc.mito2 <- isOutlier(sce$subsets_Mito_percent, type="higher")
 table(qc.mito2)
 ```
 
 Threshold values:
 
-```{r}
+```{r adapThresVal_mito}
 attr(qc.mito2, "thresholds")
 ```
 
@@ -1025,6 +1065,7 @@ DataFrame(LibSize=sum(qc.lib2),
 	  NExprs=sum(qc.nexprs2),
 	  MitoProp=sum(qc.mito2),
 	  Total=sum(discard2))
+rm(discard2, qc.lib2, qc.nexprs2, qc.mito2)
 ```
 
 ### All steps at once
@@ -1036,18 +1077,25 @@ reasons <- quickPerCellQC(colData(sce),
 			  percent_subsets=c("subsets_Mito_percent"))
 colSums(as.matrix(reasons)) %>%
   as.data.frame() %>%
-	datatable(rownames = TRUE)
+  datatable(rownames = TRUE)
 ```
 
 ### Assumptions
 
-Data quality depends on the tissue analysed, some being difficult to dissociate, e.g. brain, so that one level of QC stringency will not fit all data sets.
+Data quality depends on the tissue analysed, some being difficult to dissociate,
+e.g. brain, so that one level of QC stringency will not fit all data sets.
 
-Filtering based on QC metrics as done here assumes that these QC metrics are not correlated with biology. This may not necessarily be true in highly heterogenous data sets where some cell types represented by good-quality cells may have low RNA content or high mitochondrial content.
+Filtering based on QC metrics as done here assumes that these QC metrics are not
+correlated with biology. This may not necessarily be true in highly heterogenous
+data sets where some cell types represented by good-quality cells may have low
+RNA content or high mitochondrial content.
 
 ## Experimental factors
 
-The two data sets analysed here may have been obtained in experiments with different settings, such as cell preparation or sequencing depth. Such differences between these two batches would affect the adaptive thesholds discussed above. We will now perform QC in each batch separately.
+The two data sets analysed here may have been obtained in experiments with
+different settings, such as cell preparation or sequencing depth. Such
+differences between these two batches would affect the adaptive thesholds
+discussed above. We will now perform QC in each batch separately.
 
 We will use the quickPerCellQC() 'batch' option.
 
@@ -1067,6 +1115,7 @@ But the differences are deeper as the two sets only partially overlap:
 
 ```{r quickPerCellQC_batch_table}
 table(reasons$discard, batch.reasons$discard)
+rm(reasons, batch.reasons)
 ```
 
 Library size:
@@ -1111,13 +1160,18 @@ plotColData(sce,
 
 ### Identify poor-quality batches
 
-We will now consider the 'sample' batch to illustrate how to identify batches with overall low quality or different from other batches. Let's compare thresholds across sample groups.
+We will now consider the 'sample' batch to illustrate how to identify batches
+with overall low quality or different from other batches. Let's compare
+thresholds across sample groups.
 
 #### Number of genes detected
 
 ```{r qc_poorBatch_detected_compute, eval=TRUE}
 # compute
-discard.nexprs <- isOutlier(sce$detected, log=TRUE, type="lower", batch=sce$Sample.Name)
+discard.nexprs <- isOutlier(sce$detected,
+			    log=TRUE,
+			    type="lower",
+			    batch=sce$Sample.Name)
 nexprs.thresholds <- attr(discard.nexprs, "thresholds")["lower",]
 nexprs.thresholds %>%
   round(0) %>%
@@ -1129,7 +1183,9 @@ Without block:
 
 ```{r}
 # plots - without blocking
-discard.nexprs.woBlock <- isOutlier(sce$detected, log=TRUE, type="lower")
+discard.nexprs.woBlock <- isOutlier(sce$detected,
+				    log=TRUE,
+				    type="lower")
 without.blocking <- plotColData(sce, x="Sample.Name", y="detected",
     colour_by=I(discard.nexprs.woBlock))
 
@@ -1148,7 +1204,9 @@ with.blocking + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ##### Mitochondrial content
 
 ```{r}
-discard.mito <- isOutlier(sce$subsets_Mito_percent, type="higher", batch=sce$Sample.Name)
+discard.mito <- isOutlier(sce$subsets_Mito_percent,
+			  type="higher",
+			  batch=sce$Sample.Name)
 mito.thresholds <- attr(discard.mito, "thresholds")["higher",]
 mito.thresholds %>%
   round(0) %>%
