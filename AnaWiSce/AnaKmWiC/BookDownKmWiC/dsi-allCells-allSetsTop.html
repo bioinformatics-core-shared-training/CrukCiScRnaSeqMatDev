@@ -2607,7 +2607,7 @@ See Chapter 32 for an example of a more complex fastMNN() merge involving severa
 <span id="cb2316-21"><a href="dsi-allCells-allSetsTop.html#cb2316-21"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(Symbol, <span class="st">&quot;^RP&quot;</span>)) <span class="op">%&gt;%</span></span>
 <span id="cb2316-22"><a href="dsi-allCells-allSetsTop.html#cb2316-22"></a><span class="st">  </span><span class="kw">pull</span>(ensembl_gene_id) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>(<span class="dv">1</span>)</span>
 <span id="cb2316-23"><a href="dsi-allCells-allSetsTop.html#cb2316-23"></a>geneSymbol &lt;-<span class="st"> </span><span class="kw">rowData</span>(uncorrected)[geneEnsId,<span class="st">&quot;Symbol&quot;</span>]</span></code></pre></div>
-<!-- OLD Expression level for the top gene, ENSG00000087086 on violin plots: -->
+<!-- OLD Expression level for the top gene,  on violin plots: -->
 <div class="sourceCode" id="cb2317"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2317-1"><a href="dsi-allCells-allSetsTop.html#cb2317-1"></a><span class="kw">plotExpression</span>(uncorrected,</span>
 <span id="cb2317-2"><a href="dsi-allCells-allSetsTop.html#cb2317-2"></a>               <span class="dt">x=</span><span class="kw">I</span>(<span class="kw">factor</span>(clusters.mnn)),</span>
 <span id="cb2317-3"><a href="dsi-allCells-allSetsTop.html#cb2317-3"></a>               <span class="dt">features=</span>geneEnsId, <span class="dt">colour_by=</span><span class="st">&quot;batch&quot;</span>) <span class="op">+</span></span>
