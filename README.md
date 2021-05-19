@@ -38,6 +38,10 @@ I prefer the 'knit-merge' way as each chapter is rendered separately, each in a 
 
 **To open the bookdown:**
 
+[Bookdown index](AnaWiSce/AnaKmWiC/BookDownMkWiC/index.html)
+
+OR
+
 * clone the repository.
 * open AnaWiSce/AnaKmWiC/BookDownKmWiC/index.html **Work in progress**
 
