@@ -116,7 +116,7 @@ sampleSheetCat %>%
 sampleSheet <- sampleSheetCat %>%
 	filter(! source_name == "ABMMC")
 
-cellrangerDirLink <- sprintf("%s/%s/grch38300", projDirLink, "CaronBourque2020")
+cellrangerDirLink <- sprintf("%s/Data/%s/grch38300", projDirLink, "CaronBourque2020")
 htmlVec <- sprintf("%s/%s/%s/outs/web_summary.html", cellrangerDirLink, sampleSheet$Run, sampleSheet$Run)
 names(htmlVec) <- sampleSheet$Run
 
@@ -139,7 +139,7 @@ for(i in 1:length(htmlVec)){
 sampleSheet <- sampleSheetCat %>%
 	filter(source_name == "ABMMC")
 
-cellrangerDirLink <- sprintf("%s/%s/grch38300", projDirLink, "Hca")
+cellrangerDirLink <- sprintf("%s/Data/%s/grch38300", projDirLink, "Hca")
 htmlVec <- sprintf("%s/%s/%s/outs/web_summary.html", cellrangerDirLink, sampleSheet$Run, sampleSheet$Run)
 names(htmlVec) <- sampleSheet$Run
 
