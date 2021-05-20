@@ -21,7 +21,7 @@ Two data sets:
 
 * 'CaronBourque2020': pediatric leukemia, with four sample types, including:
   * pediatric Bone Marrow Mononuclear Cells (PBMMCs)
-  * three tumour types: ETV6-RUNX1, HHD, PRE-T and  
+  * three tumour types: ETV6-RUNX1, HHD, PRE-T  
 * 'HCA': adult BMMCs (ABMMCs) obtained from the Human Cell Atlas (HCA)
   * (here downsampled from 25000 to 5000 cells per sample)
 
@@ -38,7 +38,7 @@ I prefer the 'knit-merge' way as each chapter is rendered separately, each in a 
 
 **To open the bookdown:**
 
-[Bookdown index](AnaWiSce/AnaKmWiC/BookDownKmWiC/index.html)
+* [Bookdown index](AnaWiSce/AnaKmWiC/BookDownKmWiC/index.html)
 
 OR
 
