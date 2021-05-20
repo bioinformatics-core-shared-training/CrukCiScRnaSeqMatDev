@@ -22,7 +22,10 @@ params:
   outDirBit: "AnaWiSce/Ana1"
   bookType: "mk"
   cacheBool: FALSE  
+  setName: "caron"
+  setSuf: "_allCells"
   splSetToGet: "HHD"
+  dsiSuf: '_dsi'
 ---
 
 # Data integration - HDD {#dataSetIntegration_HHDTop}
@@ -32,12 +35,18 @@ projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
+setName <- params$setName
 splSetToGet <- params$splSetToGet
-nbPcToComp <- 50
+setSuf <- params$setSuf
+dsiSuf <- params$dsiSuf # 'dsi' for data set integration
 
 if(params$bookType == "mk"){
+	setName <- "caron"
 	splSetToGet <- "HHD"
+	setSuf <- "_allCells"
 }
+nbPcToComp <- 50
+figSize <- 7
 ```
 
 ```{r dataSetIntegration_HHD_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
@@ -90,9 +99,6 @@ Computational correction of these effects is critical for eliminating batch-to-b
 We will load the R file keeping the SCE object with the normalised counts, and subset 1000 cells per sample.
 
 ```{r}
-setName <- "caron"
-#setSuf <- ""
-setSuf <- "_allCells"
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
 
 print(tmpFn)
@@ -354,8 +360,6 @@ rescaled2$batch <- factor(rescaled2$batch)
 plotTSNE(rescaled2, colour_by="batch")
 ```
 
-
-
 ## Performing MNN correction
 
 ### Algorithm overview
@@ -380,20 +384,20 @@ mnn.out <- fastMNN(rescaled,
                    subset.row=chosen.hvgs,
                    BSPARAM=BiocSingular::RandomParam(deferred=TRUE))
 mnn.out
+mnn.out.corre.dim <- dim(reducedDim(mnn.out, "corrected"))
+mnn.out.corre.dim
+mnn.out.recon.dim <- dim(assay(mnn.out, "reconstructed"))
+mnn.out.recon.dim
 ```
 
 The function returns a SCE object containing corrected values for downstream analyses like clustering or visualization. Each column of `mnn.out` corresponds to a cell in one of the batches, while each row corresponds to an input gene in `chosen.hvgs`. The batch field in the column metadata contains a vector specifying the batch of origin of each cell.
 
-The `corrected` matrix in the `reducedDims()` contains the low-dimensional corrected coordinates for all cells, which we will use in place of the PCs in our downstream analyses (`r nrow(reducedDim(mnn.out, "corrected"))` cells and `r ncol(reducedDim(mnn.out, "corrected"))` PCs).
+The `corrected` matrix in the `reducedDims()` contains the low-dimensional corrected coordinates for all cells, which we will use in place of the PCs in our downstream analyses (`r mnn.out.corre.dim[1]` cells and `r mnn.out.corre.dim[2]` PCs).
+
+A `reconstructed` matrix in the `assays()` contains the corrected expression values for each gene in each cell, obtained by projecting the low-dimensional coordinates in corrected back into gene expression space (`r mnn.out.recon.dim[1]` genes and `r mnn.out.recon.dim[2]` cells). We do not recommend using this for anything other than visualization.
 
 ```{r}
-dim(reducedDim(mnn.out, "corrected"))
-```
-
-A `reconstructed` matrix in the `assays()` contains the corrected expression values for each gene in each cell, obtained by projecting the low-dimensional coordinates in corrected back into gene expression space (`r nrow(assay(mnn.out, "reconstructed"))` genes and `r ncol(assay(mnn.out, "reconstructed"))` cells). We do not recommend using this for anything other than visualization.
-
-```{r}
-print(assay(mnn.out, "reconstructed"))
+print(assay(mnn.out, "reconstructed")[1:5,1:3])
 ```
 
 The most relevant parameter for tuning `fastMNN()` is `k`, which specifies the number of nearest neighbors to consider when defining MNN pairs. This can be interpreted as the minimum anticipated frequency of any shared cell type or state in each batch. Increasing `k` will generally result in more aggressive merging as the algorithm is more generous in matching subpopulations across batches. It can occasionally be desirable to increase `k` if one clearly sees that the same cell types are not being adequately merged across batches.
@@ -430,6 +434,7 @@ p2 <- ggplot(data=tmpMat, aes(x=clusters, fill=batch)) +
   geom_bar(position = "fill") +
   scale_y_continuous(labels = scales::percent)
 ```
+
 ```{r}
 gridExtra::grid.arrange(p1, p2)
 ```
@@ -470,6 +475,7 @@ For `fastMNN()`, one useful diagnostic is the proportion of variance within each
 ```{r}
 round(metadata(mnn.out)$merge.info$lost.var,2)
 ```
+
 Large proportions of lost variance (>10%) suggest that correction is removing genuine biological heterogeneity. This would occur due to violations of the assumption of orthogonality between the batch effect and the biological subspace (Haghverdi et al. 2018). In this case, the proportion of lost variance is small, indicating that non-orthogonality is not a major concern.
 
 The following t-SNE shows the clusters identified:
@@ -805,6 +811,7 @@ grobx <- gridExtra::arrangeGrob(pNoLeg,
                                   unit(.12, "npc"),
                                   unit(.12, "npc"))
                         )
+
 }
 ##gx <- redrawClutree(treeList[[1]] + theme(legend.position='bottom'))
 ##grid::grid.draw(gx)
@@ -950,6 +957,7 @@ tabx <- coassignProb(
   clusters.mnn[rescaled2$batch==splVec[splIdx]])
 round(tabx,2)
 ```
+
 ```{r, eval=FALSE, include=FALSE}
 # DEV
 taby <- pairwiseRand(
@@ -1255,6 +1263,7 @@ fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s.Rdata",
               setName,
               setSuf,
               splSetToGet) # 'dsi' for data set integration
+saveRDS(mnn.out, file=fn)
 ```
 
 <!--
