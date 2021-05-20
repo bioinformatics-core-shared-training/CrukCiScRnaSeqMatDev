@@ -54,12 +54,15 @@ normPlotDirBit <- "Plots/Norm"
 
 projDir <- params$projDir
 dirRel <- params$dirRel
+outDirBit <- params$outDirBit
+setName <- params$setName
+setSuf <- params$setSuf
+
 if(params$bookType == "mk") {
 	setName <- "GSM3872434"
 	setSuf <- "_allCells"
 	dirRel <- ".."
 }
-outDirBit <- params$outDirBit
 dir.create(sprintf("%s/%s/%s", projDir, outDirBit, normPlotDirBit),
 	   showWarnings = FALSE)
 ```
