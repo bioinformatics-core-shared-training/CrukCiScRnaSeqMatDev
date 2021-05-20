@@ -25,12 +25,13 @@ params:
   cacheBool: FALSE  
   splSetToGet: "PBMMC,ETV6-RUNX1"
   setName: "caron"
-  setSuf: "_5hCps"
+  setSuf: "_allCells"
   dsiSuf: '_dsi'
 ---
 
 <!--
   setSuf: "_5hCellPerSpl"
+  setSuf: "_5hCps"
 -->
   
 ```{r}
@@ -155,7 +156,7 @@ gridExtra::grid.arrange(p1, p2+facet_wrap(~colData(sce)$type), ncol=2)
 ```
 
 
-```{r}
+```{r, cache.lazy = FALSE}
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_Fmwbl2.Rds", projDir, outDirBit, setName, setSuf)
 tmpList <- readRDS(tmpFn)
 
