@@ -47,16 +47,39 @@ splSetToGet <- "PBMMC,ETV6-RUNX1" # params may not be read in if knitting book.
 splSetVec <- unlist(strsplit(splSetToGet, ",")) # params may not be read in if knitting
 ```
 
+```{r, include=FALSE, eval=TRUE}
+params2 <- list(
+  "projDir" = "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020",
+  "dirRel" = "..",
+  #"inpDirBit" = "AnaWiSce/Ana1",
+  #"outDirBit" = "AnaWiSce/Ana1",
+  #"bookType" = "mk",
+  "inpDirBit" = "AnaWiSce/AnaKmWiC",
+  "outDirBit" = "AnaWiSce/AnaKmWiC",
+  "bookType" = "km",
+  "cacheBool"  = FALSE,  
+  "setName" = "caron",
+  "splSetToGet" = "PBMMC,ETV6-RUNX1",
+  "setSuf" = "_5hCellPerSpl",
+  "dsiSuf" = '_dsi')
+```
+
 ```{r}
-projDir <- params$projDir
-dirRel <- params$dirRel
-outDirBit <- params$outDirBit
-cacheBool <- params$cacheBool
-setName <- params$setName
-splSetToGet <- params$splSetToGet
-setSuf <- params$setSuf
-dsiSuf <- params$dsiSuf # 'dsi' for data set integration
-if(params$bookType == "mk"){
+if(interactive()) {
+  paramsToUse <- params2
+} else {
+  paramsToUse <- params
+}
+
+projDir <- paramsToUse$projDir
+dirRel <- paramsToUse$dirRel
+outDirBit <- paramsToUse$outDirBit
+cacheBool <- paramsToUse$cacheBool
+setName <- paramsToUse$setName
+splSetToGet <- paramsToUse$splSetToGet
+setSuf <- paramsToUse$setSuf
+dsiSuf <- paramsToUse$dsiSuf # 'dsi' for data set integration
+if(paramsToUse$bookType == "mk"){
 	setName <- "caron"
 	splSetToGet <- "PBMMC,ETV6-RUNX1"
 	setSuf <- "_5hCellPerSpl"
@@ -108,6 +131,7 @@ library(dynamicTreeCut)
 library(cluster) # for silhouette
 library(igraph) # for graph-based clustering and plotting networks 
 library(leiden) # for community detection
+library(pheatmap)
 library(Cairo)
 
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
@@ -175,9 +199,9 @@ See https://hemberg-lab.github.io/scRNA.seq.course/index.html for three types of
 See https://www.ncbi.nlm.nih.gov/pubmed/27303057 for review
 -->
 
-### Defining cell clusters from expression data
+<!-- Defining cell clusters from expression data -->
 
-#### Hierarchical clustering
+### Hierarchical clustering
 
 Hierarchical clustering builds a hierarchy of clusters yielding a dendrogram that groups together cells with similar expression patterns across the chosen genes.
 
@@ -211,7 +235,7 @@ knitr::include_graphics("../Images/bioCellGenHierar2.png")
 
 `r #knitr::knit_exit()`
 
-##### Clustering
+#### Clustering
 
 Here we will apply hierarchical clustering on the Euclidean distances between cells, using the Ward D2 criterion to minimize the total variance within each cluster.
 
@@ -257,6 +281,8 @@ Cell counts for each cluster (rows) and each sample (columns):
 table(hc.clusters, sce$Sample.Name)
 ```
 
+This data (cell number) may also be shown as heatmap.
+
 ```{r}
 tmpTab <- table(hc.clusters, sce$Sample.Name)
 rownames(tmpTab) = paste("hc", rownames(tmpTab), sep = "_")
@@ -272,15 +298,23 @@ getPalette = grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
 
 mat_colors <- list(source_name = getPalette(colourCount))
 names(mat_colors$source_name) <- unique(mat_col$source_name)
+```
 
-# with column clustering
-pheatmap::pheatmap(tmpTab,
+Heatmap, with samples ordered as in sample sheet:
+
+```{r}
+# without column clustering
+pheatmap(tmpTab,
+           cluster_cols = FALSE,
            annotation_col    = mat_col,
            annotation_colors = mat_colors)
+```
 
-# without column clustering
-pheatmap::pheatmap(tmpTab,
-           cluster_cols = FALSE,
+Heatmap, with samples ordered by similarity of cell distribution across clusters:
+
+```{r}
+# with column clustering
+pheatmap(tmpTab,
            annotation_col    = mat_col,
            annotation_colors = mat_colors)
 ```
@@ -290,7 +324,7 @@ If clusters mostly include cells from one sample or the other, it suggests that 
 Let us show cluster assignments on the t-SNE, with cells shaped by cell type,
 colored by cluster and sized total UMI counts ('sum').
 
-```{r plot_tsne_hierar, fig.width=6, fig.height=6}
+```{r plot_tsne_hierar, fig.width=8, fig.height=6}
 # store cluster assignment in SCE object:
 sce$cluster <- factor(hc.clusters)
 # make, store and show TSNE plot:
@@ -301,7 +335,7 @@ g
 
 Split by sample group:
 
-```{r plot_tsne_hierar_facet, fig.width=10, fig.height=10}
+```{r plot_tsne_hierar_facet, fig.width=2*5, fig.height=ceiling(nlevels(droplevels(sce$source_name))/2)*5}
 # split by sample and show:
 g <- g + facet_wrap(. ~ sce$source_name)
 g
@@ -309,7 +343,7 @@ g
 
 In some areas cells are not all assigned to the same cluster.
 
-##### Separatedness
+#### Separatedness
 
 The congruence of clusters may be assessed by computing the sillhouette for each cell.
 The larger the value the closer the cell to cells in its cluster than to cells in other clusters.
@@ -341,9 +375,9 @@ plot(sil,
 The plot shows cells with negative silhouette indicating that too many clusters may have been defined.
 The method and parameters used defined clusters with properties that may not fit the data set, eg clusters with the same diameter.
 
-#### k-means
+### k-means
 
-##### Description
+#### Description
 
 In k-means clustering, the goal is to partition N cells into k different clusters. In an iterative manner, cluster centers are defined and each cell is assigned to its nearest cluster.
 
@@ -364,7 +398,7 @@ The aim is to minimise within-cluster variation and maximise between-cluster var
     + sensitive to outliers
     + tends to define equally-sized clusters
 
-##### Example
+#### Example
 
 The dendogram built above suggests there may be six large cell populations.
 
@@ -409,7 +443,7 @@ p2
 
 Split by sample type:
 
-```{r plot_tSNE_kmeans_k6_split, fig.width=10, fig.height=10}
+```{r plot_tSNE_kmeans_k6_split, fig.width=2*5, fig.height=ceiling(nlevels(droplevels(sce$source_name))/2)*5}
 p2 + facet_wrap(~ sce$source_name)
 ```
 
@@ -418,7 +452,7 @@ To find the most appropriate number of clusters, one performs the analysis for a
 * silhouette
 * gap statistic
 
-##### Within-cluster sum-of-squares
+#### Within-cluster sum-of-squares
 
 The within-cluster sum-of-squares is the sum of the squared deviations from each observation and the cluster centroid. This metric measures the variability of observations within a cluster.  It decreases as k increases, by an amount that decreases with k. Indeed, for low k values increasing k usually improves clustering, as shown by a sharp drop in the within-cluster sum-of-squares. For higher k values, increasing k does not reduce the within-cluster sum-of-squares much: dividing clusters further only slightly reduces variablility inside clusters. On a plot of the within-cluster sum-of-squares against k, the curve shows two parts: the first with a steep negative slope and the second with a small slope. The 'elbow' of the curve indicates the most appropriate number of clusters.
 
@@ -475,6 +509,7 @@ k_neg <- clusterings %>%
   #arrange(desc(tot.withinss.diff)) %>%
   slice_max(tot.withinss.diff, n = 1) %>%
   pull(k)
+k_neg <- k_neg -1
 # get the first positive diff
 k_pos <- clusterings %>% 
   mutate(tot.withinss.diff = tot.withinss - lag(tot.withinss)) %>%
@@ -482,6 +517,7 @@ k_pos <- clusterings %>%
   #arrange(desc(tot.withinss.diff)) %>%
   slice_min(k, n = 1) %>%
   pull(k)
+k_pos <- k_pos -1
 ```
 
 The plot above suggests reasonable values for k may be:
@@ -489,7 +525,7 @@ The plot above suggests reasonable values for k may be:
 * `r k_neg` (where the drop in total within-cluster sum-of-squares is the smallest)
 * `r k_pos` (lowest cluster number where the difference in consecutive total within-cluster sum-of-squares is positive)
 
-##### Silhouette
+#### Silhouette
 
 We now compute the Silhouette values for each set of clusters defined above for the series of values of k.
 
@@ -518,7 +554,7 @@ plot(2:20, Ks,
 The plot above shows that silhouette values vary little for k between 4 and 11, though higher values are observed for k at 5, 8, 9 and 10.
 -->
 
-##### Gap statistic
+#### Gap statistic
 
 Because the variation quantity decreases as the number of clusters increases,
 a more reliable approach is to compare the observed variation to that expected from a null distribution.
@@ -538,8 +574,8 @@ gaps <- cluster::clusGap(
   x = pcs,
   FUNcluster = kmeans,
   K.max = 20,
-  nstart = 5, # for speed here but should use higher
-  B = 10 # for speed here but should use higher
+  nstart = 5, # low for expediency here but should use higher
+  B = 10 # low for expediency here but should use higher
 )
 
 ## find the "best" k
@@ -596,58 +632,54 @@ sil.cols <- sil.cols[order(-sil[,1], sil[,3])]
 plot(sil, main = paste(length(unique(sce$kmeans.best)), "clusters"), 
     border=sil.cols, col=sil.cols, do.col.sort=FALSE) 
 ```
+
 For the same number of clusters (10), fewer cells have negative values with k-means than with hierarchical clustering. The average silhouette is similar though, and all clusters show a wide range.
 
-##### Multi-metric
+#### Multi-metric
 
 <!-- TODO Keep? Implies proper choice of metrics ... -->
 
 One may also use multiple metrics rather than only one and check how they concord, using `NbClust::NbClust()` (see manual for a description of metrics computed):
 
-```{r NbClust_run, eval=FALSE}
+```{r NbClust_run, eval=TRUE}
 # run only once and save outcome to file to load later.
 
-library(NbClust)
-# tried with k from 2 to 20 but that takes too long with all cells.
-# subsample 500 cells
-tmpInd <- sample(nrow(pcs), 500)
-nb = NbClust(data=pcs[tmpInd,], 
-             distance = "euclidean",
-             min.nc = 2,
-             max.nc = 20,
-             #min.nc = 8,
-             #max.nc = 16,
-             method = "kmeans",
-             index=c("kl","ch","cindex","db","silhouette",
-                "duda","pseudot2","beale","ratkowsky",
-                "gap","gamma","mcclain","gplus",
-                "tau","sdindex","sdbw"))
-rm(tmpInd)
-
-# write NbClust object to file:
-#tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_1kCellK2to20NbClust.Rds", projDir, outDirBit, setName, setSuf) # too slow with 1000 cells
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_500CellK2to20NbClust.Rds", projDir, outDirBit, setName, setSuf)
-##print(tmpFn)
-saveRDS(nb, file=tmpFn)
-rm(tmpFn)
-```
-
-```{r NbClust_load, eval=TRUE}
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_500CellK2to20NbClust.Rds", projDir, outDirBit, setName, setSuf)
-##print(tmpFn)
-nb <- readRDS(file=tmpFn)
+if(file.exists(tmpFn))
+{
+	nb <- readRDS(file=tmpFn)
+} else {
+	library(NbClust)
+	# tried with k from 2 to 20 but that takes too long with all cells.
+	# subsample 500 cells
+	tmpInd <- sample(nrow(pcs), 500)
+		nb = NbClust(data=pcs[tmpInd,], 
+	             distance = "euclidean",
+	             min.nc = 2,
+		      max.nc = 20,
+	             #min.nc = 8,
+	             #max.nc = 16,
+	             method = "kmeans",
+	             index=c("kl","ch","cindex","db","silhouette",
+	                "duda","pseudot2","beale","ratkowsky",
+	                "gap","gamma","mcclain","gplus",
+	                "tau","sdindex","sdbw"))
+	saveRDS(nb, file=tmpFn)
+	rm(tmpInd)
+}
 rm(tmpFn)
 ```
 
 Table showing the number of methods selecting values of k as the best choice:
 
-```{r}
+```{r NbClust_show}
 table(nb$Best.nc[1,]) # consensus seems to be 3 clusters
+rm(nb)
 ```
 
 No strong support for a single sensible value of k is observed.
 
-#### Graph-based clustering
+### Graph-based clustering
 
 Graph-based clustering entails building a nearest-neighbour (NN) graph using cells as nodes and their similarity as edges, then identifying 'communities' of cells within the network (more details [there](https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/clustering-and-cell-annotation.html#unsupervised-clustering-methods)). In this k-NN graph two nodes (cells), say A and B, are connected by an edge if the distance between them is amongst the k smallest distances from A to other cells ('KNN'), and from B to other cells (shared-NN, 'SNN'). An edge may be weighted based on the number or closeness of shared nearest neighbours. Clusters are identified using metrics related to the number of neighbours ('connections') to find groups of highly interconnected cells. "The value of ‘k’ can be roughly interpreted as the anticipated size of the smallest subpopulation" (see `scran`'s `buildSNNGraph()` manual).
 
@@ -727,11 +759,14 @@ legend('bottomright',
        pt.cex=1, cex=.6, bty="n", ncol=1)
 ```
 
-##### Modularity
+#### Modularity
 
 Several methods to detect clusters ('communities') in networks rely on the 'modulatrity' metric. For a given partition of cells into clusters, modularity measures how separated clusters are from each other, based on the difference between the observed and expected weight of edges between nodes. For the whole graph, the closer to 1 the better.
 
-##### Community detection via short random walks: 'walktrap'
+#### Walktrap method
+
+<!-- #### Community detection via short random walks: 'walktrap' -->
+
 
 The walktrap method relies on short random walks (a few steps) through the network. These walks tend to be 'trapped' in highly-connected regions of the network. Node similarity is measured based on these walks. Nodes are first each assigned their own community. Pairwise distances are computed and the two closest communities are grouped. These steps are repeated a given number of times to produce a dendrogram. Hierarchical clustering is then applied to the distance matrix. The best partition is that with the highest modularity. <!-- https://link.springer.com/article/10.1007/s11227-019-03018-x -->
 
@@ -790,7 +825,7 @@ getPalette = grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
 mat_colors <- list(source_name = getPalette(colourCount))
 names(mat_colors$source_name) <- unique(mat_col$source_name)
 
-pheatmap::pheatmap(tmpTab,
+pheatmap(tmpTab,
            annotation_col    = mat_col,
            annotation_colors = mat_colors)
 ```
@@ -814,7 +849,7 @@ Comparison with 4-step clusters:
 tmpTab <- table(wt.clusters, wt.clusters.s5)
 rownames(tmpTab) = paste("4-step", rownames(tmpTab), sep = "_")
 colnames(tmpTab) = paste("5-step", colnames(tmpTab) , sep = "_")
-pheatmap::pheatmap(tmpTab)
+pheatmap(tmpTab)
 ```
 
 *With 15-step walks:*
@@ -833,7 +868,7 @@ Comparison with 4-step clusters:
 tmpTab <- table(wt.clusters, wt.clusters.s15)
 rownames(tmpTab) = paste("4-step", rownames(tmpTab), sep = "_")
 colnames(tmpTab) = paste("15-step", colnames(tmpTab) , sep = "_")
-pheatmap::pheatmap(tmpTab)
+pheatmap(tmpTab)
 ```
 
 The network may also be built and clusters identified at once with `scran::clusterSNNGraph()` that also allows for large data sets to first cluster cells with k-means into a large number of clusters and then perform graph-based clustering on cluster centroids.
@@ -865,8 +900,7 @@ Graph-based cluster sizes in cell number:
 table(clustersOnce$igraph)
 ```
 
-Heatmap display of the contingency table for the graph-based clusters and the
-k-means clusters used to build the network (color-code by size, i.e. number of cells).
+The heatmap below displays the contingency table for the graph-based clusters (rows) and the k-means clusters (columns) used to build the network (color-code by size, i.e. number of cells).
 
 ```{r}
 #table(clustersOnce$igraph,
@@ -875,7 +909,7 @@ tmpTab <- table(clustersOnce$igraph,
 		clustersOnce$kmeans)
 rownames(tmpTab) = paste("igraph", rownames(tmpTab), sep = "_")
 colnames(tmpTab) = paste("kmeans", colnames(tmpTab) , sep = "_")
-pheatmap::pheatmap(tmpTab, show_colnames = FALSE)
+pheatmap(tmpTab, show_colnames = FALSE)
 ```
 
 Graph-based cluster sizes in k-mean cluster number:
@@ -915,7 +949,9 @@ legend('bottomright',
        pt.cex=1, cex=.6, bty="n", ncol=2)
 ```
 
-##### Community detection with the 'Louvain' method
+#### Louvain method
+
+<!-- #### Community detection with the 'Louvain' method -->
 
 With the Louvain method, nodes are also first assigned their own community. This hierarchical agglomerative method then progresses in two-step iterations: 1) nodes are re-assigned one at a time to the community for which they increase modularity the most, if any, 2) a new, 'aggregate' network is built where nodes are the communities formed in the previous step. This is repeated until modularity stops increasing. The diagram below is copied from [this article](https://www.nature.com/articles/s41598-019-41695-z#Fig1).
 
@@ -931,7 +967,8 @@ BIBREF https://arxiv.org/abs/1810.08473
 We now apply the Louvain approach, store its outcome in the SCE object and show cluster sizes.
 
 ```{r cluster_louvain}
-cl <- igraph::cluster_louvain(snn.gr)$membership
+ig.louvain <- igraph::cluster_louvain(snn.gr)
+cl <- ig.louvain$membership
 cl <- factor(cl)
 # store membership
 sce$louvain <- cl
@@ -991,12 +1028,15 @@ p
 
 Split by sample type:
 
-```{r show_louvain_tsne_2, fig.width=10, fig.height=10}
+```{r show_louvain_tsne_2, fig.width=2*5, fig.height=ceiling(nlevels(droplevels(sce$source_name))/2)*5}
 # facet by sample group:
 p + facet_wrap(~ sce$source_name)
 ```
 
-##### Community detection with the 'Leiden' method
+#### Leiden method
+
+<!-- #### Community detection with the 'Leiden' method -->
+
 
 <!-- (igraph_community_leiden is only for the C lib, not the R package) -->
 
@@ -1076,44 +1116,6 @@ legend('bottomright',
        pt.bg=cols,
        pt.cex=1, cex=.6, bty="n", ncol=2)
 ```
-
-We now compute modularity to assess clusters quality (the division of cells into several groups, 'clusters', is compared to that in an equivalent random network with no structure). The overall modularity is `r round(igraph::modularity(cluster.out),2)`. <!-- cluster.out is walktrap not leiden -->
-
-Modularity can also be computed for each cluster, with `scran`'s `clusterModularity()` (now in the [bluster package](http://bioconductor.org/packages/devel/bioc/html/bluster.html)). This function returns an upper diagonal matrix with values for each pair of clusters.
-
-```{r comp_clusterModularity_snn, include = TRUE}
-# compute cluster-wise modularities,
-# with clusterModularity(),
-# which returns a matrix keeping values for each pair of clusters
-##mod.out <- clusterModularity(snn.gr, wt.clusters, get.weights=TRUE)
-mod.out <- bluster::pairwiseModularity(snn.gr, wt.clusters, get.weights=TRUE)
-# Modularity is proportional to the cluster size,
-# so we compute the ratio of the observed to expected weights
-# for each cluster pair
-ratio <- mod.out$observed/mod.out$expected
-lratio <- log10(ratio + 1) # on log scale to improve colour range
-```
-
-We display below the cluster-wise modularity on a heatmap. Clusters that are well separated mostly comprise intra-cluster edges and harbour a high modularity score on the diagonal and low scores off that diagonal. Two poorly separated clusters will share edges and the pair will have a high score.  
-
-```{r show_clusterModularity_snn}
-library(pheatmap)
-pheatmap(lratio, cluster_rows=FALSE, cluster_cols=FALSE, 
-    color=colorRampPalette(c("white", "blue"))(100))
-```
-
-The cluster-wise modularity matrix may also be shown as a network, with clusters as nodes and edges weighted by modularity:
-
-```{r plot_clusterNetwork_snn, out.width = '100%'}
-cluster.gr <- igraph::graph_from_adjacency_matrix(ratio, 
-    mode="undirected",
-    weighted=TRUE,
-    diag=FALSE)
-plot(cluster.gr,
-     label.cex = 0.2,
-     edge.width = igraph::E(cluster.gr)$weight)
-```
-
 The t-SNE plot below shows cells color-coded by cluster membership:
 
 ```{r show_leiden_tsne_1, fig.height=6, fig.width=8}
@@ -1129,7 +1131,51 @@ Split by sample type:
 p + facet_wrap(~ sce$source_name)
 ```
 
-##### Choose the number of clusters
+####  Modularity to assess clusters quality
+
+We now compute modularity to assess clusters quality (the division of cells into several groups, 'clusters', is compared to that in an equivalent random network with no structure).
+
+The overall modularity obtained with the Louvain method is `r round(igraph::modularity(ig.louvain),2)`.
+
+Modularity can also be computed for each cluster, with `scran`'s `clusterModularity()` (now in the [bluster package](http://bioconductor.org/packages/devel/bioc/html/bluster.html)). This function returns an upper diagonal matrix with values for each pair of clusters.
+
+```{r comp_clusterModularity_snn, include = TRUE}
+# compute cluster-wise modularities,
+# with clusterModularity(),
+# which returns a matrix keeping values for each pair of clusters
+##mod.out <- clusterModularity(snn.gr, wt.clusters, get.weights=TRUE)
+mod.out <- bluster::pairwiseModularity(snn.gr,
+                                       #wt.clusters,
+                                       sce$louvain,
+                                       get.weights=TRUE)
+# Modularity is proportional to the cluster size,
+# so we compute the ratio of the observed to expected weights
+# for each cluster pair
+ratio <- mod.out$observed/mod.out$expected
+lratio <- log10(ratio + 1) # on log scale to improve colour range
+```
+
+We display below the cluster-wise modularity on a heatmap. Clusters that are well separated mostly comprise intra-cluster edges and harbour a high modularity score on the diagonal and low scores off that diagonal. Two poorly separated clusters will share edges and the pair will have a high score.  
+
+```{r show_clusterModularity_snn}
+pheatmap(lratio, cluster_rows=FALSE, cluster_cols=FALSE, 
+    color=colorRampPalette(c("white", "blue"))(100))
+```
+
+The cluster-wise modularity matrix may also be shown as a network, with clusters as nodes and edges weighted by modularity:
+
+```{r plot_clusterNetwork_snn, out.width = '100%'}
+cluster.gr <- igraph::graph_from_adjacency_matrix(
+    ratio, 
+    mode="undirected",
+    weighted=TRUE,
+    diag=FALSE)
+plot(cluster.gr,
+     label.cex = 0.2,
+     edge.width = igraph::E(cluster.gr)$weight)
+```
+
+#### Choose the number of clusters
 
 Some community detection methods are hierarchical, e.g. walktrap. With these methods, one can choose the number of clusters.
 
@@ -1204,7 +1250,7 @@ p2 + facet_wrap(~ sce$source_name) +
 
 ## Comparing two sets of clusters
 
-The contingency table below shows the concordance between the k-means (columns) and walk-trap (rows) clustering methods:
+The contingency table below shows the concordance between the walk-trap (rows) and k-means (columns) clustering methods:
 
 ```{r}
 # rows: walktrap
@@ -1221,7 +1267,7 @@ Concordance can also be displayed on a heatmap:
 ```{r}
 rownames(tmpTab) = paste("walk", rownames(tmpTab), sep = "_")
 colnames(tmpTab) = paste("kmeans10", colnames(tmpTab) , sep = "_")
-pheatmap::pheatmap(tmpTab)
+pheatmap(tmpTab)
 ```
 
 Concordance can also be measured with the adjusted Rand index that ranges between 0 and 1 from random partitions to perfect agreement. Here, the adjusted Rand index is `r mclust::adjustedRandIndex(sce$cluster.out.10, sce$kmeans10)`.
@@ -1239,30 +1285,33 @@ Having identified clusters, we now display the level of expression of cell type 
 
 Example with B cell marker genes MS4A1 and CD79A:
 
-```{r exprKnownMarkers_plot1_clusteringPostDsi, fig.height=6, fig.width=8}
+```{r exprKnownMarkers_plot1_clusteringPostDsi, fig.width=2*5, fig.height=5}
 rownames(sce) <- scater::uniquifyFeatureNames(
   rowData(sce)$ensembl_gene_id,
   rowData(sce)$Symbol)
-plotTSNE(sce, by_exprs_values = "reconstructed", colour_by = "MS4A1") +
+p1 <- plotTSNE(sce, by_exprs_values = "reconstructed", colour_by = "MS4A1") +
   ggtitle("B cells: MS4A1")
-plotTSNE(sce, by_exprs_values = "reconstructed", colour_by = "CD79A") +
+p2 <- plotTSNE(sce, by_exprs_values = "reconstructed", colour_by = "CD79A") +
   ggtitle("B cells: CD79A")
+gridExtra::grid.arrange(p1, p2, ncol=2)
+rm(p1, p2)
 ```
 
-```{r}
-#```{r, fig.height=6, fig.width=8}
-plotExpression(sce,
+```{r, fig.width=2*5, fig.height=5}
+p1 <- plotExpression(sce,
                exprs_values = "reconstructed",
                x=cluToUse,
                colour_by=cluToUse,
                features= "MS4A1") +
   ggtitle("B cells")
-plotExpression(sce,
+p2 <- plotExpression(sce,
                exprs_values = "reconstructed",
                x=cluToUse,
                colour_by=cluToUse,
                features= "CD79A") +
   ggtitle("B cells")
+gridExtra::grid.arrange(p1, p2, ncol=2)
+rm(p1, p2)
 ```
 
 We now show the distribution of expression levels for marker genes of other PBMC types.
@@ -1286,7 +1335,7 @@ markGenesAvail <- lapply(markGenesFull,
                          })
 ```
 
-```{r}
+```{r, fig.width=2*5, fig.height=5}
 plotExpression2 <- function(sce, ctx, markGenesAvail) {
   if(length(markGenesAvail[[ctx]])>0) {
     plotExpression(sce, exprs_values = "reconstructed",
@@ -1333,7 +1382,7 @@ ctx <- "Platelets"
 plotExpression2(sce, ctx, markGenesAvail)
 ```
 
-Add clusters to initial sce (not the output fastMNN)
+<!-- Add clusters to initial sce (not the output fastMNN) ?TODO? --> 
 
 ## Save data
 
