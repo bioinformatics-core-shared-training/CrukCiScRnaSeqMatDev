@@ -244,7 +244,7 @@ rm(tmpName)
 
 __Challenge__: Show violin plots for the 20 genes with the lowest biological component. How do they compare to the those for HVGs chosen above?
 
-```{r plot_count_violoin_HVGbot20, eval = TRUE}
+```{r plot_count_violin_HVGbot20, eval = TRUE}
 chosen.genes.index.tmp <- order(dec.sce$bio, decreasing=FALSE)[1:20]
 tmpInd <- (which(rowData(sce)$ensembl_gene_id %in% rownames(dec.sce)[chosen.genes.index.tmp]))
 # check:
