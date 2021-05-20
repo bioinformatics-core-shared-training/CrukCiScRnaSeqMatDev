@@ -22,26 +22,34 @@ params:
   outDirBit: "AnaWiSce/Ana1"
   bookType: "mk"
   cacheBool: FALSE  
+  setName: "caron"
+  setSuf: "_allCells"
+  splSetToGet: "PBMMC"
+  dsiSuf: '_dsi'
 ---
 
-# Data integration - PBMMC {#DataIntegrationPbmmcTop}
+# Data integration - PBMMC {#DataIntegration_PBMMCTop}
 
 ```{r}
 projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
-nbPcToComp <- 50
+cacheBool <- params$cacheBool
+setName <- params$setName
+splSetToGet <- params$splSetToGet
+setSuf <- params$setSuf
+dsiSuf <- params$dsiSuf # 'dsi' for data set integration
 
 if(params$bookType == "mk"){
 	setName <- "caron"
 	splSetToGet <- "PBMMC"
 	setSuf <- "_allCells"
 }
-
+nbPcToComp <- 50
+figSize <- 7
 ```
 
 ```{r dataSetIntegration_PBMMC_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
-cacheBool <- params$cacheBool
 require(knitr)
 opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
 knitr::opts_chunk$set(echo = TRUE)
@@ -51,15 +59,20 @@ opts_chunk$set(fig.width=7, fig.height=7)
 #opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
 knitr::opts_chunk$set(dev="CairoPNG")
-set.seed(123) # for reproducibility 
+set.seed(123) # for reproducibility
 ```
 
 ```{r, include=FALSE}
 library(ggplot2)
 library(scater)
 library(scran)
+library(batchelor)
+library(bluster)
 library(dplyr)
+library(pheatmap)
+library(clustree)
 library(Cairo)
+
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
@@ -96,7 +109,7 @@ sce
 colnames(rowData(sce))[colnames(rowData(sce)) == "strand"] <- "strandNum"
 ```
 
-We next subset the data for the `r splSetToGet` sample group: 
+We next subset the data for the `r splSetToGet` sample group:
 
 ```{r}
 # CaronBourque2020
@@ -138,7 +151,7 @@ all.sce <- lapply(all.sce, logNormCounts)
 #--- variance-modelling ---#
 # model varaince with modelGeneVar()
 # find highly variable genes (HVGs) with getTopHVGs()
-library(scran)
+#library(scran)
 all.dec <- lapply(all.sce, modelGeneVar)
 all.hvgs <- lapply(all.dec, getTopHVGs, prop=0.1)
 
@@ -190,7 +203,7 @@ uni.dec <- lapply(all.dec, function(x){x[universe,]})
 
 ```{r}
 # rescale each batch to adjust for differences in sequencing depth between batches
-library(batchelor)
+#library(batchelor)
 rescaled <- multiBatchNorm(uni.sce, batch = "Sample.Name")
 ```
 
@@ -235,7 +248,7 @@ uncorrected <- cbind(rescaled[[1]], rescaled[[2]], rescaled[[3]])
 
 # Perform PCA
 # Using RandomParam() as it is more efficient for file-backed matrices.
-library(scater)
+#library(scater)
 set.seed(0010101010)
 uncorrected <- runPCA(uncorrected,
 		      subset_row=chosen.hvgs,
@@ -247,14 +260,14 @@ We use graph-based clustering on the components to obtain a summary of the popul
 As the samples should be replicates, each cluster should ideally consist of cells from each batch. However, we instead see clusters that are comprised of cells from a single batch. This indicates that cells of the same type are artificially separated due to technical differences between batches.
 
 ```{r}
-library(scran)
+#library(scran)
 # build shared nearest-neighbour graph
 snn.gr <- buildSNNGraph(uncorrected, use.dimred="PCA")
 # identify cluster with the walk trap method
 clusters <- igraph::cluster_walktrap(snn.gr)$membership
 # get number of cells for each {cluster, batch} pair
 tab <- table(Cluster=clusters, Batch=uncorrected$batch)
-tab
+#tab
 ```
 
 ```{r}
@@ -298,7 +311,7 @@ p2 <- ggplot(data=tmpMat, aes(x=clusters, fill=batch)) +
 gridExtra::grid.arrange(p1, p2)
 ```
 
-We can also visualize the corrected coordinates using a t-SNE plot. The strong separation between cells from different batches is consistent with the clustering results.
+We can also visualize the uncorrected coordinates using a t-SNE plot. The strong separation between cells from different batches is consistent with the clustering results.
 
 ```{r}
 set.seed(1111001)
@@ -314,10 +327,10 @@ Batch effects in bulk RNA sequencing studies are commonly removed with linear re
 
 To use this approach in a scRNA-seq context, we assume that the composition of cell subpopulations is the same across batches. We also assume that the batch effect is additive, i.e., any batch-induced fold-change in expression is the same across different cell subpopulations for any given gene. These are strong assumptions as batches derived from different individuals will naturally exhibit variation in cell type abundances and expression. Nonetheless, they may be acceptable when dealing with batches that are technical replicates generated from the same population of cells. (In fact, when its assumptions hold, linear regression is the most statistically efficient as it uses information from all cells to compute the common batch vector.) Linear modelling can also accommodate situations where the composition is known a priori by including the cell type as a factor in the linear model, but this situation is even less common.
 
-We use the `rescaleBatches()` function from the batchelor package to remove the batch effect. This is roughly equivalent to applying a linear regression to the log-expression values per gene, with some adjustments to improve performance and efficiency. For each gene, the mean expression in each batch is scaled down until it is equal to the lowest mean across all batches. We deliberately choose to scale all expression values down as this mitigates differences in variance when batches lie at different positions on the mean-variance trend. (Specifically, the shrinkage effect of the pseudo-count is greater for smaller counts, suppressing any differences in variance across batches.) An additional feature of `rescaleBatches()` is that it will preserve sparsity in the input matrix for greater efficiency, whereas other methods like `removeBatchEffect()` will always return a dense matrix.
+We use the `rescaleBatches()` function from the `batchelor` package to remove the batch effect. This is roughly equivalent to applying a linear regression to the log-expression values per gene, with some adjustments to improve performance and efficiency. For each gene, the mean expression in each batch is scaled down until it is equal to the lowest mean across all batches. We deliberately choose to scale all expression values down as this mitigates differences in variance when batches lie at different positions on the mean-variance trend. (Specifically, the shrinkage effect of the pseudo-count is greater for smaller counts, suppressing any differences in variance across batches.) An additional feature of `rescaleBatches()` is that it will preserve sparsity in the input matrix for greater efficiency, whereas other methods like `removeBatchEffect()` will always return a dense matrix.
 
 ```{r}
-library(batchelor)
+#library(batchelor)
 rescaled2 <- rescaleBatches(rescaled)
 rescaled2
 ```
@@ -330,8 +343,8 @@ rescaled2 <- runPCA(rescaled2, subset_row=chosen.hvgs, exprs_values="corrected")
 
 snn.gr <- buildSNNGraph(rescaled2, use.dimred="PCA")
 clusters.resc <- igraph::cluster_walktrap(snn.gr)$membership
-tab.resc <- table(Cluster=clusters.resc, Batch=rescaled2$batch)
-tab.resc
+#tab.resc <- table(Cluster=clusters.resc, Batch=rescaled2$batch)
+#tab.resc
 ```
 
 <!-- Cluster size and cell contribution by sample: -->
@@ -373,6 +386,8 @@ p2 <- ggplot(data=tmpMat, aes(x=clusters, fill=batch)) +
 gridExtra::grid.arrange(p1, p2)
 ```
 
+Compute and plot t-SNE:
+
 ```{r}
 rescaled2 <- runTSNE(rescaled2, dimred="PCA")
 rescaled2$batch <- factor(rescaled2$batch)
@@ -402,6 +417,11 @@ mnn.out <- fastMNN(rescaled,
 		   subset.row=chosen.hvgs,
 		   BSPARAM=BiocSingular::RandomParam(deferred=TRUE))
 mnn.out
+mnn.out.corre.dim <- dim(reducedDim(mnn.out, "corrected"))
+mnn.out.corre.dim
+mnn.out.recon.dim <- dim(assay(mnn.out, "reconstructed"))
+mnn.out.recon.dim
+
 ```
 
 The function returns a SCE object containing corrected values for downstream analyses like clustering or visualization. Each column of `mnn.out` corresponds to a cell in one of the batches, while each row corresponds to an input gene in chosen.hvgs. The batch field in the column metadata contains a vector specifying the batch of origin of each cell.
@@ -410,13 +430,9 @@ The function returns a SCE object containing corrected values for downstream ana
 print(head(mnn.out$batch))
 ```
 
-The corrected matrix in the `reducedDims()` contains the low-dimensional corrected coordinates for all cells, which we will use in place of the principal components (PCs) in our downstream analyses.
+The corrected matrix in the `reducedDims()` contains the low-dimensional corrected coordinates for all cells, which we will use in place of the principal components (PCs) in our downstream analyses (`r mnn.out.corre.dim[1]` cells and `r mnn.out.corre.dim[2]` PCs).
 
-```{r}
-dim(reducedDim(mnn.out, "corrected"))
-```
-
-A reconstructed matrix in the `assays()` contains the corrected expression values for each gene in each cell, obtained by projecting the low-dimensional coordinates in corrected back into gene expression space. We do not recommend using this for anything other than visualization.
+A `reconstructed` matrix in the `assays()` contains the corrected expression values for each gene in each cell, obtained by projecting the low-dimensional coordinates in corrected back into gene expression space (`r mnn.out.recon.dim[1]` genes and `r mnn.out.recon.dim[2]` cells). We do not recommend using this for anything other than visualization.
 
 ```{r}
 print(assay(mnn.out, "reconstructed"))
@@ -428,12 +444,14 @@ The most relevant parameter for tuning `fastMNN()` is `k`, which specifies the n
 See Chapter 32 for an example of a more complex fastMNN() merge involving several human pancreas datasets generated by different authors on different patients with different technologies.
 -->
 
-### Correction diagnostics
+## Correction diagnostics
+
+### Mixing between batches
 
 We cluster on the low-dimensional corrected coordinates to obtain a partitioning of the cells that serves as a proxy for the population structure. If the batch effect is successfully corrected, clusters corresponding to shared cell types or states should contain cells from multiple batches. We see that most clusters contain contributions from each batch after correction, consistent with our expectation that the batches are replicates of each other.
 
 ```{r}
-library(scran)
+#library(scran)
 snn.gr <- buildSNNGraph(mnn.out, use.dimred="corrected")
 clusters.mnn <- igraph::cluster_walktrap(snn.gr)$membership
 tab.mnn <- table(Cluster=clusters.mnn, Batch=mnn.out$batch)
@@ -471,13 +489,15 @@ norm <- normalizeCounts(tab.mnn, pseudo_count=10)
 
 # Ranking clusters by the largest variances.
 rv <- rowVars(norm) %>% round(2)
+
+# show
 DataFrame(Batch=tab.mnn, var=rv)[order(rv, decreasing=TRUE),]
 ```
 
 We can also visualize the corrected coordinates using a t-SNE plot. The presence of visual clusters containing cells from all batches provides a comforting illusion that the correction was successful.
 
 ```{r}
-library(scater)
+#library(scater)
 set.seed(0010101010)
 mnn.out <- runTSNE(mnn.out, dimred="corrected")
 
@@ -496,7 +516,7 @@ round(metadata(mnn.out)$merge.info$lost.var,2)
 
 Large proportions of lost variance (>10%) suggest that correction is removing genuine biological heterogeneity. This would occur due to violations of the assumption of orthogonality between the batch effect and the biological subspace (Haghverdi et al. 2018). In this case, the proportion of lost variance is small, indicating that non-orthogonality is not a major concern.
 
-The following t-SNE shows clusters identified:
+The following t-SNE shows the clusters identified:
 
 ```{r}
 mnn.out$cluster <- paste0("c", clusters.mnn)
@@ -611,7 +631,7 @@ Ideally, we should see a many-to-1 mapping where the across-batch clustering is 
 One heatmap is generated for each dataset, where each entry is colored according to the number of cells with each pair of labels (before and after correction), on the log10 scale with a pseudocounts +10 for a smoother color transition (so a minimum value of log10(0+10) == 1). 
 
 ```{r}
-library(pheatmap)
+#library(pheatmap)
 
 # have common color scale:
 # for the number of cells on the log10 scale
@@ -645,7 +665,7 @@ heat2 <- pheatmap(log10(tab+10), cluster_row=FALSE, cluster_col=FALSE,
 		main=sprintf("%s comparison (number of cells, log10 scale)", splVec[splIdx]),
 		silent=TRUE)
 
-library(clustree)
+#library(clustree)
 combined <- cbind(cl.1=colLabels(rescaled[[splIdx]]),
 		  cl.2=clusters.mnn[rescaled2$batch==splVec[splIdx]])
 clustree(combined, prefix="cl.", edge_arrow=FALSE)
@@ -692,7 +712,7 @@ ri1 <- rand.index(as.integer(clusters.mnn[rescaled2$batch=="GSM3872443"]),
 # same as above but with `bluster`
 splIdx <- 1
 
-library(bluster)
+#library(bluster)
 ri1 <- pairwiseRand(as.integer(clusters.mnn[rescaled2$batch==splVec[splIdx]]),
 		     as.integer(colLabels(rescaled[[splIdx]])),
 		     mode="index")
