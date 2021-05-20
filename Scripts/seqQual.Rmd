@@ -71,7 +71,7 @@ Library structure reminder:
 
 ```{r}
 tmpFn <- sprintf("%s/Images/tenxLibStructureV3.png", dirRel)
-knitr::include_graphics(tmpFn, auto_pdf = TRUE
+knitr::include_graphics(tmpFn, auto_pdf = TRUE)
 rm(tmpFn)
 ```
 
