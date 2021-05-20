@@ -36,15 +36,22 @@ Creating a bookdown can be done in two ways:
 
 I prefer the 'knit-merge' way as each chapter is rendered separately, each in a different session. I also like to skip unnecessary re-running during development and so use caching. That however sometimes creates issues when a cached chunk uses an object updated elsewhere (another chunk) since the last caching. I ended up in such a situation and decided to use the 'merge-knit' method instead, with no caching, which also offers the possibility to render chapters one at a time. Which is fine, until parameters are added to a chapter that are not listed in the index template which is the only one used with this single-session method (as far as I understand. But I have not yet checked that by editing index.Rmd).
 
-**To open the bookdown:**
+
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+**To open the bookdown (please mind: work in progress):**
 
 * [Bookdown index](AnaWiSce/AnaKmWiC/BookDownKmWiC/index.html)
 
 OR
 
-* clone the repository.
+* clone the repository
 * open AnaWiSce/AnaKmWiC/BookDownKmWiC/index.html **Work in progress**
 
+</div>
 
 ## List of chapters:
 
