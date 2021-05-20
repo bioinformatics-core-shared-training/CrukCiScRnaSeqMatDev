@@ -39,13 +39,12 @@ knitr::opts_chunk$set(dev="CairoPNG")
 ```
 
 ```{r variables_seqQual}
-#projDirOsx <- "/Users/baller01/MyMount/clust1a/20200511_FernandesM_ME_crukBiSs2020"
-#projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
 #projDir <- "/home/ubuntu/Course_Materials/scRNAseq"
 projDir <- params$projDir
 projDirLink <- "/Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020"
 inpDirBit <- params$inpDirBit
 outDirBit <- params$outDirBit
+dirRel <- ".."
 ```
 
 ```{r libraries_seqQual}
@@ -69,6 +68,12 @@ Library structure reminder:
 <!--
 ![](`r sprintf("%s/Images/tenxLibStructureV3.png", projDir)`)
 -->
+
+```{r}
+tmpFn <- sprintf("%s/Images/tenxLibStructureV3.png", dirRel)
+knitr::include_graphics(tmpFn, auto_pdf = TRUE
+rm(tmpFn)
+```
 
 * The **sample index** identifies the library, with one I7 index per sample
 * The 10X **cell barcode** (or cell index) identifies the droplet in the library
