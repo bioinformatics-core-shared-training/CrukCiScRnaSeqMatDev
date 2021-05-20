@@ -224,3 +224,11 @@ Doublet detection procedures should only be applied to libraries generated in th
 It is also difficult to interpret doublet predictions in data containing cellular trajectories. By definition, cells in the middle of a trajectory are always intermediate between other cells and are liable to be incorrectly detected as doublets. Some protection is provided by the non-linear nature of many real trajectories, which reduces the risk of simulated doublets coinciding with real cells in doubletCells(). One can also put more weight on the relative library sizes in doubletCluster() instead of relying solely on N, under the assumption that sudden spikes in RNA content are unlikely in a continuous biological process.
 
 The best solution to the doublet problem is experimental - that is, to avoid generating them in the first place. This should be a consideration when designing scRNA-seq experiments, where the desire to obtain large numbers of cells at minimum cost should be weighed against the general deterioration in data quality and reliability when doublets become more frequent.
+
+
+## Session information
+
+```{r sessionInfo_doubletDetect}
+sessionInfo()
+```
+
