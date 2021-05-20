@@ -20,9 +20,12 @@ params:
   dirRel: ".."
   inpDirBit: "AnaWiSce/Ana1"
   outDirBit: "AnaWiSce/Ana1"
-  bookType: "mk"  
+  bookType: "mk"
   cacheBool: FALSE  
+  setName: "caron"
+  setSuf: "_allCells"
   splSetToGet: "ETV6-RUNX1"
+  dsiSuf: '_dsi'
 ---
 
 # Data integration - ETV6-RUNX1 {#dataSetIntegration_ETV6-RUNX1Top}
@@ -32,12 +35,18 @@ projDir <- params$projDir
 dirRel <- params$dirRel
 outDirBit <- params$outDirBit
 cacheBool <- params$cacheBool
+setName <- params$setName
 splSetToGet <- params$splSetToGet
-nbPcToComp <- 50
+setSuf <- params$setSuf
+dsiSuf <- params$dsiSuf # 'dsi' for data set integration
 
 if(params$bookType == "mk"){
+	setName <- "caron"
 	splSetToGet <- "ETV6-RUNX1"
+	setSuf <- "_allCells"
 }
+nbPcToComp <- 50
+figSize <- 7
 ```
 
 ```{r dataSetIntegration_ETV6-RUNX1_setup, include=FALSE, echo=FALSE, dev="CairoPNG"}
@@ -71,7 +80,7 @@ fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=
 Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. Its text is reproduced below with few modifications to adapt it to the data set under scrutiny here.
 
 ## Abbreviations
- 
+
 * HVG: highly variable genes
 * MNN: mutual nearest neighbors
 * PBMMC: peripheral blood mononuclear cell
@@ -81,8 +90,6 @@ Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datas
 
 Large single-cell RNA sequencing (scRNA-seq) projects usually need to generate data across multiple batches due to logistical constraints. However, the processing of different batches is often subject to uncontrollable differences, e.g., changes in operator, differences in reagent quality. This results in systematic differences in the observed expression in cells from different batches, which we refer to as “batch effects”. Batch effects are problematic as they can be major drivers of heterogeneity in the data, masking the relevant biological differences and complicating interpretation of the results.
 
-## Load data
-
 Computational correction of these effects is critical for eliminating batch-to-batch variation, allowing data across multiple batches to be combined for common downstream analysis. However, existing methods based on linear models (Ritchie et al. 2015; Leek et al. 2012) assume that the composition of cell populations are either known or the same across batches. To overcome these limitations, bespoke methods have been developed for batch correction of single-cell data (Haghverdi et al. 2018; Butler et al. 2018; Lin et al. 2019) that do not require a priori knowledge about the composition of the population. This allows them to be used in workflows for exploratory analyses of scRNA-seq data where such knowledge is usually unavailable.
 
 ## Loading the data
@@ -90,10 +97,6 @@ Computational correction of these effects is critical for eliminating batch-to-b
 We will load the R file keeping the SCE object with the normalised counts, and subset 1000 cells per sample.
 
 ```{r}
-setName <- "caron"
-#setSuf <- ""
-setSuf <- "_allCells"
-
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds", projDir, outDirBit, setName, setSuf)
 
 print(tmpFn)
@@ -113,15 +116,9 @@ We next subset the data for the `r splSetToGet` sample group:
 # CaronBourque2020
 cb_sampleSheetFn <- file.path(projDir, "Data/CaronBourque2020/SraRunTable.txt")
 cb_sampleSheet <- read.table(cb_sampleSheetFn, header=T, sep=",")
-
-splSetToGet
-
-cb_sampleSheet
-```
-
-```{r}
 splVec <- cb_sampleSheet %>% filter(source_name == splSetToGet) %>%
-	pull(Sample.Name) %>% unique
+	pull(Sample.Name) %>% unique()
+
 sourceNames <- unique(colData(sce)$source_name)
 sceOrig <- sce
 sce <- sceOrig[,sce$source_name == splSetToGet ]
@@ -203,14 +200,14 @@ uni.sce <- lapply(all.sce, function(x){x[universe,]})
 uni.dec <- lapply(all.dec, function(x){x[universe,]})
 ```
 
-* We rescale each batch to adjust for differences in sequencing depth between batches. The multiBatchNorm() function recomputes log-normalized expression values after adjusting the size factors for systematic differences in coverage between SingleCellExperiment (SCE) objects. (Size factors only remove biases between cells within a single batch.) This improves the quality of the correction by removing one aspect of the technical differences between batches.
+* We rescale each batch to adjust for differences in sequencing depth between batches. The `multiBatchNorm()` function recomputes log-normalized expression values after adjusting the size factors for systematic differences in coverage between SingleCellExperiment (SCE) objects. (Size factors only remove biases between cells within a single batch.) This improves the quality of the correction by removing one aspect of the technical differences between batches.
 
 ```{r}
 # rescale each batch to adjust for differences in sequencing depth between batches
 rescaled <- multiBatchNorm(uni.sce, batch = "Sample.Name")
 ```
 
-* We perform feature selection by averaging the variance components across all batches with the combineVar() function. We compute the average as it is responsive to batch-specific HVGs while still preserving the within-batch ranking of genes.
+* We perform feature selection by averaging the variance components across all batches with the `combineVar()` function. We compute the average as it is responsive to batch-specific HVGs while still preserving the within-batch ranking of genes.
 
 ```{r}
 # compute average variance components across samples
@@ -241,6 +238,7 @@ identical(rowData(rescaled[[1]]), rowData(rescaled[[4]]))
 rescaled[[1]]$batch <- rescaled[[1]]$Sample.Name
 rescaled2 <- lapply(rescaled, function(x){x$batch <- x$Sample.Name; x})
 rescaled <- rescaled2
+rm(rescaled2)
 
 # concat matrices:
 uncorrected <- do.call(cbind, rescaled)
@@ -266,6 +264,7 @@ clusters <- igraph::cluster_walktrap(snn.gr)$membership
 tab <- table(Cluster=clusters, Batch=uncorrected$batch)
 #tab
 ```
+
 ```{r}
 tmpMat <- data.frame("clusters"=clusters, "batch"=uncorrected$batch)
 ```
@@ -296,7 +295,7 @@ p2 <- ggplot(data=tmpMat, aes(x=clusters, fill=batch)) +
 gridExtra::grid.arrange(p1, p2)
 ```
 
-We can also visualize the corrected coordinates using a t-SNE plot. The strong separation between cells from different batches is consistent with the clustering results.
+We can also visualize the uncorrected coordinates using a t-SNE plot. The strong separation between cells from different batches is consistent with the clustering results.
 
 ```{r}
 set.seed(1111001)
@@ -308,7 +307,7 @@ Of course, the other explanation for batch-specific clusters is that there are c
 
 ## Linear regression
 
-Batch effects in bulk RNA sequencing studies are commonly removed with linear regression. This involves fitting a linear model to each gene’s expression profile, setting the undesirable batch term to zero and recomputing the observations sans the batch effect, yielding a set of corrected expression values for downstream analyses. Linear modelling is the basis of the `removeBatchEffect()` function from the limma package (Ritchie et al. 2015) as well the `comBat()` function from the sva package (Leek et al. 2012).
+Batch effects in bulk RNA sequencing studies are commonly removed with linear regression. This involves fitting a linear model to each gene’s expression profile, setting the undesirable batch term to zero and recomputing the observations sans the batch effect, yielding a set of corrected expression values for downstream analyses. Linear modelling is the basis of the `removeBatchEffect()` function from the `limma` package (Ritchie et al. 2015) as well the `comBat()` function from the `sva` package (Leek et al. 2012).
 
 To use this approach in a scRNA-seq context, we assume that the composition of cell subpopulations is the same across batches. We also assume that the batch effect is additive, i.e., any batch-induced fold-change in expression is the same across different cell subpopulations for any given gene. These are strong assumptions as batches derived from different individuals will naturally exhibit variation in cell type abundances and expression. Nonetheless, they may be acceptable when dealing with batches that are technical replicates generated from the same population of cells. (In fact, when its assumptions hold, linear regression is the most statistically efficient as it uses information from all cells to compute the common batch vector.) Linear modelling can also accommodate situations where the composition is known a priori by including the cell type as a factor in the linear model, but this situation is even less common.
 
@@ -327,7 +326,7 @@ rescaled2 <- runPCA(rescaled2, subset_row=chosen.hvgs, exprs_values="corrected")
 
 snn.gr <- buildSNNGraph(rescaled2, use.dimred="PCA")
 clusters.resc <- igraph::cluster_walktrap(snn.gr)$membership
-tab.resc <- table(Cluster=clusters.resc, Batch=rescaled2$batch)
+#tab.resc <- table(Cluster=clusters.resc, Batch=rescaled2$batch)
 #tab.resc
 ```
 
@@ -360,8 +359,6 @@ rescaled2$batch <- factor(rescaled2$batch)
 plotTSNE(rescaled2, colour_by="batch")
 ```
 
-
-
 ## Performing MNN correction
 
 ### Algorithm overview
@@ -369,7 +366,6 @@ plotTSNE(rescaled2, colour_by="batch")
 Consider a cell a in batch A, and identify the cells in batch B that are nearest neighbors to a in the expression space defined by the selected features. Repeat this for a cell b in batch B, identifying its nearest neighbors in A. Mutual nearest neighbors are pairs of cells from different batches that belong in each other’s set of nearest neighbors. The reasoning is that MNN pairs represent cells from the same biological state prior to the application of a batch effect - see Haghverdi et al. (2018) for full theoretical details. Thus, the difference between cells in MNN pairs can be used as an estimate of the batch effect, the subtraction of which yields batch-corrected values.
 
 Compared to linear regression, MNN correction does not assume that the population composition is the same or known beforehand. This is because it learns the shared population structure via identification of MNN pairs and uses this information to obtain an appropriate estimate of the batch effect. Instead, the key assumption of MNN-based approaches is that the batch effect is orthogonal to the biology in high-dimensional expression space. Violations reduce the effectiveness and accuracy of the correction, with the most common case arising from variations in the direction of the batch effect between clusters. Nonetheless, the assumption is usually reasonable as a random vector is very likely to be orthogonal in high-dimensional space.
-
 
 ### Application to the data
 
@@ -386,17 +382,17 @@ mnn.out <- fastMNN(rescaled,
                    subset.row=chosen.hvgs,
                    BSPARAM=BiocSingular::RandomParam(deferred=TRUE))
 mnn.out
+mnn.out.corre.dim <- dim(reducedDim(mnn.out, "corrected"))
+mnn.out.corre.dim
+mnn.out.recon.dim <- dim(assay(mnn.out, "reconstructed"))
+mnn.out.recon.dim
 ```
 
 The function returns a SCE object containing corrected values for downstream analyses like clustering or visualization. Each column of `mnn.out` corresponds to a cell in one of the batches, while each row corresponds to an input gene in `chosen.hvgs`. The batch field in the column metadata contains a vector specifying the batch of origin of each cell.
 
-The `corrected` matrix in the `reducedDims()` contains the low-dimensional corrected coordinates for all cells, which we will use in place of the PCs in our downstream analyses (`r nrow(reducedDim(mnn.out, "corrected"))` cells and `r ncol(reducedDim(mnn.out, "corrected"))` PCs).
+The `corrected` matrix in the `reducedDims()` contains the low-dimensional corrected coordinates for all cells, which we will use in place of the PCs in our downstream analyses (`r mnn.out.corre.dim[1]` cells and `r mnn.out.corre.dim[2]` PCs).
 
-```{r}
-dim(reducedDim(mnn.out, "corrected"))
-```
-
-A `reconstructed` matrix in the `assays()` contains the corrected expression values for each gene in each cell, obtained by projecting the low-dimensional coordinates in corrected back into gene expression space (`r nrow(assay(mnn.out, "reconstructed"))` genes and `r ncol(assay(mnn.out, "reconstructed"))` cells). We do not recommend using this for anything other than visualization.
+A `reconstructed` matrix in the `assays()` contains the corrected expression values for each gene in each cell, obtained by projecting the low-dimensional coordinates in corrected back into gene expression space (`r mnn.out.recon.dim[1]` genes and `r mnn.out.recon.dim[2]` cells). We do not recommend using this for anything other than visualization.
 
 ```{r}
 print(assay(mnn.out, "reconstructed"))
@@ -415,7 +411,6 @@ See Chapter 32 for an example of a more complex fastMNN() merge involving severa
 We cluster on the low-dimensional corrected coordinates to obtain a partitioning of the cells that serves as a proxy for the population structure. If the batch effect is successfully corrected, clusters corresponding to shared cell types or states should contain cells from multiple batches. We see that all clusters contain contributions from each batch after correction, consistent with our expectation that the batches are replicates of each other.
 
 ```{r}
-library(scran)
 snn.gr <- buildSNNGraph(mnn.out, use.dimred="corrected", k=20)
 clusters.mnn <- igraph::cluster_walktrap(snn.gr)$membership
 tab.mnn <- table(Cluster=clusters.mnn, Batch=mnn.out$batch)
@@ -437,6 +432,7 @@ p2 <- ggplot(data=tmpMat, aes(x=clusters, fill=batch)) +
   geom_bar(position = "fill") +
   scale_y_continuous(labels = scales::percent)
 ```
+
 ```{r}
 gridExtra::grid.arrange(p1, p2)
 ```
