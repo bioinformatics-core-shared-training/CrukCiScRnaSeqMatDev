@@ -167,3 +167,10 @@ saveRDS(sce.raw, tmpFn)
 tmpFn <- sprintf("%s/%s/Robjects/sceRaw_postBiomart.Rds", projDir, outDirBit)
 sce.raw <- readRDS(tmpFn)
 ```
+
+## Session information
+
+```{r sessionInfo_doubletDetect}
+sessionInfo()
+```
+
