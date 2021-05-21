@@ -176,7 +176,7 @@ plotUMAP(sce, colour_by="label") + ggtitle("UMAP")
 plotTSNE(sce, colour_by="label") + ggtitle("tSNE")
 ```
 
-### Cell type classification
+### Cell type classification {#cellTypeAnnotation}
 
 We perform automated cell type classification using a reference dataset to annotate each cluster based on its pseudo-bulk profile. This is for a quick assignment of cluster identity. We are going to use Human Primary Cell Atlas (HPCA) data for that. `HumanPrimaryCellAtlasData` function provides normalized expression values for 713 microarray samples from HPCA ([Mabbott et al., 2013](https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-14-632)).
 These 713 samples were processed and normalized as described in [Aran, Looney and Liu et al. (2019)](https://www.nature.com/articles/s41590-018-0276-y).
