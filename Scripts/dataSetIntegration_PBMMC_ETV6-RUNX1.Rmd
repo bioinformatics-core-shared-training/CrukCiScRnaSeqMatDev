@@ -31,7 +31,15 @@ params:
   setSuf: "_allCells"
 -->
 
-# Data integration - PBMMC and ETV6-RUNX {#dsi{{setSuf}}_PBMMC_ETV6-RUNX1Top}
+```{r}
+# need string for analysis name to use in header identifier
+setSuf <- params$setSuf
+if(params$bookType == "mk") {setSuf <- "_5hCellPerSpl"}
+if(exists("isChild")) { setSuf <- "{{setSuf}}" }
+anaStg <- gsub("_", "-", setSuf)
+```
+
+# Data integration - PBMMC and ETV6-RUNX {#dsi`r anaStg`-PBMMC-ETV6-RUNX1Top}
 
 ```{r variables_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
 projDir <- params$projDir
