@@ -184,6 +184,7 @@ session-information-5
 identifying-confounding-factors---caron-set
 load-object
 pca-1
+raw-counts
 normalised-counts
 session-information-6
 featSelecTop
@@ -242,6 +243,7 @@ comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-afte
 coassignment-probabilities
 rand-index
 encouraging-consistency-with-marker-genes-1
+ackowledgements
 session-information-11
 dataSetIntegration_HHDTop
 abbreviations-3
@@ -260,6 +262,7 @@ comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-afte
 coassignment-probabilities-1
 rand-index-1
 encouraging-consistency-with-marker-genes-2
+acknowledgements
 session-information-12
 DataIntegrationPretTop
 abbreviations-4
@@ -280,6 +283,7 @@ rand-index-2
 encouraging-consistency-with-marker-genes-3
 session-information-13
 dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top
+learning-objectives
 abbreviations-5
 motivation-4
 load-the-data
@@ -344,7 +348,7 @@ expression-of-known-marker-genes
 save-data
 session-information-16
 clusterMarkerGenesTop
-learning-objectives
+learning-objectives-1
 load-data-6
 detecting-genes-differentially-expressed-between-clusters
 differential-expression-analysis
@@ -397,15 +401,16 @@ find-temporally-expressed-genes
 pseudotime-analysis-for-another-hca-sample
 exercise-1
 pseudoTime3Top
-ackowledgements
+ackowledgements-1
 session-information-20
 doubletDetectionTop
-learning-objectives-1
+learning-objectives-2
 set-up-analysis
 load-data-8
 overview-1
 doublet-detection-by-simulation
 further-comments
+ackowledgements-2
 session-information-21
 annex
 dsi-allCells-PBMMC-ETV6-RUNX1Top
@@ -453,3 +458,6 @@ introduction-5
 sample-sheet-3
 srr9264343
 session-information-24
+learning-objectives-3
+learning-objectives-4
+learning-objectives-5

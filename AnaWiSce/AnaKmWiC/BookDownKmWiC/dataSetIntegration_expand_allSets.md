@@ -102,10 +102,16 @@ anaStg <- gsub("_", "-", setSuf)
  
 # Data integration - all Caron sample types {#dsi-allCells-allSetsTop}
 
-<!--
-**CODE NEEDS UPDATING**
-**as were other data set integration chapters with fewr sample types** 
--->
+## Learning objectives
+
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+* bla
+* bla
+* bla
+</div>
 
 
 ```r
@@ -943,7 +949,7 @@ mnn.out
 
 ```r
 mnn.out$batch <- factor(mnn.out$batch)
-mnn.out$type <- gsub("_[1-4]","",mnn.out$batch)
+mnn.out$splType <- gsub("_[1-4]","",mnn.out$batch)
 mnn.out.corre.dim <- dim(reducedDim(mnn.out, "corrected"))
 mnn.out.corre.dim
 ```
@@ -1156,7 +1162,8 @@ p
 
 
 ```r
-p + facet_wrap(~mnn.out$type, ncol=2)
+mnn.out$splType <- gsub("_[1-4]","",mnn.out$batch) # TODO fix; shouldn't need to; done above already
+p + facet_wrap(~mnn.out$splType, ncol=2)
 ```
 
 <img src="dataSetIntegration_expand_allSets_files/figure-html/fastmnn_diagTsnePlotSplit_dsi_allCells_allSets-1.png" width="672" />
@@ -1167,7 +1174,7 @@ p + facet_wrap(~mnn.out$type, ncol=2)
 p.clu <- plotTSNE(mnn.out, colour_by="clusters.mnn")
 p.batch <- plotTSNE(mnn.out, colour_by="batch")
 #grid.arrange(p.clu, p.batch, ncol=2)
-grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$type), ncol=2)
+grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$splType), ncol=2)
 ```
 
 
@@ -1961,7 +1968,7 @@ geneEnsId <- demo %>% data.frame %>%
 geneSymbol <- rowData(uncorrected)[geneEnsId,"Symbol"]
 ```
 
-<!-- OLD Expression level for the top gene,  on violin plots: -->
+<!-- OLD Expression level for the top gene, ENSG00000087086 on violin plots: -->
 
 
 ```r
@@ -2072,8 +2079,8 @@ mnn.out
 
 ```r
 mnn.out$batch <- factor(mnn.out$batch)
-mnn.out$type <- gsub("_[1-4]","",mnn.out$batch)
-mnn.out$type <- factor(mnn.out$type)
+mnn.out$splType <- gsub("_[1-4]","",mnn.out$batch)
+mnn.out$splType <- factor(mnn.out$splType)
 ```
 
 
@@ -2180,26 +2187,33 @@ mnn.out <- runTSNE(mnn.out, dimred="corrected",
 p.batch <- plotTSNE(mnn.out, colour_by="batch", point_size=0.3)
 p.clu <- plotTSNE(mnn.out, colour_by="clusters.mnn", point_size=0.3)
 #grid.arrange(p.clu, p.batch, ncol=2)
-grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$type), ncol=2)
+mnn.out$splType <- gsub("_[1-4]","",mnn.out$batch) # TODO fix; shouldn't need to; done above already
+grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$splType), ncol=2)
 ```
 
 <img src="dataSetIntegration_expand_allSets_files/figure-html/unnamed-chunk-14-1.png" width="806.4" />
 
-Write mnn.out object to file
+Write mnn.out object to file:
 
 
 ```r
-colData(mnn.out) <- cbind(colData(uncorrected),colData(mnn.out)[,c("type", "clusters.mnn")])
+colData(mnn.out) <- cbind(colData(uncorrected),
+			  colData(mnn.out)[,c("splType", "clusters.mnn")])
 # Write object to file
 # fastMnnWholeByList -> Fmwbl
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_Fmwbl.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_Fmwbl.Rds",
+		 projDir, outDirBit, setName, setSuf, splSetToGet2)
 saveRDS(mnn.out, tmpFn)
 
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_Fmwbl2.Rds", projDir, outDirBit, setName, setSuf)
-saveRDS(list("chosen.hvgs"=chosen.hvgs, "uncorrected"=uncorrected,"rescaled.mbn"=rescaled.mbn), tmpFn)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_Fmwbl2.Rds",
+		 projDir, outDirBit, setName, setSuf, splSetToGet2)
+saveRDS(list("chosen.hvgs"=chosen.hvgs,
+	     "uncorrected"=uncorrected,
+	     "rescaled.mbn"=rescaled.mbn),
+	tmpFn)
 ```
 
-Proportions of lost variance
+Proportions of lost variance:
 
 
 ```r
@@ -3008,18 +3022,20 @@ p1
 ```r
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 # save object?
+# 'dsi' for data set integration
 fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_normNoLog.Rds",
               projDir,
               outDirBit,
               setName,
               setSuf,
-              splSetToGet2) # 'dsi' for data set integration
+              splSetToGet2)
 saveRDS(normNoLog, file=fn)
 ```
 
 
 ## Session information
 
+<details>
 
 ```r
 sessionInfo()
@@ -3114,4 +3130,5 @@ sessionInfo()
 ## [91] viridisLite_0.4.0         vipor_0.4.5              
 ## [93] bslib_0.2.5
 ```
+</details>
 

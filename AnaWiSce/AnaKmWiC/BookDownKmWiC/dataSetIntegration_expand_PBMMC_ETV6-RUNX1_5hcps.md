@@ -99,6 +99,18 @@ anaStg <- gsub("_", "-", setSuf)
 
 # Data integration - PBMMC and ETV6-RUNX {#dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top}
 
+## Learning objectives
+
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+* bla
+* bla
+* bla
+</div>
+
+
 
 ```r
 projDir <- params$projDir
@@ -811,6 +823,28 @@ p + facet_wrap(. ~ mnn.out$source_name)
 
 <img src="dataSetIntegration_expand_PBMMC_ETV6-RUNX1_5hcps_files/figure-html/fastmnn_diagTsnePlot2_dsi_5hCellPerSpl_PBMMC_ETV6-RUNX1-1.png" width="672" />
 
+Write mnn.out object to file:
+
+
+```r
+mnn.out$splType <- gsub("_[1-4]","",mnn.out$batch) # for diff exp/abun btw cond
+mnn.out$clusters.mnn <- clusters.mnn # for diff exp/abun btw cond
+colData(mnn.out) <- cbind(colData(uncorrected),
+			  colData(mnn.out)[,c("splType", "clusters.mnn")])
+# Write object to file
+# fastMnnWholeByList -> Fmwbl
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_Fmwbl.Rds",
+		 projDir, outDirBit, setName, setSuf, splSetToGet2)
+saveRDS(mnn.out, tmpFn)
+
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_Fmwbl2.Rds",
+		 projDir, outDirBit, setName, setSuf, splSetToGet2)
+saveRDS(list("chosen.hvgs"=chosen.hvgs,
+	     "uncorrected"=uncorrected),
+	tmpFn)
+```
+
+
 For `fastMNN()`, one useful diagnostic is the proportion of variance within each batch that is lost during MNN correction. Specifically, this refers to the within-batch variance that is removed during orthogonalization with respect to the average correction vector at each merge step. This is returned via the `lost.var` field in the metadata of `mnn.out`, which contains a matrix of the variance lost in each batch (column) at each merge step (row).
 
 
@@ -1291,8 +1325,6 @@ ariVec
 A sample may show a low Rand index value if cells grouped together in a small cluster before correction are split into distinct clusters after correction because the latter comprise cell populations not observed in that sample but present in other samples.
 
 This would be the case of GSM3872434 with far fewer erythrocytes (grouped in a single cluster) than GSM3872443, in which subtypes can be distinguished.
-<!--
--->
 
 We can also break down the **adjusted Rand index (ARI)** into per-cluster ratios for more detailed diagnostics. For example, we could see low ratios off the diagonal if distinct clusters in the within-batch clustering were incorrectly aggregated in the merged clustering. Conversely, we might see low ratios on the diagonal if the correction inflated or introduced spurious heterogeneity inside a within-batch cluster.
 
@@ -1433,7 +1465,7 @@ demo <- m.out[[cluToGet]]
 #as.data.frame(demo[1:20,c("Symbol", "Top", "p.value", "FDR", "summary.logFC")]) 
 ```
 
-Expression level for the top gene,  on violin plots:
+Expression level for the top gene, ENSG00000008517 on violin plots:
 
 
 ```r
@@ -1953,6 +1985,7 @@ saveRDS(normNoLog, file=fn)
 
 ## Session information
 
+<details>
 
 ```r
 sessionInfo()
@@ -2049,5 +2082,6 @@ sessionInfo()
 ##  [99] viridisLite_0.4.0         vipor_0.4.5              
 ## [101] bslib_0.2.5
 ```
+</details>
 
 

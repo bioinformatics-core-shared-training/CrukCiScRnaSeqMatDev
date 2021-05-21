@@ -101,10 +101,16 @@ anaStg <- gsub("_", "-", setSuf)
  
 # Data integration - all Caron sample types {#dsi-5hCellPerSpl-allSetsTop}
 
-<!--
-**CODE NEEDS UPDATING**
-**as were other data set integration chapters with fewr sample types** 
--->
+## Learning objectives
+
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+* bla
+* bla
+* bla
+</div>
 
 
 ```r
@@ -942,7 +948,7 @@ mnn.out
 
 ```r
 mnn.out$batch <- factor(mnn.out$batch)
-mnn.out$type <- gsub("_[1-4]","",mnn.out$batch)
+mnn.out$splType <- gsub("_[1-4]","",mnn.out$batch)
 mnn.out.corre.dim <- dim(reducedDim(mnn.out, "corrected"))
 mnn.out.corre.dim
 ```
@@ -1145,7 +1151,8 @@ p
 
 
 ```r
-p + facet_wrap(~mnn.out$type, ncol=2)
+mnn.out$splType <- gsub("_[1-4]","",mnn.out$batch) # TODO fix; shouldn't need to; done above already
+p + facet_wrap(~mnn.out$splType, ncol=2)
 ```
 
 <img src="dataSetIntegration_expand_allSets_5hcps_files/figure-html/fastmnn_diagTsnePlotSplit_dsi_5hCellPerSpl_allSets-1.png" width="672" />
@@ -1156,7 +1163,7 @@ p + facet_wrap(~mnn.out$type, ncol=2)
 p.clu <- plotTSNE(mnn.out, colour_by="clusters.mnn")
 p.batch <- plotTSNE(mnn.out, colour_by="batch")
 #grid.arrange(p.clu, p.batch, ncol=2)
-grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$type), ncol=2)
+grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$splType), ncol=2)
 ```
 
 
@@ -2061,8 +2068,8 @@ mnn.out
 
 ```r
 mnn.out$batch <- factor(mnn.out$batch)
-mnn.out$type <- gsub("_[1-4]","",mnn.out$batch)
-mnn.out$type <- factor(mnn.out$type)
+mnn.out$splType <- gsub("_[1-4]","",mnn.out$batch)
+mnn.out$splType <- factor(mnn.out$splType)
 ```
 
 
@@ -2159,26 +2166,33 @@ mnn.out <- runTSNE(mnn.out, dimred="corrected",
 p.batch <- plotTSNE(mnn.out, colour_by="batch", point_size=0.3)
 p.clu <- plotTSNE(mnn.out, colour_by="clusters.mnn", point_size=0.3)
 #grid.arrange(p.clu, p.batch, ncol=2)
-grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$type), ncol=2)
+mnn.out$splType <- gsub("_[1-4]","",mnn.out$batch) # TODO fix; shouldn't need to; done above already
+grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$splType), ncol=2)
 ```
 
 <img src="dataSetIntegration_expand_allSets_5hcps_files/figure-html/unnamed-chunk-14-1.png" width="806.4" />
 
-Write mnn.out object to file
+Write mnn.out object to file:
 
 
 ```r
-colData(mnn.out) <- cbind(colData(uncorrected),colData(mnn.out)[,c("type", "clusters.mnn")])
+colData(mnn.out) <- cbind(colData(uncorrected),
+			  colData(mnn.out)[,c("splType", "clusters.mnn")])
 # Write object to file
 # fastMnnWholeByList -> Fmwbl
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_Fmwbl.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_Fmwbl.Rds",
+		 projDir, outDirBit, setName, setSuf, splSetToGet2)
 saveRDS(mnn.out, tmpFn)
 
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_Fmwbl2.Rds", projDir, outDirBit, setName, setSuf)
-saveRDS(list("chosen.hvgs"=chosen.hvgs, "uncorrected"=uncorrected,"rescaled.mbn"=rescaled.mbn), tmpFn)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_Fmwbl2.Rds",
+		 projDir, outDirBit, setName, setSuf, splSetToGet2)
+saveRDS(list("chosen.hvgs"=chosen.hvgs,
+	     "uncorrected"=uncorrected,
+	     "rescaled.mbn"=rescaled.mbn),
+	tmpFn)
 ```
 
-Proportions of lost variance
+Proportions of lost variance:
 
 
 ```r
@@ -2987,18 +3001,20 @@ p1
 ```r
 splSetToGet2 <- gsub(",", "_", splSetToGet)
 # save object?
+# 'dsi' for data set integration
 fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_normNoLog.Rds",
               projDir,
               outDirBit,
               setName,
               setSuf,
-              splSetToGet2) # 'dsi' for data set integration
+              splSetToGet2)
 saveRDS(normNoLog, file=fn)
 ```
 
 
 ## Session information
 
+<details>
 
 ```r
 sessionInfo()
@@ -3039,9 +3055,9 @@ sessionInfo()
 ## [21] SingleCellExperiment_1.12.0 SummarizedExperiment_1.20.0
 ## [23] Biobase_2.50.0              GenomicRanges_1.42.0       
 ## [25] GenomeInfoDb_1.26.7         IRanges_2.24.1             
-## [27] S4Vectors_0.28.1            BiocGenerics_0.36.1        
-## [29] MatrixGenerics_1.2.1        matrixStats_0.58.0         
-## [31] ggplot2_3.3.3               BiocParallel_1.24.1        
+## [27] MatrixGenerics_1.2.1        matrixStats_0.58.0         
+## [29] ggplot2_3.3.3               S4Vectors_0.28.1           
+## [31] BiocGenerics_0.36.1         BiocParallel_1.24.1        
 ## [33] knitr_1.33                 
 ## 
 ## loaded via a namespace (and not attached):
@@ -3050,48 +3066,48 @@ sessionInfo()
 ##  [5] scuttle_1.0.4             XVector_0.30.0           
 ##  [7] fs_1.5.0                  rstudioapi_0.13          
 ##  [9] farver_2.1.0              graphlayouts_0.7.1       
-## [11] ggrepel_0.9.1             RSpectra_0.16-0          
-## [13] fansi_0.4.2               lubridate_1.7.10         
-## [15] xml2_1.3.2                codetools_0.2-18         
-## [17] sparseMatrixStats_1.2.1   polyclip_1.10-0          
-## [19] jsonlite_1.7.2            ResidualMatrix_1.0.0     
-## [21] broom_0.7.6               dbplyr_2.1.1             
-## [23] uwot_0.1.10               ggforce_0.3.3            
-## [25] compiler_4.0.3            httr_1.4.2               
-## [27] dqrng_0.3.0               backports_1.2.1          
-## [29] assertthat_0.2.1          Matrix_1.3-3             
-## [31] limma_3.46.0              cli_2.5.0                
-## [33] tweenr_1.0.2              htmltools_0.5.1.1        
-## [35] tools_4.0.3               rsvd_1.0.5               
-## [37] igraph_1.2.6              gtable_0.3.0             
-## [39] glue_1.4.2                GenomeInfoDbData_1.2.4   
-## [41] Rcpp_1.0.6                cellranger_1.1.0         
-## [43] jquerylib_0.1.4           vctrs_0.3.8              
-## [45] DelayedMatrixStats_1.12.3 xfun_0.23                
-## [47] ps_1.6.0                  beachmat_2.6.4           
-## [49] rvest_1.0.0               lifecycle_1.0.0          
-## [51] irlba_2.3.3               statmod_1.4.36           
-## [53] edgeR_3.32.1              zlibbioc_1.36.0          
-## [55] MASS_7.3-54               scales_1.1.1             
-## [57] tidygraph_1.2.0           hms_1.0.0                
-## [59] RColorBrewer_1.1-2        yaml_2.2.1               
-## [61] sass_0.4.0                stringi_1.6.1            
-## [63] highr_0.9                 checkmate_2.0.0          
-## [65] rlang_0.4.11              pkgconfig_2.0.3          
-## [67] bitops_1.0-7              evaluate_0.14            
-## [69] lattice_0.20-44           labeling_0.4.2           
-## [71] tidyselect_1.1.1          magrittr_2.0.1           
-## [73] bookdown_0.22             R6_2.5.0                 
-## [75] generics_0.1.0            DelayedArray_0.16.3      
-## [77] DBI_1.1.1                 pillar_1.6.1             
-## [79] haven_2.4.1               withr_2.4.2              
-## [81] RCurl_1.98-1.3            modelr_0.1.8             
-## [83] crayon_1.4.1              utf8_1.2.1               
-## [85] rmarkdown_2.8             viridis_0.6.1            
-## [87] locfit_1.5-9.4            grid_4.0.3               
-## [89] readxl_1.3.1              reprex_2.0.0             
-## [91] digest_0.6.27             munsell_0.5.0            
-## [93] beeswarm_0.3.1            viridisLite_0.4.0        
-## [95] vipor_0.4.5               bslib_0.2.5
+## [11] ggrepel_0.9.1             fansi_0.4.2              
+## [13] lubridate_1.7.10          xml2_1.3.2               
+## [15] codetools_0.2-18          sparseMatrixStats_1.2.1  
+## [17] polyclip_1.10-0           jsonlite_1.7.2           
+## [19] ResidualMatrix_1.0.0      broom_0.7.6              
+## [21] dbplyr_2.1.1              ggforce_0.3.3            
+## [23] compiler_4.0.3            httr_1.4.2               
+## [25] dqrng_0.3.0               backports_1.2.1          
+## [27] assertthat_0.2.1          Matrix_1.3-3             
+## [29] limma_3.46.0              cli_2.5.0                
+## [31] tweenr_1.0.2              htmltools_0.5.1.1        
+## [33] tools_4.0.3               rsvd_1.0.5               
+## [35] igraph_1.2.6              gtable_0.3.0             
+## [37] glue_1.4.2                GenomeInfoDbData_1.2.4   
+## [39] Rcpp_1.0.6                cellranger_1.1.0         
+## [41] jquerylib_0.1.4           vctrs_0.3.8              
+## [43] DelayedMatrixStats_1.12.3 xfun_0.23                
+## [45] ps_1.6.0                  beachmat_2.6.4           
+## [47] rvest_1.0.0               lifecycle_1.0.0          
+## [49] irlba_2.3.3               statmod_1.4.36           
+## [51] edgeR_3.32.1              zlibbioc_1.36.0          
+## [53] MASS_7.3-54               scales_1.1.1             
+## [55] tidygraph_1.2.0           hms_1.0.0                
+## [57] RColorBrewer_1.1-2        yaml_2.2.1               
+## [59] sass_0.4.0                stringi_1.6.1            
+## [61] highr_0.9                 rlang_0.4.11             
+## [63] pkgconfig_2.0.3           bitops_1.0-7             
+## [65] evaluate_0.14             lattice_0.20-44          
+## [67] labeling_0.4.2            tidyselect_1.1.1         
+## [69] magrittr_2.0.1            bookdown_0.22            
+## [71] R6_2.5.0                  generics_0.1.0           
+## [73] DelayedArray_0.16.3       DBI_1.1.1                
+## [75] pillar_1.6.1              haven_2.4.1              
+## [77] withr_2.4.2               RCurl_1.98-1.3           
+## [79] modelr_0.1.8              crayon_1.4.1             
+## [81] utf8_1.2.1                rmarkdown_2.8            
+## [83] viridis_0.6.1             locfit_1.5-9.4           
+## [85] grid_4.0.3                readxl_1.3.1             
+## [87] reprex_2.0.0              digest_0.6.27            
+## [89] munsell_0.5.0             beeswarm_0.3.1           
+## [91] viridisLite_0.4.0         vipor_0.4.5              
+## [93] bslib_0.2.5
 ```
+</details>
 
