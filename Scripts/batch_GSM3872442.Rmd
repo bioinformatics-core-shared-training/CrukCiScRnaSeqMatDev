@@ -45,7 +45,14 @@ set.seed(123) # for reproducibility
 
 # batch correction - GSM3872442 set
 
-**TODO** remove libSize+batch section and keep batch regress only.
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+**Learning objectives:**
+
+**TODO:** remove libSize+batch section and keep batch regress only.
+</div>
 
 GSM3872442 is a single PBMMC sample sequenced as a pool of two libraries:
 SRR9264351 and SRR9264352.
@@ -85,7 +92,8 @@ Load object
 setSuf <- ""
 
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds", projDir, outDirBit, "caron", setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds",
+		 projDir, outDirBit, "caron", setSuf)
 sce <- readRDS(tmpFn)
 ```
 
@@ -288,8 +296,6 @@ plotReducedDim(sce, dimred = "PCA_lm_batch",
 
 ## SCTransform
 
-### Batch only
-
 First make a copy of the SCE object (we will need one later).
 
 ```{r batchOnlySctRun_batch_GSM3872442}
@@ -303,17 +309,6 @@ sceOrig <- sce
 ```{r batchOnlySctCheck_batch_GSM3872442}
 counts <- counts(sce)
 class(counts)
-
-if(FALSE) # dev
-{
-# https://rawgit.com/ChristophH/sctransform/supp_html/supplement/variance_stabilizing_transformation.html
-# https://s3-us-west-2.amazonaws.com/10x.files/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz
-setwd("/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/Scripts/BookDownDevSrv008")
-getwd()
-dir()
-counts <- Read10X(data.dir = "filtered_gene_bc_matrices/hg19/")  # Seurat function to read in 10x count data
-getwd()
-}
 
 # inspect data
 gene_attr <- data.frame(mean = rowMeans(counts),
@@ -481,218 +476,6 @@ Keep copy of SCE object for later:
 
 ```{r batchOnlySct_copy_batch_GSM3872442}
 sce_batchOnly <- sce
-```
-
-### Both library size and batch
-
-Use the copy of the SCE object made earlier.
-
-```{r libSizeBatchSct_back_batch_GSM3872442}
-sce <- sceOrig
-```
-
-Some cells are very different from the rest.
-
-```{r libSizeBatchSct_sctransform_vst_batch_GSM3872442}
-counts <- counts(sce)
-colnames(counts) <- colData(sce)$Barcode
-
-#cellAttr <- as.data.frame(colData(sce))[,c("log10sum", "batch")]
-cellAttr <- as.data.frame(colData(sce))
-rownames(cellAttr) <- colData(sce)$Barcode
-
-sctnorm_data <- sctransform::vst(umi = counts,
-                                 min_cells = 5,
-                                 #min_cells = 10,
-                                 #method = "nb_fast",
-                                 #n_genes = 3000,
-                                 #bw_adjust = 2, # 3
-                                 cell_attr = cellAttr,
-                                 latent_var = c("log10sum", "batch"),
-                                 #latent_var = c("batch"),
-                                 return_gene_attr = TRUE,
-                                 return_cell_attr = TRUE,
-                                 verbosity = 0)
-
-sctransform::plot_model_pars(sctnorm_data)
-
-# exclude genes that were not used in the transformation: 
-tmpInd <- which(rownames(sce) %in% rownames(sctnorm_data$y))
-cols.meta <- colData(sceOrig)
-rows.meta <- rowData(sceOrig)
-
-new.counts <- counts(sceOrig)[tmpInd, ]
-sce <- SingleCellExperiment(list(counts=new.counts))
-
-# reset the column data on the new object
-colData(sce) <- cols.meta
-rowData(sce) <- rows.meta[tmpInd, ]
-
-# We now copy the transformation output to the SCE object:
-
-vstMat <- as(sctnorm_data$y[rownames(sce),], "dgCMatrix")
-all(colnames(vstMat) == sce$Barcode)
-dim(vstMat)
-
-colnames(vstMat) <- NULL
-assay(sce, "sctrans_norm_libSizeBatch0") <- vstMat # as(vst_out$y[rownames(sce),], "dgCMatrix")
-
-#Also copy 'logcounts':
-
-assayX <- "logcounts"
-tmpAssay <- assay(sceOrig, assayX)
-assay(sce, assayX) <- tmpAssay[tmpInd, ]
-
-reducedDim(sce, "PCA_sctrans_norm_libSizeBatch0") <- reducedDim(
-  runPCA(sce,
-         exprs_values = "sctrans_norm_libSizeBatch0"),
-  "PCA"
-)
-plotReducedDim(
-  sce,
-  dimred = "PCA_sctrans_norm_libSizeBatch0",
-  colour_by = "batch",
-  size_by = "sum",
-  shape_by = "Sample.Name"
-) + ggtitle("PCA plot: sctransform normalization - libSizeBatch0")
-```
-                                 
-                                 
-                                 
-```{r libSizeBatchSct_vst_batch_GSM3872442}
-sce <- sceOrig
-
-require(Seurat)
-# use Seurat's SCTransform
-sce.srt <- as.Seurat(sce)
-sce.srt <- SCTransform(sce.srt,
-                       min_cells = 5,
-                       vars.to.regress = c("log10sum", "batch"),
-                       #vars.to.regress = c("batch"),
-                        # Variables to regress out in a second non-regularized linear regression
-                        # so log10sum is redundant here ...
-                       return_gene_attr = TRUE,
-                       return_cell_attr = TRUE,
-                       #show_progress = FALSE,
-                       verbose = FALSE,
-                       verbosity = 0
-                       )
-
-str(sce.srt[["SCT"]])
-##sce.srt[["SCT"]]@misc
-
-# https://hbctraining.github.io/scRNA-seq/lessons/06_SC_SCT_and_integration.html
-
-#GetAssay(sce.srt, assay = "SCT")@misc$vst.out
-##sce.srt[["SCT"]]@scale.data %>% head()
-```
-
-Check model used:
-
-```{r libSizeBatchSct_model_batch_GSM3872442}
-#print(sce.srt[["SCT"]]@misc$vst.out$model_str) # sctransform::vst
-print(sce.srt[["SCT"]]@SCTModel.list$model1@model) # Seurat::SCTransform
-```
-
-Discard genes that were not used in the transformation.
-
-```{r libSizeBatchSct_subsetGenes_batch_GSM3872442}
-# exclude genes that were not used in the transformation: 
-tmpInd <- which(rownames(sce) %in% rownames(sce.srt[["SCT"]]@scale.data))
-cols.meta <- colData(sceOrig)
-rows.meta <- rowData(sceOrig)
-
-new.counts <- counts(sceOrig)[tmpInd, ]
-sce <- SingleCellExperiment(list(counts=new.counts))
-
-# reset the column data on the new object
-colData(sce) <- cols.meta
-rowData(sce) <- rows.meta[tmpInd, ]
-
-# tidy
-rm(sceOrig)
-```
-
-Copy the transformation output to the SCE object.
-
-```{r libSizeBatchSct_copyVstMat_batch_GSM3872442}
-vstMat <- as(sce.srt[["SCT"]]@scale.data[rownames(sce),], "dgCMatrix")
-#all(colnames(vstMat) == sce$Barcode)
-dd <- sce.srt@meta.data %>%
-  dplyr::select(Barcode)
-# check order of cells are identical
-all(dd[colnames(vstMat), "Barcode"] == sce$Barcode)
-colnames(vstMat) <- NULL
-assay(sce, "sctrans_norm") <- vstMat
-```
-
-Show diagnostic plots:
-
-```{r libSizeBatchSct_modelPars_batch_GSM3872442}
-#sctransform::plot_model_pars(sce.srt[["SCT"]]@misc$vst.out) # sctransform::vst
-# not with Seurat::SCTransform ... empty sce.srt[["SCT"]]@misc 20200422
-rm(sce.srt)
-```
-
-Show reduced dimension plots and check for improved mixing of cells from the two sets:
-
-```{r libSizeBatchSct_pca_batch_GSM3872442}
-reducedDim(sce, "PCA_sctrans_norm") <- reducedDim(
-  runPCA(sce, exprs_values = "sctrans_norm")
-)
-plotReducedDim(
-  sce,
-  dimred = "PCA_sctrans_norm",
-  colour_by = "batch",
-  size_by = "sum",
-  shape_by = "Sample.Name"
-) + ggtitle("PCA plot: sctransform normalization") 
-```
-
-```{r, eval=FALSE, include=FALSE}
-reducedDimNames(sce)
-```
-
-```{r libSizeBatchSct_tsne_batch_GSM3872442}
-sce <- runTSNE(sce, dimred="PCA_sctrans_norm", name="TSNE_sctrans_norm")
-plotReducedDim(
-  sce,
-  dimred = "TSNE_sctrans_norm",
-  colour_by = "batch",
-  size_by = "sum",
-  shape_by = "Sample.Name"
-) + ggtitle("TSNE plot: sctransform normalization") 
-```
-
-```{r, eval=FALSE, include=FALSE}
-reducedDimNames(sce)
-```
-
-```{r libSizeBatchSct_umap_batch_GSM3872442}
-sce <- runUMAP(sce, dimred="PCA_sctrans_norm", name="UMAP_sctrans_norm")
-plotReducedDim(
-  sce,
-  dimred = "UMAP_sctrans_norm",
-  colour_by = "batch",
-  size_by = "sum",
-  shape_by = "Sample.Name"
-) + ggtitle("UMAP plot: sctransform normalization") 
-```
-
-```{r, eval=FALSE, include=FALSE}
-reducedDimNames(sce)
-```
-
-Add PCA_sctrans_norm_batchOnly (same cells, only genes may differ)
-
-```{r libSizeBatchSct_addBatchOnly_batch_GSM3872442}
-reducedDim(sce, "PCA_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "PCA_sctrans_norm_batchOnly")
-reducedDim(sce, "TSNE_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "TSNE_sctrans_norm_batchOnly")
-reducedDim(sce, "UMAP_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "UMAP_sctrans_norm_batchOnly")
-```
-
-```{r libSizeBatchSct_copy_batch_GSM3872442, eval=FALSE}
-#scePostSct <- sce # not used TODO remove
 ```
 
 ## mnnCorrect
@@ -904,6 +687,8 @@ plotReducedDim(
 
 ## Session information
 
+<details>
 ```{r}
 sessionInfo()
 ```
+</details>
