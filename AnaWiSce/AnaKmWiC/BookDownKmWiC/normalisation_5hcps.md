@@ -44,9 +44,8 @@ library(knitr)
 
 
 ```r
-#src <- lapply(c("Caron", "Hca"), function(setNameUpp) knit_expand(file = "test.Rmd"))
 src <- lapply(c("Caron"), function(setNameUpp) knit_expand(file = "normalisation_5hCellPerSpl.Rmd"))
-## src <- lapply(c("Caron"), function(setNameUpp) knit_expand(file = "normalisation_GSM3872434.Rmd"))
+##src <- lapply(c("Caron"), function(setNameUpp) knit_expand(file = "normalisation_5hCellPerSpl_dev.Rmd"))
 ```
 
 
@@ -80,7 +79,7 @@ params:
 
 
 
-# Normalisation - Caron set
+# Normalisation - Caron set {#NormalisationCaron5hcpsTop}
 
 Sources: chapters on Normalisation in the [OSCA book](https://osca.bioconductor.org/normalization.html) and the '[Hemberg group material](https://scrnaseq-course.cog.sanger.ac.uk/website/index.html).
 

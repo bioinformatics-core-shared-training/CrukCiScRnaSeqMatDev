@@ -44,7 +44,7 @@ Normalisation removes such differences so that differences between cells are not
 In scaling normalization, the “normalization factor” is an estimate of the library size relative to the other cells. 
 steps: compute a cell-specific 'scaling' or 'size' factor that represents the relative bias in that cell and divide all counts for the cell by that factor to remove that bias. Assumption: any cell specific bias will affect genes the same way.
 
-Scaling methods typically generate normalised counts-per-million (CPM) or transcripts-per-million (TPM_ values.
+Scaling methods typically generate normalised counts-per-million (CPM) or transcripts-per-million (TPM) values.
 
 
 ```r

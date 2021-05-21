@@ -35,5 +35,6 @@ params:
 
 The chapters listed below are included in the annex: 
 
+* **test** ref (see \@ref(SeqQualTop))
 * Data integration - PBMMC and ETV6-RUNX, with all cells (no downsampling) (see \@ref(dsi_allCells_allSetsTop)).
-* Data integration - all 'Caron' sample types (ETV6-RUNX1, HHD, PBMMCand PRE-T), with all cells (no downsampling) (see  \@ref(dsi_allCells_PBMMC_ETV6-RUNX1Top)).
+* Data integration - all 'Caron' sample types (ETV6-RUNX1, HHD, PBMMCand PRE-T), with all cells (no downsampling) (see \@ref(dsi_allCells_PBMMC_ETV6-RUNX1Top)).

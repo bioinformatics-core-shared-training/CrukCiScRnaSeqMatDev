@@ -78,7 +78,8 @@ splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 
-anaStg <- sprintf("'%s_%s'", splSetToGet2, setSuf)
+anaStg <- sprintf("%s%s", splSetToGet2, setSuf)
+anaStg <- gsub("_", "-", anaStg)
 
 #displayToUse <- Sys.getenv("DISPLAY")
 #Cairo::CairoX11(display=displayToUse);
@@ -153,7 +154,7 @@ library(Cairo)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-# Clustering with ''PBMMC,ETV6-RUNX1'' and '_5hCellPerSpl' {#clustering'PBMMC_ETV6-RUNX1__5hCellPerSpl'Top}
+# Clustering with 'PBMMC,ETV6-RUNX1' and '_5hCellPerSpl' {#clusteringPBMMC-ETV6-RUNX1-5hCellPerSplTop}
 
 <!-- TODO: get image file
 <img src="../Images/Andrews2017_Fig1.png" style="margin:auto; display:block" />

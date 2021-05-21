@@ -34,13 +34,12 @@ TODO:
 
 
 ```r
-#projDirOsx <- "/Users/baller01/MyMount/clust1a/20200511_FernandesM_ME_crukBiSs2020"
-#projDir <- "/mnt/scratcha/bioinformatics/baller01/20200511_FernandesM_ME_crukBiSs2020"
 #projDir <- "/home/ubuntu/Course_Materials/scRNAseq"
 projDir <- params$projDir
 projDirLink <- "/Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020"
 inpDirBit <- params$inpDirBit
 outDirBit <- params$outDirBit
+dirRel <- ".."
 ```
 
 
@@ -65,6 +64,18 @@ Library structure reminder:
 <!--
 ![](/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/Images/tenxLibStructureV3.png)
 -->
+
+
+```r
+tmpFn <- sprintf("%s/Images/tenxLibStructureV3.png", dirRel)
+knitr::include_graphics(tmpFn, auto_pdf = TRUE)
+```
+
+<img src="../Images/tenxLibStructureV3.png" width="636" />
+
+```r
+rm(tmpFn)
+```
 
 * The **sample index** identifies the library, with one I7 index per sample
 * The 10X **cell barcode** (or cell index) identifies the droplet in the library

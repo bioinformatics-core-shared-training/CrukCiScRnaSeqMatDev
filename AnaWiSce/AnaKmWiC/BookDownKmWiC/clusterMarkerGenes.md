@@ -31,7 +31,7 @@ params:
 
 
 
-# Cluster marker genes
+# Cluster marker genes {#clusterMarkerGenesTop}
 
 <img src="../../Images/Andrews2017_Fig1.png" style="margin:auto; display:block" />
 

@@ -120,7 +120,7 @@ sampleSheetCat %>%
 sampleSheet <- sampleSheetCat %>%
 	filter(! source_name == "ABMMC")
 
-cellrangerDirLink <- sprintf("%s/%s/grch38300", projDirLink, "CaronBourque2020")
+cellrangerDirLink <- sprintf("%s/Data/%s/grch38300", projDirLink, "CaronBourque2020")
 htmlVec <- sprintf("%s/%s/%s/outs/web_summary.html", cellrangerDirLink, sampleSheet$Run, sampleSheet$Run)
 names(htmlVec) <- sampleSheet$Run
 
@@ -129,29 +129,29 @@ for(i in 1:length(htmlVec)){
 }
 ```
 
-[ SRR9264343 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264343/SRR9264343/outs/web_summary.html )
+[ SRR9264343 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264343/SRR9264343/outs/web_summary.html )
 
-[ SRR9264344 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264344/SRR9264344/outs/web_summary.html )
+[ SRR9264344 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264344/SRR9264344/outs/web_summary.html )
 
-[ SRR9264345 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264345/SRR9264345/outs/web_summary.html )
+[ SRR9264345 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264345/SRR9264345/outs/web_summary.html )
 
-[ SRR9264346 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264346/SRR9264346/outs/web_summary.html )
+[ SRR9264346 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264346/SRR9264346/outs/web_summary.html )
 
-[ SRR9264347 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264347/SRR9264347/outs/web_summary.html )
+[ SRR9264347 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264347/SRR9264347/outs/web_summary.html )
 
-[ SRR9264348 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264348/SRR9264348/outs/web_summary.html )
+[ SRR9264348 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264348/SRR9264348/outs/web_summary.html )
 
-[ SRR9264349 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264349/SRR9264349/outs/web_summary.html )
+[ SRR9264349 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264349/SRR9264349/outs/web_summary.html )
 
-[ SRR9264350 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264350/SRR9264350/outs/web_summary.html )
+[ SRR9264350 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264350/SRR9264350/outs/web_summary.html )
 
-[ SRR9264351 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264351/SRR9264351/outs/web_summary.html )
+[ SRR9264351 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264351/SRR9264351/outs/web_summary.html )
 
-[ SRR9264352 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264352/SRR9264352/outs/web_summary.html )
+[ SRR9264352 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264352/SRR9264352/outs/web_summary.html )
 
-[ SRR9264353 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264353/SRR9264353/outs/web_summary.html )
+[ SRR9264353 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264353/SRR9264353/outs/web_summary.html )
 
-[ SRR9264354 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/CaronBourque2020/grch38300/SRR9264354/SRR9264354/outs/web_summary.html )
+[ SRR9264354 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/CaronBourque2020/grch38300/SRR9264354/SRR9264354/outs/web_summary.html )
 
 ```r
 # TODO: add links to sample sheet and show with DT::datatable
@@ -170,7 +170,7 @@ for(i in 1:length(htmlVec)){
 sampleSheet <- sampleSheetCat %>%
 	filter(source_name == "ABMMC")
 
-cellrangerDirLink <- sprintf("%s/%s/grch38300", projDirLink, "Hca")
+cellrangerDirLink <- sprintf("%s/Data/%s/grch38300", projDirLink, "Hca")
 htmlVec <- sprintf("%s/%s/%s/outs/web_summary.html", cellrangerDirLink, sampleSheet$Run, sampleSheet$Run)
 names(htmlVec) <- sampleSheet$Run
 
@@ -179,18 +179,18 @@ for(i in 1:length(htmlVec)){
 }
 ```
 
-[ MantonBM1 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Hca/grch38300/MantonBM1/MantonBM1/outs/web_summary.html )
+[ MantonBM1 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/Hca/grch38300/MantonBM1/MantonBM1/outs/web_summary.html )
 
-[ MantonBM2 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Hca/grch38300/MantonBM2/MantonBM2/outs/web_summary.html )
+[ MantonBM2 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/Hca/grch38300/MantonBM2/MantonBM2/outs/web_summary.html )
 
-[ MantonBM3 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Hca/grch38300/MantonBM3/MantonBM3/outs/web_summary.html )
+[ MantonBM3 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/Hca/grch38300/MantonBM3/MantonBM3/outs/web_summary.html )
 
-[ MantonBM4 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Hca/grch38300/MantonBM4/MantonBM4/outs/web_summary.html )
+[ MantonBM4 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/Hca/grch38300/MantonBM4/MantonBM4/outs/web_summary.html )
 
-[ MantonBM5 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Hca/grch38300/MantonBM5/MantonBM5/outs/web_summary.html )
+[ MantonBM5 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/Hca/grch38300/MantonBM5/MantonBM5/outs/web_summary.html )
 
-[ MantonBM6 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Hca/grch38300/MantonBM6/MantonBM6/outs/web_summary.html )
+[ MantonBM6 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/Hca/grch38300/MantonBM6/MantonBM6/outs/web_summary.html )
 
-[ MantonBM7 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Hca/grch38300/MantonBM7/MantonBM7/outs/web_summary.html )
+[ MantonBM7 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/Hca/grch38300/MantonBM7/MantonBM7/outs/web_summary.html )
 
-[ MantonBM8 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Hca/grch38300/MantonBM8/MantonBM8/outs/web_summary.html )
+[ MantonBM8 ]( /Users/baller01/MyMount/svr008ssd/20200511_FernandesM_ME_crukBiSs2020/Data/Hca/grch38300/MantonBM8/MantonBM8/outs/web_summary.html )

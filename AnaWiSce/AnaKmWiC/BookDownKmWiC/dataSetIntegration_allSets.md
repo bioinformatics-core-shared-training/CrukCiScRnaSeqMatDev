@@ -32,8 +32,16 @@ params:
 <!--
   setSuf: "_5hCellPerSpl"
 -->
-  
-# Data integration - all Caron sample types {#dsi{{setSuf}}_allSetsTop}
+
+
+```r
+setSuf <- params$setSuf
+if(params$bookType == "mk") {setSuf <- "_allCells"}
+if(exists("isChild")) { setSuf <- "{{setSuf}}" }
+anaStg <- gsub("_", "-", setSuf)
+```
+ 
+# Data integration - all Caron sample types {#dsi-allCells-allSetsTop}
 
 <!--
 **CODE NEEDS UPDATING**
@@ -2099,7 +2107,7 @@ pheatmap::pheatmap(tab.mnn,
            )
 ```
 
-<img src="dataSetIntegration_allSets_files/figure-html/unnamed-chunk-12-1.png" width="672" />
+<img src="dataSetIntegration_allSets_files/figure-html/unnamed-chunk-13-1.png" width="672" />
 
 
 ```r
@@ -2116,7 +2124,7 @@ p.clu <- plotTSNE(mnn.out, colour_by="clusters.mnn", point_size=0.3)
 grid.arrange(p.clu, p.batch+facet_wrap(~mnn.out$type), ncol=2)
 ```
 
-<img src="dataSetIntegration_allSets_files/figure-html/unnamed-chunk-13-1.png" width="806.4" />
+<img src="dataSetIntegration_allSets_files/figure-html/unnamed-chunk-14-1.png" width="806.4" />
 
 Write mnn.out object to file
 
@@ -2176,7 +2184,7 @@ pheatmap::pheatmap(tmpData,
            )
 ```
 
-<img src="dataSetIntegration_allSets_files/figure-html/unnamed-chunk-15-1.png" width="672" />
+<img src="dataSetIntegration_allSets_files/figure-html/unnamed-chunk-16-1.png" width="672" />
 
 
 ### Preserving biological heterogeneity
@@ -3006,47 +3014,46 @@ sessionInfo()
 ##  [5] scuttle_1.0.4             XVector_0.30.0           
 ##  [7] fs_1.5.0                  rstudioapi_0.13          
 ##  [9] farver_2.1.0              graphlayouts_0.7.1       
-## [11] ggrepel_0.9.1             RSpectra_0.16-0          
-## [13] fansi_0.4.2               lubridate_1.7.10         
-## [15] xml2_1.3.2                codetools_0.2-18         
-## [17] sparseMatrixStats_1.2.1   polyclip_1.10-0          
-## [19] jsonlite_1.7.2            ResidualMatrix_1.0.0     
-## [21] broom_0.7.6               dbplyr_2.1.1             
-## [23] uwot_0.1.10               ggforce_0.3.3            
-## [25] compiler_4.0.3            httr_1.4.2               
-## [27] dqrng_0.3.0               backports_1.2.1          
-## [29] assertthat_0.2.1          Matrix_1.3-3             
-## [31] cli_2.5.0                 limma_3.46.0             
-## [33] tweenr_1.0.2              htmltools_0.5.1.1        
-## [35] tools_4.0.3               rsvd_1.0.5               
-## [37] igraph_1.2.6              gtable_0.3.0             
-## [39] glue_1.4.2                GenomeInfoDbData_1.2.4   
-## [41] Rcpp_1.0.6                cellranger_1.1.0         
-## [43] jquerylib_0.1.4           vctrs_0.3.8              
-## [45] DelayedMatrixStats_1.12.3 xfun_0.23                
-## [47] ps_1.6.0                  beachmat_2.6.4           
-## [49] rvest_1.0.0               lifecycle_1.0.0          
-## [51] irlba_2.3.3               statmod_1.4.36           
-## [53] edgeR_3.32.1              MASS_7.3-54              
-## [55] zlibbioc_1.36.0           scales_1.1.1             
-## [57] tidygraph_1.2.0           hms_1.0.0                
-## [59] RColorBrewer_1.1-2        yaml_2.2.1               
-## [61] sass_0.4.0                stringi_1.6.1            
-## [63] highr_0.9                 checkmate_2.0.0          
-## [65] rlang_0.4.11              pkgconfig_2.0.3          
-## [67] bitops_1.0-7              evaluate_0.14            
-## [69] lattice_0.20-44           labeling_0.4.2           
-## [71] tidyselect_1.1.1          magrittr_2.0.1           
-## [73] bookdown_0.22             R6_2.5.0                 
-## [75] generics_0.1.0            DelayedArray_0.16.3      
-## [77] DBI_1.1.1                 pillar_1.6.1             
-## [79] haven_2.4.1               withr_2.4.2              
-## [81] RCurl_1.98-1.3            modelr_0.1.8             
-## [83] crayon_1.4.1              utf8_1.2.1               
-## [85] rmarkdown_2.8             viridis_0.6.1            
-## [87] locfit_1.5-9.4            grid_4.0.3               
-## [89] readxl_1.3.1              reprex_2.0.0             
-## [91] digest_0.6.27             munsell_0.5.0            
-## [93] beeswarm_0.3.1            viridisLite_0.4.0        
-## [95] vipor_0.4.5               bslib_0.2.5
+## [11] ggrepel_0.9.1             fansi_0.4.2              
+## [13] lubridate_1.7.10          xml2_1.3.2               
+## [15] codetools_0.2-18          sparseMatrixStats_1.2.1  
+## [17] polyclip_1.10-0           jsonlite_1.7.2           
+## [19] ResidualMatrix_1.0.0      broom_0.7.6              
+## [21] dbplyr_2.1.1              ggforce_0.3.3            
+## [23] compiler_4.0.3            httr_1.4.2               
+## [25] dqrng_0.3.0               backports_1.2.1          
+## [27] assertthat_0.2.1          Matrix_1.3-3             
+## [29] cli_2.5.0                 limma_3.46.0             
+## [31] tweenr_1.0.2              htmltools_0.5.1.1        
+## [33] tools_4.0.3               rsvd_1.0.5               
+## [35] igraph_1.2.6              gtable_0.3.0             
+## [37] glue_1.4.2                GenomeInfoDbData_1.2.4   
+## [39] Rcpp_1.0.6                cellranger_1.1.0         
+## [41] jquerylib_0.1.4           vctrs_0.3.8              
+## [43] DelayedMatrixStats_1.12.3 xfun_0.23                
+## [45] ps_1.6.0                  beachmat_2.6.4           
+## [47] rvest_1.0.0               lifecycle_1.0.0          
+## [49] irlba_2.3.3               statmod_1.4.36           
+## [51] edgeR_3.32.1              MASS_7.3-54              
+## [53] zlibbioc_1.36.0           scales_1.1.1             
+## [55] tidygraph_1.2.0           hms_1.0.0                
+## [57] RColorBrewer_1.1-2        yaml_2.2.1               
+## [59] sass_0.4.0                stringi_1.6.1            
+## [61] highr_0.9                 rlang_0.4.11             
+## [63] pkgconfig_2.0.3           bitops_1.0-7             
+## [65] evaluate_0.14             lattice_0.20-44          
+## [67] labeling_0.4.2            tidyselect_1.1.1         
+## [69] magrittr_2.0.1            bookdown_0.22            
+## [71] R6_2.5.0                  generics_0.1.0           
+## [73] DelayedArray_0.16.3       DBI_1.1.1                
+## [75] pillar_1.6.1              haven_2.4.1              
+## [77] withr_2.4.2               RCurl_1.98-1.3           
+## [79] modelr_0.1.8              crayon_1.4.1             
+## [81] utf8_1.2.1                rmarkdown_2.8            
+## [83] viridis_0.6.1             locfit_1.5-9.4           
+## [85] grid_4.0.3                readxl_1.3.1             
+## [87] reprex_2.0.0              digest_0.6.27            
+## [89] munsell_0.5.0             beeswarm_0.3.1           
+## [91] viridisLite_0.4.0         vipor_0.4.5              
+## [93] bslib_0.2.5
 ```
