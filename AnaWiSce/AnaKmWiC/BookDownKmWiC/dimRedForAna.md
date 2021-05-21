@@ -31,7 +31,12 @@ params:
 
 # Dimensionality reduction for analysis {#dimRedForAnaTop}
 
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
 **TODO** add text and fix fig size.
+</div>
 
 
 ```r
@@ -72,7 +77,8 @@ We will load the R file keeping the SCE object with the normalised counts for 50
 
 ```r
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds",
+		 projDir, outDirBit, setName, setSuf)
 print(tmpFn)
 ```
 
@@ -111,7 +117,8 @@ sce
 colnames(rowData(sce))[colnames(rowData(sce)) == "strand"] <- "strandNum"
 
 # also get feature selection outcome
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_featSel.Rds", projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_featSel.Rds",
+		 projDir, outDirBit, setName, setSuf)
 tmpList <- readRDS(tmpFn)
 dec.sce <- tmpList$dec.sce
 hvg.index <- tmpList$hvg.index
@@ -154,11 +161,11 @@ barplot(attributes(sce.pca)$percentVar[1:nbPcToComp],
 
 ```r
 # cumulative proportion of variance explained by selected PCs
-cumsum(attributes(sce.pca)$percentVar)[1:dim(sce.pca)[2]]
+round(cumsum(attributes(sce.pca)$percentVar)[1:dim(sce.pca)[2]])
 ```
 
 ```
-## [1] 10.24611 14.47335 16.85835 18.71418 20.10582 21.25363 22.19929
+## [1] 10 14 17 19 20 21 22
 ```
 
 ```r
@@ -387,6 +394,7 @@ rm(sce)
 
 ## Session information
 
+<details>
 
 ```r
 sessionInfo()
@@ -464,3 +472,4 @@ sessionInfo()
 ## [73] beeswarm_0.3.1            bluster_1.0.0            
 ## [75] statmod_1.4.35            ellipsis_0.3.2
 ```
+</details>

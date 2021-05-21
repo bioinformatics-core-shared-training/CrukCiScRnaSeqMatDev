@@ -475,6 +475,7 @@ rm(sce)
 
 ## Session information
 
+<details>
 
 ```r
 sessionInfo()
@@ -551,3 +552,4 @@ sessionInfo()
 ## [73] vctrs_0.3.7               tidyselect_1.1.1         
 ## [75] xfun_0.22                 sparseMatrixStats_1.2.1
 ```
+</details>

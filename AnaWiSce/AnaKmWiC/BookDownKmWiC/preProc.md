@@ -151,7 +151,7 @@ rm(tmpFn)
 
 ## Example
 
-We will load the data for the first sample in the sample sheet: SRR9264343.
+We will load the data for the first sample in the sample sheet: SRR9264343. 
 
 
 ```r
