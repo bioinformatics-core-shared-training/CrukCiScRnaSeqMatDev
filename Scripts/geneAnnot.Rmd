@@ -48,7 +48,7 @@ we will use the outcome for a single sample, eg SRR9264343.
 
 ```{r geneAnnot_variables}
 projDir <- params$projDir
-wrkDir <- sprintf("%s/CaronBourque2020/grch38300", projDir) 
+wrkDir <- sprintf("%s/Data/CaronBourque2020/grch38300", projDir) 
 outDirBit <- params$outDirBit
 biomartBool <- TRUE # biomaRt sometimes fails, do it once, write to file and use that copy.
 ```
