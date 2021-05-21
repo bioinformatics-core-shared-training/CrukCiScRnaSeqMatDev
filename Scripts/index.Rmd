@@ -28,7 +28,6 @@ params:
   dirRel: '../..'
 ---
 
-**WORKING DOCUMENT - IN PROGRESS**
 
 <!--
   splSetToGet: "PBMMC,ETV6-RUNX1"
@@ -118,6 +117,18 @@ document.write(\'<div class="btn-group pull-right" style="position: absolute; to
 readr::write_lines(htmlhead, path = "header.html")
 ```
 
+
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+**WORKING DOCUMENT - IN PROGRESS**
+
+</div>
+
+
+
 # Preamble {#Preamble}
 
 ```{r, cache=FALSE, eval=FALSE, echo=FALSE}
@@ -146,7 +157,9 @@ Four type of samples are considered:
 
 * eight patients:
   * six B-ALL
-  * two T-ALL
+    * four 't(12;21)' or 'ETV6-RUNX1'
+    * two 'High hyper diploid' or 'HHD'
+  * two T-ALL ('PRE-T')
 * three healthy pediatric controls
 * eight healthy adult controls, publicly available
 
@@ -156,58 +169,37 @@ As the study aims at identifying cell populations, large numbers of cells were s
 
 We will follow several steps:
 
-* sequencing quality check
-* alignment of reads to the human genome (GRCh38) with 10X software cellranger
-* quality control (cell calls, cells and genes filtering) <!-- mention doublet detection -->
-* count normalisation
-* data set integration
-* feature selection
-* dimensionality reduction
-* clustering
-* marker gene identification
-* cell type annotation
-* cell cycle assignment
-* trajectory analysis
+* sequencing quality check (see \@ref(SeqQualTop)) <!-- seqQual.Rmd -->
+* alignment of reads to the human genome (GRCh38) with 10X software cellranger (see \@ref(AliFeatCountTop)) <!-- cellRanger.Rmd -->
+* quality control (cell calls, cells and genes filtering)  (see \@ref(PreProcAllCellsTop) for the 'all-cells' analysis and \@ref(PreProcTop) for the analysis of the downsampled data set to use in the course) <!-- TODO mention doublet detection -->
+* count normalisation (see \@ref(NormalisationAllCellsTop) for the 'all-cells' analysis and \@ref(NormalisationCaron5hcpsTop) for the analysis of the downsampled data set to use in the course)
+* data set integration (see \@ref(dsi-allCells-PBMMC-ETV6-RUNX1Top) and \@ref(dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top), and  \@ref(dsi-allCells-allSetsTop) and \@ref(dsi-5hCellPerSpl-allSetsTop)  )
+* feature selection (see \@ref(featSelecTop))
+* dimensionality reduction (see \@ref(dimRedForVizTop) for visualisation and \@ref(dimRedForAnaTop) for analysis)
+* clustering (see \@ref(clusteringPBMMC-ETV6-RUNX1-5hCellPerSplTop) or \@ref(clustering-with-PBMMC-ETV6-RUNX1-and--5hCellPerSpl))
+* marker gene identification (see \@ref(clusterMarkerGenesTop))
+* cell cycle assignment (see \@ref(cellCyclePhasesTop))
+* cell type annotation (see \@ref(cellTypeAnnotation))
+* trajectory analysis (see \@ref(pseudoTimeTop))
 
 <!--
 TODO: add analysis flowchart?
 -->
 
-## The analyses
+## Abbreviations
 
-This report includes:
+* ALL: Acute Lymphoblastic Leukemia
+* BMMC: Bone Marrow Mononuclear Cell
+* cALL: childhood ALL
+* HCA: Human Cell Atlas
+* PCA: Principal Component Analysis
+* UMI: Unique Molecular Identifier
 
-* **Sequence Quality** is good (see \@ref(SeqQualTop)) <!-- seqQual.Rmd -->
-* **cellranger** output suggests the data sets are good quality (see \@ref(AliFeatCountTop)) <!-- cellRanger.Rmd -->
-* **Quality control** - a first glance at the RNA data set comprising all droplets deemed to contain at leat one cell, to check the data quality and biological signal (eg. do we observe cell types we expect?) (see \@ref(PreProcAllCellsTop) for the 'all-cells' analysis and \@ref(PreProcTop) for the analysis of the downsampled data set to use in the course) <!-- preProcAllCells.Rmd and preProc.Rmd -->
-
-<!--
-* an annotation of RNA clusters using known PBMC marker genes (see \@ref(AllDropletsCellTypeAnnotTop)) <!-- .Rmd -->
--->
-
-## Overall summary
-
-<!-- seurat3Adt_glanceAtGex.Rmd -->
-* 
-
-<!-- seurat3Adt_10x3kPbmcMarkers.Rmd -->
-* 
-
-<!-- seurat3Hto.Rmd -->
-* 
-
-## Conclusion
+<!-- SETUP -->
 
 ```{r index.libraries, include=FALSE}
 library(knitr) # for knit_exit()
 ```
-
-## Abbreviations
-
-* BMMC: Bone Marrow Mononuclear Cell
-* HCA: Human Cell Atlas
-* PCA: Principal Component Analysis
-* UMI: Unique Molecular Identifier
 
 ```{r index.variables, include=FALSE}
 nbFig <- 1
