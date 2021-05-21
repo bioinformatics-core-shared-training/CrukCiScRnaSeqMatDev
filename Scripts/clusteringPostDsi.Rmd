@@ -57,7 +57,7 @@ params2 <- list(
   "inpDirBit" = "AnaWiSce/AnaKmWiC",
   "outDirBit" = "AnaWiSce/AnaKmWiC",
   "bookType" = "km",
-  "cacheBool"  = FALSE,  
+  "cacheBool"  = FALSE,
   "setName" = "caron",
   "splSetToGet" = "PBMMC,ETV6-RUNX1",
   "setSuf" = "_5hCellPerSpl",
@@ -91,7 +91,8 @@ splSetToGet2 <- gsub(",", "_", splSetToGet)
 nbPcToComp <- 50
 figSize <- 7
 
-anaStg <- sprintf("'%s_%s'", splSetToGet2, setSuf)
+anaStg <- sprintf("%s%s", splSetToGet2, setSuf)
+anaStg <- gsub("_", "-", anaStg)
 
 #displayToUse <- Sys.getenv("DISPLAY")
 #Cairo::CairoX11(display=displayToUse);
@@ -137,7 +138,7 @@ library(Cairo)
 fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=16))
 ```
 
-# Clustering with '`r sprintf("'%s'", splSetToGet)`' and '`r setSuf`' {#clustering`r anaStg`Top}
+# Clustering with '`r splSetToGet`' and '`r setSuf`' {#clustering`r anaStg`Top}
 
 <!-- TODO: get image file
 <img src="../Images/Andrews2017_Fig1.png" style="margin:auto; display:block" />
@@ -1398,6 +1399,8 @@ saveRDS(sce, file=tmpFn)
 
 ## Session information
 
+<details>
 ```{r}
 sessionInfo()
 ```
+</details>
