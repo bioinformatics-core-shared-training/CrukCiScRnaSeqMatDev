@@ -36,7 +36,7 @@ knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```
 
-# Normalisation - `r "{{setNameUpp}}"` set
+# Normalisation - `r "{{setNameUpp}}"` set {#Normalisation{{setNameUpp}}5hcpsTop}
 
 Sources: chapters on Normalisation in the [OSCA book](https://osca.bioconductor.org/normalization.html) and the '[Hemberg group material](https://scrnaseq-course.cog.sanger.ac.uk/website/index.html).
 
