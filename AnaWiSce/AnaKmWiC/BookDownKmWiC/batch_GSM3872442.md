@@ -33,7 +33,14 @@ params:
 
 # batch correction - GSM3872442 set
 
-**TODO** remove libSize+batch section and keep batch regress only.
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+**Learning objectives:**
+
+**TODO:** remove libSize+batch section and keep batch regress only.
+</div>
 
 GSM3872442 is a single PBMMC sample sequenced as a pool of two libraries:
 SRR9264351 and SRR9264352.
@@ -68,7 +75,8 @@ Load object
 setSuf <- ""
 
 # Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds", projDir, outDirBit, "caron", setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postQc%s.Rds",
+		 projDir, outDirBit, "caron", setSuf)
 sce <- readRDS(tmpFn)
 ```
 
@@ -323,17 +331,6 @@ class(counts)
 ```
 
 ```r
-if(FALSE) # dev
-{
-# https://rawgit.com/ChristophH/sctransform/supp_html/supplement/variance_stabilizing_transformation.html
-# https://s3-us-west-2.amazonaws.com/10x.files/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz
-setwd("/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/Scripts/BookDownDevSrv008")
-getwd()
-dir()
-counts <- Read10X(data.dir = "filtered_gene_bc_matrices/hg19/")  # Seurat function to read in 10x count data
-getwd()
-}
-
 # inspect data
 gene_attr <- data.frame(mean = rowMeans(counts),
                         detection_rate = rowMeans(counts > 0),
@@ -572,344 +569,6 @@ Keep copy of SCE object for later:
 
 ```r
 sce_batchOnly <- sce
-```
-
-### Both library size and batch
-
-Use the copy of the SCE object made earlier.
-
-
-```r
-sce <- sceOrig
-```
-
-Some cells are very different from the rest.
-
-
-```r
-counts <- counts(sce)
-colnames(counts) <- colData(sce)$Barcode
-
-#cellAttr <- as.data.frame(colData(sce))[,c("log10sum", "batch")]
-cellAttr <- as.data.frame(colData(sce))
-rownames(cellAttr) <- colData(sce)$Barcode
-
-sctnorm_data <- sctransform::vst(umi = counts,
-                                 min_cells = 5,
-                                 #min_cells = 10,
-                                 #method = "nb_fast",
-                                 #n_genes = 3000,
-                                 #bw_adjust = 2, # 3
-                                 cell_attr = cellAttr,
-                                 latent_var = c("log10sum", "batch"),
-                                 #latent_var = c("batch"),
-                                 return_gene_attr = TRUE,
-                                 return_cell_attr = TRUE,
-                                 verbosity = 0)
-
-sctransform::plot_model_pars(sctnorm_data)
-```
-
-<img src="batch_GSM3872442_files/figure-html/libSizeBatchSct_sctransform_vst_batch_GSM3872442-1.png" width="672" />
-
-```r
-# exclude genes that were not used in the transformation: 
-tmpInd <- which(rownames(sce) %in% rownames(sctnorm_data$y))
-cols.meta <- colData(sceOrig)
-rows.meta <- rowData(sceOrig)
-
-new.counts <- counts(sceOrig)[tmpInd, ]
-sce <- SingleCellExperiment(list(counts=new.counts))
-
-# reset the column data on the new object
-colData(sce) <- cols.meta
-rowData(sce) <- rows.meta[tmpInd, ]
-
-# We now copy the transformation output to the SCE object:
-
-vstMat <- as(sctnorm_data$y[rownames(sce),], "dgCMatrix")
-all(colnames(vstMat) == sce$Barcode)
-```
-
-```
-## [1] TRUE
-```
-
-```r
-dim(vstMat)
-```
-
-```
-## [1] 13784  2099
-```
-
-```r
-colnames(vstMat) <- NULL
-assay(sce, "sctrans_norm_libSizeBatch0") <- vstMat # as(vst_out$y[rownames(sce),], "dgCMatrix")
-
-#Also copy 'logcounts':
-
-assayX <- "logcounts"
-tmpAssay <- assay(sceOrig, assayX)
-assay(sce, assayX) <- tmpAssay[tmpInd, ]
-
-reducedDim(sce, "PCA_sctrans_norm_libSizeBatch0") <- reducedDim(
-  runPCA(sce,
-         exprs_values = "sctrans_norm_libSizeBatch0"),
-  "PCA"
-)
-plotReducedDim(
-  sce,
-  dimred = "PCA_sctrans_norm_libSizeBatch0",
-  colour_by = "batch",
-  size_by = "sum",
-  shape_by = "Sample.Name"
-) + ggtitle("PCA plot: sctransform normalization - libSizeBatch0")
-```
-
-<img src="batch_GSM3872442_files/figure-html/libSizeBatchSct_sctransform_vst_batch_GSM3872442-2.png" width="672" />
-                                 
-                                 
-                                 
-
-```r
-sce <- sceOrig
-
-require(Seurat)
-# use Seurat's SCTransform
-sce.srt <- as.Seurat(sce)
-sce.srt <- SCTransform(sce.srt,
-                       min_cells = 5,
-                       vars.to.regress = c("log10sum", "batch"),
-                       #vars.to.regress = c("batch"),
-                        # Variables to regress out in a second non-regularized linear regression
-                        # so log10sum is redundant here ...
-                       return_gene_attr = TRUE,
-                       return_cell_attr = TRUE,
-                       #show_progress = FALSE,
-                       verbose = FALSE,
-                       verbosity = 0
-                       )
-
-str(sce.srt[["SCT"]])
-```
-
-```
-## Formal class 'SCTAssay' [package "Seurat"] with 9 slots
-##   ..@ SCTModel.list:List of 1
-##   .. ..$ model1:Formal class 'SCTModel' [package "Seurat"] with 6 slots
-##   .. .. .. ..@ feature.attributes:'data.frame':	13784 obs. of  12 variables:
-##   .. .. .. .. ..$ detection_rate       : num [1:13784] 0.0243 0.0081 0.02906 0.00333 0.10195 ...
-##   .. .. .. .. ..$ gmean                : num [1:13784] 0.01718 0.00596 0.02074 0.00231 0.08436 ...
-##   .. .. .. .. ..$ variance             : num [1:13784] 0.02512 0.01183 0.03103 0.00333 0.22363 ...
-##   .. .. .. .. ..$ residual_mean        : num [1:13784] 0.02914 0.01863 -0.01525 0.00311 0.01306 ...
-##   .. .. .. .. ..$ residual_variance    : num [1:13784] 1.341 1.403 0.759 0.922 1.081 ...
-##   .. .. .. .. ..$ theta                : num [1:13784] 0.461 0.2 0.536 0.128 1.284 ...
-##   .. .. .. .. ..$ (Intercept)          : num [1:13784] -11.7 -12.2 -11.5 -12.5 -10.3 ...
-##   .. .. .. .. ..$ log_umi              : num [1:13784] 2.27 2.11 2.28 1.91 2.33 ...
-##   .. .. .. .. ..$ genes_log_gmean_step1: logi [1:13784] FALSE FALSE TRUE FALSE FALSE FALSE ...
-##   .. .. .. .. ..$ step1_theta          : num [1:13784] NA NA 0.933 NA NA ...
-##   .. .. .. .. ..$ step1_(Intercept)    : num [1:13784] NA NA -13 NA NA ...
-##   .. .. .. .. ..$ step1_log_umi        : num [1:13784] NA NA 2.67 NA NA ...
-##   .. .. .. ..@ cell.attributes   :'data.frame':	2099 obs. of  3 variables:
-##   .. .. .. .. ..$ umi        : num [1:2099] 2160 2291 3349 3728 596 ...
-##   .. .. .. .. ..$ log_umi    : num [1:2099] 3.33 3.36 3.52 3.57 2.78 ...
-##   .. .. .. .. ..$ cells_step1: logi [1:2099] TRUE TRUE TRUE TRUE TRUE TRUE ...
-##   .. .. .. ..@ clips             :List of 2
-##   .. .. .. .. ..$ vst: num [1:2] -45.8 45.8
-##   .. .. .. .. ..$ sct: num [1:2] -8.36 8.36
-##   .. .. .. ..@ umi.assay         : chr "RNA"
-##   .. .. .. ..@ model             : chr "y ~ log_umi"
-##   .. .. .. ..@ arguments         :List of 25
-##   .. .. .. .. ..$ latent_var          : chr "log_umi"
-##   .. .. .. .. ..$ batch_var           : NULL
-##   .. .. .. .. ..$ latent_var_nonreg   : NULL
-##   .. .. .. .. ..$ n_genes             : num 2000
-##   .. .. .. .. ..$ n_cells             : num 2099
-##   .. .. .. .. ..$ method              : chr "poisson"
-##   .. .. .. .. ..$ do_regularize       : logi TRUE
-##   .. .. .. .. ..$ theta_regularization: chr "od_factor"
-##   .. .. .. .. ..$ res_clip_range      : num [1:2] -45.8 45.8
-##   .. .. .. .. ..$ bin_size            : num 500
-##   .. .. .. .. ..$ min_cells           : num 5
-##   .. .. .. .. ..$ residual_type       : chr "pearson"
-##   .. .. .. .. ..$ return_cell_attr    : logi TRUE
-##   .. .. .. .. ..$ return_gene_attr    : logi TRUE
-##   .. .. .. .. ..$ return_corrected_umi: logi TRUE
-##   .. .. .. .. ..$ min_variance        : num -Inf
-##   .. .. .. .. ..$ bw_adjust           : num 3
-##   .. .. .. .. ..$ gmean_eps           : num 1
-##   .. .. .. .. ..$ theta_estimation_fun: chr "theta.ml"
-##   .. .. .. .. ..$ theta_given         : NULL
-##   .. .. .. .. ..$ verbosity           : num 0
-##   .. .. .. .. ..$ verbose             : NULL
-##   .. .. .. .. ..$ show_progress       : NULL
-##   .. .. .. .. ..$ sct.clip.range      : num [1:2] -8.36 8.36
-##   .. .. .. .. ..$ sct.method          : chr "default"
-##   ..@ counts       :Formal class 'dgCMatrix' [package "Matrix"] with 6 slots
-##   .. .. ..@ i       : int [1:1465665] 20 58 67 86 157 177 199 201 210 211 ...
-##   .. .. ..@ p       : int [1:2100] 0 834 1702 2384 3476 3853 4657 5325 6049 6551 ...
-##   .. .. ..@ Dim     : int [1:2] 13784 2099
-##   .. .. ..@ Dimnames:List of 2
-##   .. .. .. ..$ : chr [1:13784] "ENSG00000237491" "ENSG00000225880" "ENSG00000230368" "ENSG00000230699" ...
-##   .. .. .. ..$ : chr [1:2099] "cell_1" "cell_2" "cell_3" "cell_4" ...
-##   .. .. ..@ x       : num [1:1465665] 1 1 4 1 1 1 1 14 2 1 ...
-##   .. .. ..@ factors : list()
-##   ..@ data         :Formal class 'dgCMatrix' [package "Matrix"] with 6 slots
-##   .. .. ..@ i       : int [1:1465665] 20 58 67 86 157 177 199 201 210 211 ...
-##   .. .. ..@ p       : int [1:2100] 0 834 1702 2384 3476 3853 4657 5325 6049 6551 ...
-##   .. .. ..@ Dim     : int [1:2] 13784 2099
-##   .. .. ..@ Dimnames:List of 2
-##   .. .. .. ..$ : chr [1:13784] "ENSG00000237491" "ENSG00000225880" "ENSG00000230368" "ENSG00000230699" ...
-##   .. .. .. ..$ : chr [1:2099] "cell_1" "cell_2" "cell_3" "cell_4" ...
-##   .. .. ..@ x       : num [1:1465665] 0.693 0.693 1.609 0.693 0.693 ...
-##   .. .. ..@ factors : list()
-##   ..@ scale.data   : num [1:3000, 1:2099] -0.1647 -0.06593 -0.02594 -0.00907 -0.13346 ...
-##   .. ..- attr(*, "dimnames")=List of 2
-##   .. .. ..$ : chr [1:3000] "ENSG00000237491" "ENSG00000225880" "ENSG00000188290" "ENSG00000131591" ...
-##   .. .. ..$ : chr [1:2099] "cell_1" "cell_2" "cell_3" "cell_4" ...
-##   ..@ key          : chr "sct_"
-##   ..@ assay.orig   : chr "RNA"
-##   ..@ var.features : chr [1:3000] "ENSG00000090382" "ENSG00000143546" "ENSG00000163220" "ENSG00000257764" ...
-##   ..@ meta.features:'data.frame':	13784 obs. of  0 variables
-##   ..@ misc         : Named list()
-```
-
-```r
-##sce.srt[["SCT"]]@misc
-
-# https://hbctraining.github.io/scRNA-seq/lessons/06_SC_SCT_and_integration.html
-
-#GetAssay(sce.srt, assay = "SCT")@misc$vst.out
-##sce.srt[["SCT"]]@scale.data %>% head()
-```
-
-Check model used:
-
-
-```r
-#print(sce.srt[["SCT"]]@misc$vst.out$model_str) # sctransform::vst
-print(sce.srt[["SCT"]]@SCTModel.list$model1@model) # Seurat::SCTransform
-```
-
-```
-## [1] "y ~ log_umi"
-```
-
-Discard genes that were not used in the transformation.
-
-
-```r
-# exclude genes that were not used in the transformation: 
-tmpInd <- which(rownames(sce) %in% rownames(sce.srt[["SCT"]]@scale.data))
-cols.meta <- colData(sceOrig)
-rows.meta <- rowData(sceOrig)
-
-new.counts <- counts(sceOrig)[tmpInd, ]
-sce <- SingleCellExperiment(list(counts=new.counts))
-
-# reset the column data on the new object
-colData(sce) <- cols.meta
-rowData(sce) <- rows.meta[tmpInd, ]
-
-# tidy
-rm(sceOrig)
-```
-
-Copy the transformation output to the SCE object.
-
-
-```r
-vstMat <- as(sce.srt[["SCT"]]@scale.data[rownames(sce),], "dgCMatrix")
-#all(colnames(vstMat) == sce$Barcode)
-dd <- sce.srt@meta.data %>%
-  dplyr::select(Barcode)
-# check order of cells are identical
-all(dd[colnames(vstMat), "Barcode"] == sce$Barcode)
-```
-
-```
-## [1] TRUE
-```
-
-```r
-colnames(vstMat) <- NULL
-assay(sce, "sctrans_norm") <- vstMat
-```
-
-Show diagnostic plots:
-
-
-```r
-#sctransform::plot_model_pars(sce.srt[["SCT"]]@misc$vst.out) # sctransform::vst
-# not with Seurat::SCTransform ... empty sce.srt[["SCT"]]@misc 20200422
-rm(sce.srt)
-```
-
-Show reduced dimension plots and check for improved mixing of cells from the two sets:
-
-
-```r
-reducedDim(sce, "PCA_sctrans_norm") <- reducedDim(
-  runPCA(sce, exprs_values = "sctrans_norm")
-)
-plotReducedDim(
-  sce,
-  dimred = "PCA_sctrans_norm",
-  colour_by = "batch",
-  size_by = "sum",
-  shape_by = "Sample.Name"
-) + ggtitle("PCA plot: sctransform normalization") 
-```
-
-<img src="batch_GSM3872442_files/figure-html/libSizeBatchSct_pca_batch_GSM3872442-1.png" width="672" />
-
-
-
-
-```r
-sce <- runTSNE(sce, dimred="PCA_sctrans_norm", name="TSNE_sctrans_norm")
-plotReducedDim(
-  sce,
-  dimred = "TSNE_sctrans_norm",
-  colour_by = "batch",
-  size_by = "sum",
-  shape_by = "Sample.Name"
-) + ggtitle("TSNE plot: sctransform normalization") 
-```
-
-<img src="batch_GSM3872442_files/figure-html/libSizeBatchSct_tsne_batch_GSM3872442-1.png" width="672" />
-
-
-
-
-```r
-sce <- runUMAP(sce, dimred="PCA_sctrans_norm", name="UMAP_sctrans_norm")
-plotReducedDim(
-  sce,
-  dimred = "UMAP_sctrans_norm",
-  colour_by = "batch",
-  size_by = "sum",
-  shape_by = "Sample.Name"
-) + ggtitle("UMAP plot: sctransform normalization") 
-```
-
-<img src="batch_GSM3872442_files/figure-html/libSizeBatchSct_umap_batch_GSM3872442-1.png" width="672" />
-
-
-
-Add PCA_sctrans_norm_batchOnly (same cells, only genes may differ)
-
-
-```r
-reducedDim(sce, "PCA_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "PCA_sctrans_norm_batchOnly")
-reducedDim(sce, "TSNE_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "TSNE_sctrans_norm_batchOnly")
-reducedDim(sce, "UMAP_sctrans_norm_batchOnly") <- reducedDim(sce_batchOnly, "UMAP_sctrans_norm_batchOnly")
-```
-
-
-```r
-#scePostSct <- sce # not used TODO remove
 ```
 
 ## mnnCorrect
@@ -1170,6 +829,7 @@ plotReducedDim(
 
 ## Session information
 
+<details>
 
 ```r
 sessionInfo()
@@ -1193,34 +853,34 @@ sessionInfo()
 ## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
 ## 
 ## attached base packages:
-## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [1] stats4    parallel  stats     graphics  grDevices utils     datasets 
 ## [8] methods   base     
 ## 
 ## other attached packages:
 ##  [1] harmony_1.0                 Rcpp_1.0.6                 
-##  [3] batchelor_1.6.3             SeuratObject_4.0.0         
+##  [3] batchelor_1.6.3             SeuratObject_4.0.1         
 ##  [5] Seurat_4.0.1                limma_3.46.0               
 ##  [7] Cairo_1.5-12.2              BiocSingular_1.6.0         
-##  [9] dplyr_1.0.5                 scran_1.18.7               
+##  [9] dplyr_1.0.6                 scran_1.18.7               
 ## [11] scater_1.18.6               ggplot2_3.3.3              
 ## [13] SingleCellExperiment_1.12.0 SummarizedExperiment_1.20.0
 ## [15] Biobase_2.50.0              GenomicRanges_1.42.0       
 ## [17] GenomeInfoDb_1.26.7         IRanges_2.24.1             
 ## [19] S4Vectors_0.28.1            BiocGenerics_0.36.1        
 ## [21] MatrixGenerics_1.2.1        matrixStats_0.58.0         
-## [23] knitr_1.32                 
+## [23] knitr_1.33                 
 ## 
 ## loaded via a namespace (and not attached):
 ##   [1] plyr_1.8.6                igraph_1.2.6             
 ##   [3] lazyeval_0.2.2            splines_4.0.3            
 ##   [5] BiocParallel_1.24.1       listenv_0.8.0            
 ##   [7] scattermore_0.7           digest_0.6.27            
-##   [9] htmltools_0.5.1.1         viridis_0.6.0            
+##   [9] htmltools_0.5.1.1         viridis_0.6.1            
 ##  [11] fansi_0.4.2               magrittr_2.0.1           
 ##  [13] tensor_1.5                cluster_2.1.2            
 ##  [15] ROCR_1.0-11               globals_0.14.0           
-##  [17] spatstat.sparse_2.0-0     colorspace_2.0-0         
-##  [19] ggrepel_0.9.1             xfun_0.22                
+##  [17] spatstat.sparse_2.0-0     colorspace_2.0-1         
+##  [19] ggrepel_0.9.1             xfun_0.23                
 ##  [21] crayon_1.4.1              RCurl_1.98-1.3           
 ##  [23] jsonlite_1.7.2            spatstat.data_2.1-0      
 ##  [25] survival_3.2-11           zoo_1.8-9                
@@ -1232,50 +892,50 @@ sessionInfo()
 ##  [37] DBI_1.1.1                 edgeR_3.32.1             
 ##  [39] miniUI_0.1.1.1            isoband_0.2.4            
 ##  [41] viridisLite_0.4.0         xtable_1.8-4             
-##  [43] spatstat.core_2.1-2       reticulate_1.18          
+##  [43] reticulate_1.20           spatstat.core_2.1-2      
 ##  [45] dqrng_0.3.0               rsvd_1.0.5               
 ##  [47] ResidualMatrix_1.0.0      htmlwidgets_1.5.3        
-##  [49] httr_1.4.2                FNN_1.1.3                
-##  [51] RColorBrewer_1.1-2        ellipsis_0.3.2           
-##  [53] ica_1.0-2                 pkgconfig_2.0.3          
-##  [55] farver_2.1.0              scuttle_1.0.4            
-##  [57] deldir_0.2-10             sass_0.3.1               
-##  [59] uwot_0.1.10               locfit_1.5-9.4           
-##  [61] utf8_1.2.1                tidyselect_1.1.1         
-##  [63] labeling_0.4.2            rlang_0.4.10             
-##  [65] reshape2_1.4.4            later_1.2.0              
-##  [67] munsell_0.5.0             tools_4.0.3              
-##  [69] generics_0.1.0            ggridges_0.5.3           
-##  [71] evaluate_0.14             stringr_1.4.0            
-##  [73] fastmap_1.1.0             goftest_1.2-2            
-##  [75] yaml_2.2.1                fitdistrplus_1.1-3       
-##  [77] purrr_0.3.4               RANN_2.6.1               
-##  [79] nlme_3.1-152              pbapply_1.4-3            
-##  [81] future_1.21.0             sparseMatrixStats_1.2.1  
-##  [83] mime_0.10                 compiler_4.0.3           
-##  [85] png_0.1-7                 plotly_4.9.3             
-##  [87] beeswarm_0.3.1            spatstat.utils_2.1-0     
-##  [89] tibble_3.1.1              statmod_1.4.35           
-##  [91] bslib_0.2.4               stringi_1.5.3            
-##  [93] highr_0.9                 RSpectra_0.16-0          
-##  [95] lattice_0.20-44           bluster_1.0.0            
-##  [97] Matrix_1.3-2              vctrs_0.3.7              
-##  [99] pillar_1.6.0              lifecycle_1.0.0          
-## [101] spatstat.geom_2.1-0       lmtest_0.9-38            
-## [103] jquerylib_0.1.3           RcppAnnoy_0.0.18         
-## [105] BiocNeighbors_1.8.2       data.table_1.14.0        
-## [107] cowplot_1.1.1             bitops_1.0-7             
-## [109] irlba_2.3.3               httpuv_1.5.5             
-## [111] patchwork_1.1.1           R6_2.5.0                 
-## [113] bookdown_0.22             promises_1.2.0.1         
-## [115] KernSmooth_2.23-20        gridExtra_2.3            
-## [117] vipor_0.4.5               parallelly_1.24.0        
-## [119] codetools_0.2-18          MASS_7.3-54              
-## [121] assertthat_0.2.1          withr_2.4.2              
-## [123] sctransform_0.3.2.9005    GenomeInfoDbData_1.2.4   
-## [125] mgcv_1.8-35               rpart_4.1-15             
-## [127] grid_4.0.3                beachmat_2.6.4           
-## [129] tidyr_1.1.3               rmarkdown_2.7            
-## [131] DelayedMatrixStats_1.12.3 Rtsne_0.15               
-## [133] shiny_1.6.0               ggbeeswarm_0.6.0
+##  [49] httr_1.4.2                RColorBrewer_1.1-2       
+##  [51] ellipsis_0.3.2            ica_1.0-2                
+##  [53] farver_2.1.0              pkgconfig_2.0.3          
+##  [55] scuttle_1.0.4             uwot_0.1.10              
+##  [57] deldir_0.2-10             sass_0.4.0               
+##  [59] locfit_1.5-9.4            utf8_1.2.1               
+##  [61] labeling_0.4.2            tidyselect_1.1.1         
+##  [63] rlang_0.4.11              reshape2_1.4.4           
+##  [65] later_1.2.0               munsell_0.5.0            
+##  [67] tools_4.0.3               generics_0.1.0           
+##  [69] ggridges_0.5.3            evaluate_0.14            
+##  [71] stringr_1.4.0             fastmap_1.1.0            
+##  [73] goftest_1.2-2             yaml_2.2.1               
+##  [75] fitdistrplus_1.1-3        purrr_0.3.4              
+##  [77] RANN_2.6.1                nlme_3.1-152             
+##  [79] pbapply_1.4-3             future_1.21.0            
+##  [81] sparseMatrixStats_1.2.1   mime_0.10                
+##  [83] compiler_4.0.3            beeswarm_0.3.1           
+##  [85] plotly_4.9.3              png_0.1-7                
+##  [87] spatstat.utils_2.1-0      tibble_3.1.2             
+##  [89] statmod_1.4.36            bslib_0.2.5              
+##  [91] stringi_1.6.1             highr_0.9                
+##  [93] lattice_0.20-44           bluster_1.0.0            
+##  [95] Matrix_1.3-3              vctrs_0.3.8              
+##  [97] pillar_1.6.1              lifecycle_1.0.0          
+##  [99] spatstat.geom_2.1-0       lmtest_0.9-38            
+## [101] jquerylib_0.1.4           RcppAnnoy_0.0.18         
+## [103] BiocNeighbors_1.8.2       data.table_1.14.0        
+## [105] cowplot_1.1.1             bitops_1.0-7             
+## [107] irlba_2.3.3               httpuv_1.6.1             
+## [109] patchwork_1.1.1           R6_2.5.0                 
+## [111] bookdown_0.22             promises_1.2.0.1         
+## [113] KernSmooth_2.23-20        gridExtra_2.3            
+## [115] vipor_0.4.5               parallelly_1.25.0        
+## [117] codetools_0.2-18          MASS_7.3-54              
+## [119] assertthat_0.2.1          withr_2.4.2              
+## [121] sctransform_0.3.2.9005    GenomeInfoDbData_1.2.4   
+## [123] mgcv_1.8-35               rpart_4.1-15             
+## [125] grid_4.0.3                beachmat_2.6.4           
+## [127] tidyr_1.1.3               rmarkdown_2.8            
+## [129] DelayedMatrixStats_1.12.3 Rtsne_0.15               
+## [131] shiny_1.6.0               ggbeeswarm_0.6.0
 ```
+</details>

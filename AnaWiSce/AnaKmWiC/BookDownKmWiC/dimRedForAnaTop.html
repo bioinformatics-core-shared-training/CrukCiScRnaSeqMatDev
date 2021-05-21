@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 13 Dimensionality reduction for analysis | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
+  <title>Chapter 12 Dimensionality reduction for analysis | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
   <meta name="description" content="A report for all analyses (bookdown::gitbook)." />
   <meta name="generator" content="bookdown 0.22 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 13 Dimensionality reduction for analysis | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta property="og:title" content="Chapter 12 Dimensionality reduction for analysis | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   <meta name="github-repo" content="rstudio/bookdown-demo" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 13 Dimensionality reduction for analysis | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta name="twitter:title" content="Chapter 12 Dimensionality reduction for analysis | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
   
   <meta name="twitter:description" content="A report for all analyses (bookdown::gitbook)." />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="batch-correction-gsm3872442-set.html"/>
-<link rel="next" href="DataIntegration-PBMMCTop.html"/>
+<link rel="prev" href="featSelecTop.html"/>
+<link rel="next" href="batch-correction-gsm3872442-set.html"/>
 <script src="libs/jquery-3.5.1/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -937,30 +937,29 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 <li class="chapter" data-level="11.3" data-path="featSelecTop.html"><a href="featSelecTop.html#session-information-7"><i class="fa fa-check"></i><b>11.3</b> Session information</a></li>
 </ul></li>
-<li class="chapter" data-level="12" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html"><i class="fa fa-check"></i><b>12</b> batch correction - GSM3872442 set</a><ul>
-<li class="chapter" data-level="12.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#prepare-data"><i class="fa fa-check"></i><b>12.1</b> Prepare data</a></li>
-<li class="chapter" data-level="12.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#normalise-each-separately-and-re-pool"><i class="fa fa-check"></i><b>12.2</b> Normalise each separately and re-pool</a></li>
-<li class="chapter" data-level="12.3" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#normalise-batches-together"><i class="fa fa-check"></i><b>12.3</b> Normalise batches together</a></li>
-<li class="chapter" data-level="12.4" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#batch-correction"><i class="fa fa-check"></i><b>12.4</b> Batch correction</a><ul>
-<li class="chapter" data-level="12.4.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#gaussian-normal-linear-models"><i class="fa fa-check"></i><b>12.4.1</b> Gaussian (normal) linear models</a></li>
+<li class="chapter" data-level="12" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html"><i class="fa fa-check"></i><b>12</b> Dimensionality reduction for analysis</a><ul>
+<li class="chapter" data-level="12.1" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#load-data-2"><i class="fa fa-check"></i><b>12.1</b> Load data</a></li>
+<li class="chapter" data-level="12.2" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#denoising-expression-values-using-pca"><i class="fa fa-check"></i><b>12.2</b> Denoising expression values using PCA</a></li>
+<li class="chapter" data-level="12.3" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#visualise-expression-patterns-of-some-hvgs"><i class="fa fa-check"></i><b>12.3</b> Visualise expression patterns of some HVGs</a></li>
+<li class="chapter" data-level="12.4" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#session-information-8"><i class="fa fa-check"></i><b>12.4</b> Session information</a></li>
 </ul></li>
-<li class="chapter" data-level="12.5" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#sctransform-5"><i class="fa fa-check"></i><b>12.5</b> SCTransform</a><ul>
-<li class="chapter" data-level="12.5.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#batch-only"><i class="fa fa-check"></i><b>12.5.1</b> Batch only</a></li>
-<li class="chapter" data-level="12.5.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#both-library-size-and-batch"><i class="fa fa-check"></i><b>12.5.2</b> Both library size and batch</a></li>
+<li class="chapter" data-level="13" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html"><i class="fa fa-check"></i><b>13</b> batch correction - GSM3872442 set</a><ul>
+<li class="chapter" data-level="13.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#prepare-data"><i class="fa fa-check"></i><b>13.1</b> Prepare data</a></li>
+<li class="chapter" data-level="13.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#normalise-each-separately-and-re-pool"><i class="fa fa-check"></i><b>13.2</b> Normalise each separately and re-pool</a></li>
+<li class="chapter" data-level="13.3" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#normalise-batches-together"><i class="fa fa-check"></i><b>13.3</b> Normalise batches together</a></li>
+<li class="chapter" data-level="13.4" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#batch-correction"><i class="fa fa-check"></i><b>13.4</b> Batch correction</a><ul>
+<li class="chapter" data-level="13.4.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#gaussian-normal-linear-models"><i class="fa fa-check"></i><b>13.4.1</b> Gaussian (normal) linear models</a></li>
 </ul></li>
-<li class="chapter" data-level="12.6" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#mnncorrect"><i class="fa fa-check"></i><b>12.6</b> mnnCorrect</a><ul>
-<li class="chapter" data-level="12.6.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#check-presence-of-batch-effect"><i class="fa fa-check"></i><b>12.6.1</b> Check presence of batch effect</a></li>
-<li class="chapter" data-level="12.6.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#correct-batch-effect-with-mnncorrect"><i class="fa fa-check"></i><b>12.6.2</b> Correct batch effect with mnnCorrect</a></li>
+<li class="chapter" data-level="13.5" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#sctransform-5"><i class="fa fa-check"></i><b>13.5</b> SCTransform</a><ul>
+<li class="chapter" data-level="13.5.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#batch-only"><i class="fa fa-check"></i><b>13.5.1</b> Batch only</a></li>
 </ul></li>
-<li class="chapter" data-level="12.7" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#fastmnn"><i class="fa fa-check"></i><b>12.7</b> fastMNN</a></li>
-<li class="chapter" data-level="12.8" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#harmony"><i class="fa fa-check"></i><b>12.8</b> Harmony</a></li>
-<li class="chapter" data-level="12.9" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#session-information-8"><i class="fa fa-check"></i><b>12.9</b> Session information</a></li>
+<li class="chapter" data-level="13.6" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#mnncorrect"><i class="fa fa-check"></i><b>13.6</b> mnnCorrect</a><ul>
+<li class="chapter" data-level="13.6.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#check-presence-of-batch-effect"><i class="fa fa-check"></i><b>13.6.1</b> Check presence of batch effect</a></li>
+<li class="chapter" data-level="13.6.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#correct-batch-effect-with-mnncorrect"><i class="fa fa-check"></i><b>13.6.2</b> Correct batch effect with mnnCorrect</a></li>
 </ul></li>
-<li class="chapter" data-level="13" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html"><i class="fa fa-check"></i><b>13</b> Dimensionality reduction for analysis</a><ul>
-<li class="chapter" data-level="13.1" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#load-data-2"><i class="fa fa-check"></i><b>13.1</b> Load data</a></li>
-<li class="chapter" data-level="13.2" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#denoising-expression-values-using-pca"><i class="fa fa-check"></i><b>13.2</b> Denoising expression values using PCA</a></li>
-<li class="chapter" data-level="13.3" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#visualise-expression-patterns-of-some-hvgs"><i class="fa fa-check"></i><b>13.3</b> Visualise expression patterns of some HVGs</a></li>
-<li class="chapter" data-level="13.4" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#session-information-9"><i class="fa fa-check"></i><b>13.4</b> Session information</a></li>
+<li class="chapter" data-level="13.7" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#fastmnn"><i class="fa fa-check"></i><b>13.7</b> fastMNN</a></li>
+<li class="chapter" data-level="13.8" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#harmony"><i class="fa fa-check"></i><b>13.8</b> Harmony</a></li>
+<li class="chapter" data-level="13.9" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#session-information-9"><i class="fa fa-check"></i><b>13.9</b> Session information</a></li>
 </ul></li>
 <li class="chapter" data-level="14" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html"><i class="fa fa-check"></i><b>14</b> Data integration - PBMMC</a><ul>
 <li class="chapter" data-level="14.1" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#abbreviations-1"><i class="fa fa-check"></i><b>14.1</b> Abbreviations</a></li>
@@ -1280,43 +1279,49 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
             <section class="normal" id="section-">
 <div id="dimRedForAnaTop" class="section level1">
-<h1><span class="header-section-number">Chapter 13</span> Dimensionality reduction for analysis</h1>
+<h1><span class="header-section-number">Chapter 12</span> Dimensionality reduction for analysis</h1>
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class="blue">
 <p><strong>TODO</strong> add text and fix fig size.</p>
-<div class="sourceCode" id="cb1000"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1000-1"><a href="dimRedForAnaTop.html#cb1000-1"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
-<span id="cb1000-2"><a href="dimRedForAnaTop.html#cb1000-2"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
-<span id="cb1000-3"><a href="dimRedForAnaTop.html#cb1000-3"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span>
-<span id="cb1000-4"><a href="dimRedForAnaTop.html#cb1000-4"></a>cacheBool &lt;-<span class="st"> </span>params<span class="op">$</span>cacheBool</span>
-<span id="cb1000-5"><a href="dimRedForAnaTop.html#cb1000-5"></a>cacheBool &lt;-<span class="st"> </span>params<span class="op">$</span>cacheBool</span>
-<span id="cb1000-6"><a href="dimRedForAnaTop.html#cb1000-6"></a>setName &lt;-<span class="st"> </span>params<span class="op">$</span>setName</span>
-<span id="cb1000-7"><a href="dimRedForAnaTop.html#cb1000-7"></a>setSuf &lt;-<span class="st"> </span>params<span class="op">$</span>setSuf</span>
-<span id="cb1000-8"><a href="dimRedForAnaTop.html#cb1000-8"></a></span>
-<span id="cb1000-9"><a href="dimRedForAnaTop.html#cb1000-9"></a><span class="cf">if</span>(params<span class="op">$</span>bookType <span class="op">==</span><span class="st"> &quot;mk&quot;</span>) {</span>
-<span id="cb1000-10"><a href="dimRedForAnaTop.html#cb1000-10"></a>    setName &lt;-<span class="st"> &quot;caron&quot;</span></span>
-<span id="cb1000-11"><a href="dimRedForAnaTop.html#cb1000-11"></a>    setSuf &lt;-<span class="st"> &quot;_5hCellPerSpl&quot;</span></span>
-<span id="cb1000-12"><a href="dimRedForAnaTop.html#cb1000-12"></a>    dirRel &lt;-<span class="st"> &quot;..&quot;</span></span>
-<span id="cb1000-13"><a href="dimRedForAnaTop.html#cb1000-13"></a>}</span>
-<span id="cb1000-14"><a href="dimRedForAnaTop.html#cb1000-14"></a></span>
-<span id="cb1000-15"><a href="dimRedForAnaTop.html#cb1000-15"></a>nbPcToComp &lt;-<span class="st"> </span><span class="dv">50</span></span></code></pre></div>
-<div class="sourceCode" id="cb1001"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1001-1"><a href="dimRedForAnaTop.html#cb1001-1"></a><span class="kw">library</span>(ggplot2)</span>
-<span id="cb1001-2"><a href="dimRedForAnaTop.html#cb1001-2"></a><span class="kw">library</span>(scater)</span>
-<span id="cb1001-3"><a href="dimRedForAnaTop.html#cb1001-3"></a><span class="kw">library</span>(scran)</span>
-<span id="cb1001-4"><a href="dimRedForAnaTop.html#cb1001-4"></a><span class="kw">library</span>(dplyr)</span>
-<span id="cb1001-5"><a href="dimRedForAnaTop.html#cb1001-5"></a><span class="kw">library</span>(Cairo)</span>
-<span id="cb1001-6"><a href="dimRedForAnaTop.html#cb1001-6"></a>fontsize &lt;-<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">12</span>),</span>
-<span id="cb1001-7"><a href="dimRedForAnaTop.html#cb1001-7"></a>          <span class="dt">axis.title=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>))</span></code></pre></div>
+</div>
+<div class="sourceCode" id="cb902"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb902-1"><a href="dimRedForAnaTop.html#cb902-1"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb902-2"><a href="dimRedForAnaTop.html#cb902-2"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
+<span id="cb902-3"><a href="dimRedForAnaTop.html#cb902-3"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span>
+<span id="cb902-4"><a href="dimRedForAnaTop.html#cb902-4"></a>cacheBool &lt;-<span class="st"> </span>params<span class="op">$</span>cacheBool</span>
+<span id="cb902-5"><a href="dimRedForAnaTop.html#cb902-5"></a>cacheBool &lt;-<span class="st"> </span>params<span class="op">$</span>cacheBool</span>
+<span id="cb902-6"><a href="dimRedForAnaTop.html#cb902-6"></a>setName &lt;-<span class="st"> </span>params<span class="op">$</span>setName</span>
+<span id="cb902-7"><a href="dimRedForAnaTop.html#cb902-7"></a>setSuf &lt;-<span class="st"> </span>params<span class="op">$</span>setSuf</span>
+<span id="cb902-8"><a href="dimRedForAnaTop.html#cb902-8"></a></span>
+<span id="cb902-9"><a href="dimRedForAnaTop.html#cb902-9"></a><span class="cf">if</span>(params<span class="op">$</span>bookType <span class="op">==</span><span class="st"> &quot;mk&quot;</span>) {</span>
+<span id="cb902-10"><a href="dimRedForAnaTop.html#cb902-10"></a>    setName &lt;-<span class="st"> &quot;caron&quot;</span></span>
+<span id="cb902-11"><a href="dimRedForAnaTop.html#cb902-11"></a>    setSuf &lt;-<span class="st"> &quot;_5hCellPerSpl&quot;</span></span>
+<span id="cb902-12"><a href="dimRedForAnaTop.html#cb902-12"></a>    dirRel &lt;-<span class="st"> &quot;..&quot;</span></span>
+<span id="cb902-13"><a href="dimRedForAnaTop.html#cb902-13"></a>}</span>
+<span id="cb902-14"><a href="dimRedForAnaTop.html#cb902-14"></a></span>
+<span id="cb902-15"><a href="dimRedForAnaTop.html#cb902-15"></a>nbPcToComp &lt;-<span class="st"> </span><span class="dv">50</span></span></code></pre></div>
+<div class="sourceCode" id="cb903"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb903-1"><a href="dimRedForAnaTop.html#cb903-1"></a><span class="kw">library</span>(ggplot2)</span>
+<span id="cb903-2"><a href="dimRedForAnaTop.html#cb903-2"></a><span class="kw">library</span>(scater)</span>
+<span id="cb903-3"><a href="dimRedForAnaTop.html#cb903-3"></a><span class="kw">library</span>(scran)</span>
+<span id="cb903-4"><a href="dimRedForAnaTop.html#cb903-4"></a><span class="kw">library</span>(dplyr)</span>
+<span id="cb903-5"><a href="dimRedForAnaTop.html#cb903-5"></a><span class="kw">library</span>(Cairo)</span>
+<span id="cb903-6"><a href="dimRedForAnaTop.html#cb903-6"></a>fontsize &lt;-<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">12</span>),</span>
+<span id="cb903-7"><a href="dimRedForAnaTop.html#cb903-7"></a>          <span class="dt">axis.title=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>))</span></code></pre></div>
 <div id="load-data-2" class="section level2">
-<h2><span class="header-section-number">13.1</span> Load data</h2>
+<h2><span class="header-section-number">12.1</span> Load data</h2>
 <p>We will load the R file keeping the SCE object with the normalised counts for 500 cells per sample.</p>
-<div class="sourceCode" id="cb1002"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1002-1"><a href="dimRedForAnaTop.html#cb1002-1"></a><span class="co"># Read object in:</span></span>
-<span id="cb1002-2"><a href="dimRedForAnaTop.html#cb1002-2"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds&quot;</span>, projDir, outDirBit, setName, setSuf)</span>
-<span id="cb1002-3"><a href="dimRedForAnaTop.html#cb1002-3"></a><span class="kw">print</span>(tmpFn)</span></code></pre></div>
+<div class="sourceCode" id="cb904"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb904-1"><a href="dimRedForAnaTop.html#cb904-1"></a><span class="co"># Read object in:</span></span>
+<span id="cb904-2"><a href="dimRedForAnaTop.html#cb904-2"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds&quot;</span>,</span>
+<span id="cb904-3"><a href="dimRedForAnaTop.html#cb904-3"></a>         projDir, outDirBit, setName, setSuf)</span>
+<span id="cb904-4"><a href="dimRedForAnaTop.html#cb904-4"></a><span class="kw">print</span>(tmpFn)</span></code></pre></div>
 <pre><code>## [1] &quot;/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/AnaWiSce/AnaKmWiC/Robjects/caron_sce_nz_postDeconv_5hCellPerSpl_dimRed.Rds&quot;</code></pre>
-<div class="sourceCode" id="cb1004"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1004-1"><a href="dimRedForAnaTop.html#cb1004-1"></a><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(tmpFn))</span>
-<span id="cb1004-2"><a href="dimRedForAnaTop.html#cb1004-2"></a>{</span>
-<span id="cb1004-3"><a href="dimRedForAnaTop.html#cb1004-3"></a>    knitr<span class="op">::</span><span class="kw">knit_exit</span>()</span>
-<span id="cb1004-4"><a href="dimRedForAnaTop.html#cb1004-4"></a>}</span>
-<span id="cb1004-5"><a href="dimRedForAnaTop.html#cb1004-5"></a>sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
-<span id="cb1004-6"><a href="dimRedForAnaTop.html#cb1004-6"></a>sce</span></code></pre></div>
+<div class="sourceCode" id="cb906"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb906-1"><a href="dimRedForAnaTop.html#cb906-1"></a><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(tmpFn))</span>
+<span id="cb906-2"><a href="dimRedForAnaTop.html#cb906-2"></a>{</span>
+<span id="cb906-3"><a href="dimRedForAnaTop.html#cb906-3"></a>    knitr<span class="op">::</span><span class="kw">knit_exit</span>()</span>
+<span id="cb906-4"><a href="dimRedForAnaTop.html#cb906-4"></a>}</span>
+<span id="cb906-5"><a href="dimRedForAnaTop.html#cb906-5"></a>sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
+<span id="cb906-6"><a href="dimRedForAnaTop.html#cb906-6"></a>sce</span></code></pre></div>
 <pre><code>## class: SingleCellExperiment 
 ## dim: 16629 5500 
 ## metadata(0):
@@ -1329,70 +1334,71 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## colData names(16): Barcode Run ... cell_sparsity sizeFactor
 ## reducedDimNames(3): PCA TSNE UMAP
 ## altExpNames(0):</code></pre>
-<div class="sourceCode" id="cb1006"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1006-1"><a href="dimRedForAnaTop.html#cb1006-1"></a><span class="co">#any(duplicated(rowData(sce)$ensembl_gene_id))</span></span>
-<span id="cb1006-2"><a href="dimRedForAnaTop.html#cb1006-2"></a><span class="co"># some function(s) used below complain about &#39;strand&#39; already being used in row data,</span></span>
-<span id="cb1006-3"><a href="dimRedForAnaTop.html#cb1006-3"></a><span class="co"># so rename that column now:</span></span>
-<span id="cb1006-4"><a href="dimRedForAnaTop.html#cb1006-4"></a><span class="kw">colnames</span>(<span class="kw">rowData</span>(sce))[<span class="kw">colnames</span>(<span class="kw">rowData</span>(sce)) <span class="op">==</span><span class="st"> &quot;strand&quot;</span>] &lt;-<span class="st"> &quot;strandNum&quot;</span></span>
-<span id="cb1006-5"><a href="dimRedForAnaTop.html#cb1006-5"></a></span>
-<span id="cb1006-6"><a href="dimRedForAnaTop.html#cb1006-6"></a><span class="co"># also get feature selection outcome</span></span>
-<span id="cb1006-7"><a href="dimRedForAnaTop.html#cb1006-7"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_featSel.Rds&quot;</span>, projDir, outDirBit, setName, setSuf)</span>
-<span id="cb1006-8"><a href="dimRedForAnaTop.html#cb1006-8"></a>tmpList &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
-<span id="cb1006-9"><a href="dimRedForAnaTop.html#cb1006-9"></a>dec.sce &lt;-<span class="st"> </span>tmpList<span class="op">$</span>dec.sce</span>
-<span id="cb1006-10"><a href="dimRedForAnaTop.html#cb1006-10"></a>hvg.index &lt;-<span class="st"> </span>tmpList<span class="op">$</span>hvg.index</span>
-<span id="cb1006-11"><a href="dimRedForAnaTop.html#cb1006-11"></a><span class="kw">rm</span>(tmpList)</span></code></pre></div>
+<div class="sourceCode" id="cb908"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb908-1"><a href="dimRedForAnaTop.html#cb908-1"></a><span class="co">#any(duplicated(rowData(sce)$ensembl_gene_id))</span></span>
+<span id="cb908-2"><a href="dimRedForAnaTop.html#cb908-2"></a><span class="co"># some function(s) used below complain about &#39;strand&#39; already being used in row data,</span></span>
+<span id="cb908-3"><a href="dimRedForAnaTop.html#cb908-3"></a><span class="co"># so rename that column now:</span></span>
+<span id="cb908-4"><a href="dimRedForAnaTop.html#cb908-4"></a><span class="kw">colnames</span>(<span class="kw">rowData</span>(sce))[<span class="kw">colnames</span>(<span class="kw">rowData</span>(sce)) <span class="op">==</span><span class="st"> &quot;strand&quot;</span>] &lt;-<span class="st"> &quot;strandNum&quot;</span></span>
+<span id="cb908-5"><a href="dimRedForAnaTop.html#cb908-5"></a></span>
+<span id="cb908-6"><a href="dimRedForAnaTop.html#cb908-6"></a><span class="co"># also get feature selection outcome</span></span>
+<span id="cb908-7"><a href="dimRedForAnaTop.html#cb908-7"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_featSel.Rds&quot;</span>,</span>
+<span id="cb908-8"><a href="dimRedForAnaTop.html#cb908-8"></a>         projDir, outDirBit, setName, setSuf)</span>
+<span id="cb908-9"><a href="dimRedForAnaTop.html#cb908-9"></a>tmpList &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
+<span id="cb908-10"><a href="dimRedForAnaTop.html#cb908-10"></a>dec.sce &lt;-<span class="st"> </span>tmpList<span class="op">$</span>dec.sce</span>
+<span id="cb908-11"><a href="dimRedForAnaTop.html#cb908-11"></a>hvg.index &lt;-<span class="st"> </span>tmpList<span class="op">$</span>hvg.index</span>
+<span id="cb908-12"><a href="dimRedForAnaTop.html#cb908-12"></a><span class="kw">rm</span>(tmpList)</span></code></pre></div>
 </div>
 <div id="denoising-expression-values-using-pca" class="section level2">
-<h2><span class="header-section-number">13.2</span> Denoising expression values using PCA</h2>
+<h2><span class="header-section-number">12.2</span> Denoising expression values using PCA</h2>
 <p>Aim: use the trend fitted above to identify PCs linked to biology.</p>
 <p>Assumption: biology drives most of the variance hence should be captured by the first PCs, while technical noise affects each gene independently, hence is captured by later PCs.</p>
 <p>Logic: Compute the sum of the technical component across genes used in the PCA, use it as the amount of variance not related to biology and that we should therefore remove. Later PCs are excluded until the amount of variance they account for matches that corresponding to the technical component.</p>
-<div class="sourceCode" id="cb1007"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1007-1"><a href="dimRedForAnaTop.html#cb1007-1"></a>var.fit &lt;-<span class="st"> </span><span class="kw">metadata</span>(dec.sce)</span>
-<span id="cb1007-2"><a href="dimRedForAnaTop.html#cb1007-2"></a></span>
-<span id="cb1007-3"><a href="dimRedForAnaTop.html#cb1007-3"></a><span class="co"># remove uninteresting PCs:</span></span>
-<span id="cb1007-4"><a href="dimRedForAnaTop.html#cb1007-4"></a><span class="co">#options(BiocSingularParam.default=IrlbaParam())</span></span>
-<span id="cb1007-5"><a href="dimRedForAnaTop.html#cb1007-5"></a>sce &lt;-<span class="st"> </span><span class="kw">denoisePCA</span>(sce, <span class="dt">technical=</span>var.fit<span class="op">$</span>trend, <span class="dt">assay.type=</span><span class="st">&quot;logcounts&quot;</span>)</span>
-<span id="cb1007-6"><a href="dimRedForAnaTop.html#cb1007-6"></a><span class="kw">rm</span>(var.fit)</span>
-<span id="cb1007-7"><a href="dimRedForAnaTop.html#cb1007-7"></a></span>
-<span id="cb1007-8"><a href="dimRedForAnaTop.html#cb1007-8"></a><span class="co"># check assay names, should see &#39;PCA&#39;:</span></span>
-<span id="cb1007-9"><a href="dimRedForAnaTop.html#cb1007-9"></a><span class="co">##assayNames(sce)</span></span>
-<span id="cb1007-10"><a href="dimRedForAnaTop.html#cb1007-10"></a><span class="co"># check dimension of the PC table:</span></span>
-<span id="cb1007-11"><a href="dimRedForAnaTop.html#cb1007-11"></a><span class="co">##dim(reducedDim(sce, &quot;PCA&quot;)) </span></span>
-<span id="cb1007-12"><a href="dimRedForAnaTop.html#cb1007-12"></a></span>
-<span id="cb1007-13"><a href="dimRedForAnaTop.html#cb1007-13"></a>sce.pca &lt;-<span class="st"> </span><span class="kw">reducedDim</span>(sce, <span class="st">&quot;PCA&quot;</span>) <span class="co"># get copy of PCA matrix</span></span>
-<span id="cb1007-14"><a href="dimRedForAnaTop.html#cb1007-14"></a>tmpCol &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="st">&quot;grey&quot;</span>, nbPcToComp) <span class="co"># set colours to show selected PCs in green</span></span>
-<span id="cb1007-15"><a href="dimRedForAnaTop.html#cb1007-15"></a>tmpCol[<span class="dv">1</span><span class="op">:</span><span class="kw">dim</span>(sce.pca)[<span class="dv">2</span>]] &lt;-<span class="st"> &quot;green&quot;</span></span>
-<span id="cb1007-16"><a href="dimRedForAnaTop.html#cb1007-16"></a><span class="kw">barplot</span>(<span class="kw">attributes</span>(sce.pca)<span class="op">$</span>percentVar[<span class="dv">1</span><span class="op">:</span>nbPcToComp],</span>
-<span id="cb1007-17"><a href="dimRedForAnaTop.html#cb1007-17"></a>        <span class="dt">main=</span><span class="kw">sprintf</span>(<span class="st">&quot;Scree plot for the %s first PCs&quot;</span>, nbPcToComp),</span>
-<span id="cb1007-18"><a href="dimRedForAnaTop.html#cb1007-18"></a>        <span class="dt">names.arg=</span><span class="dv">1</span><span class="op">:</span>nbPcToComp,</span>
-<span id="cb1007-19"><a href="dimRedForAnaTop.html#cb1007-19"></a>        <span class="dt">col=</span>tmpCol,</span>
-<span id="cb1007-20"><a href="dimRedForAnaTop.html#cb1007-20"></a>        <span class="dt">cex.names =</span> <span class="fl">0.8</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb909"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb909-1"><a href="dimRedForAnaTop.html#cb909-1"></a>var.fit &lt;-<span class="st"> </span><span class="kw">metadata</span>(dec.sce)</span>
+<span id="cb909-2"><a href="dimRedForAnaTop.html#cb909-2"></a></span>
+<span id="cb909-3"><a href="dimRedForAnaTop.html#cb909-3"></a><span class="co"># remove uninteresting PCs:</span></span>
+<span id="cb909-4"><a href="dimRedForAnaTop.html#cb909-4"></a><span class="co">#options(BiocSingularParam.default=IrlbaParam())</span></span>
+<span id="cb909-5"><a href="dimRedForAnaTop.html#cb909-5"></a>sce &lt;-<span class="st"> </span><span class="kw">denoisePCA</span>(sce, <span class="dt">technical=</span>var.fit<span class="op">$</span>trend, <span class="dt">assay.type=</span><span class="st">&quot;logcounts&quot;</span>)</span>
+<span id="cb909-6"><a href="dimRedForAnaTop.html#cb909-6"></a><span class="kw">rm</span>(var.fit)</span>
+<span id="cb909-7"><a href="dimRedForAnaTop.html#cb909-7"></a></span>
+<span id="cb909-8"><a href="dimRedForAnaTop.html#cb909-8"></a><span class="co"># check assay names, should see &#39;PCA&#39;:</span></span>
+<span id="cb909-9"><a href="dimRedForAnaTop.html#cb909-9"></a><span class="co">##assayNames(sce)</span></span>
+<span id="cb909-10"><a href="dimRedForAnaTop.html#cb909-10"></a><span class="co"># check dimension of the PC table:</span></span>
+<span id="cb909-11"><a href="dimRedForAnaTop.html#cb909-11"></a><span class="co">##dim(reducedDim(sce, &quot;PCA&quot;)) </span></span>
+<span id="cb909-12"><a href="dimRedForAnaTop.html#cb909-12"></a></span>
+<span id="cb909-13"><a href="dimRedForAnaTop.html#cb909-13"></a>sce.pca &lt;-<span class="st"> </span><span class="kw">reducedDim</span>(sce, <span class="st">&quot;PCA&quot;</span>) <span class="co"># get copy of PCA matrix</span></span>
+<span id="cb909-14"><a href="dimRedForAnaTop.html#cb909-14"></a>tmpCol &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="st">&quot;grey&quot;</span>, nbPcToComp) <span class="co"># set colours to show selected PCs in green</span></span>
+<span id="cb909-15"><a href="dimRedForAnaTop.html#cb909-15"></a>tmpCol[<span class="dv">1</span><span class="op">:</span><span class="kw">dim</span>(sce.pca)[<span class="dv">2</span>]] &lt;-<span class="st"> &quot;green&quot;</span></span>
+<span id="cb909-16"><a href="dimRedForAnaTop.html#cb909-16"></a><span class="kw">barplot</span>(<span class="kw">attributes</span>(sce.pca)<span class="op">$</span>percentVar[<span class="dv">1</span><span class="op">:</span>nbPcToComp],</span>
+<span id="cb909-17"><a href="dimRedForAnaTop.html#cb909-17"></a>        <span class="dt">main=</span><span class="kw">sprintf</span>(<span class="st">&quot;Scree plot for the %s first PCs&quot;</span>, nbPcToComp),</span>
+<span id="cb909-18"><a href="dimRedForAnaTop.html#cb909-18"></a>        <span class="dt">names.arg=</span><span class="dv">1</span><span class="op">:</span>nbPcToComp,</span>
+<span id="cb909-19"><a href="dimRedForAnaTop.html#cb909-19"></a>        <span class="dt">col=</span>tmpCol,</span>
+<span id="cb909-20"><a href="dimRedForAnaTop.html#cb909-20"></a>        <span class="dt">cex.names =</span> <span class="fl">0.8</span>)</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/comp_denoisePCA-1.png" width="672" /></p>
-<div class="sourceCode" id="cb1008"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1008-1"><a href="dimRedForAnaTop.html#cb1008-1"></a><span class="co"># cumulative proportion of variance explained by selected PCs</span></span>
-<span id="cb1008-2"><a href="dimRedForAnaTop.html#cb1008-2"></a><span class="kw">cumsum</span>(<span class="kw">attributes</span>(sce.pca)<span class="op">$</span>percentVar)[<span class="dv">1</span><span class="op">:</span><span class="kw">dim</span>(sce.pca)[<span class="dv">2</span>]]</span></code></pre></div>
-<pre><code>## [1] 10.24611 14.47335 16.85835 18.71418 20.10582 21.25363 22.19929</code></pre>
-<div class="sourceCode" id="cb1010"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1010-1"><a href="dimRedForAnaTop.html#cb1010-1"></a><span class="co"># plot on PC1 and PC2 plane:</span></span>
-<span id="cb1010-2"><a href="dimRedForAnaTop.html#cb1010-2"></a><span class="kw">plotPCA</span>(sce, <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb910"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb910-1"><a href="dimRedForAnaTop.html#cb910-1"></a><span class="co"># cumulative proportion of variance explained by selected PCs</span></span>
+<span id="cb910-2"><a href="dimRedForAnaTop.html#cb910-2"></a><span class="kw">round</span>(<span class="kw">cumsum</span>(<span class="kw">attributes</span>(sce.pca)<span class="op">$</span>percentVar)[<span class="dv">1</span><span class="op">:</span><span class="kw">dim</span>(sce.pca)[<span class="dv">2</span>]])</span></code></pre></div>
+<pre><code>## [1] 10 14 17 19 20 21 22</code></pre>
+<div class="sourceCode" id="cb912"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb912-1"><a href="dimRedForAnaTop.html#cb912-1"></a><span class="co"># plot on PC1 and PC2 plane:</span></span>
+<span id="cb912-2"><a href="dimRedForAnaTop.html#cb912-2"></a><span class="kw">plotPCA</span>(sce, <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>)</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/comp_denoisePCA-2.png" width="672" /></p>
-<div class="sourceCode" id="cb1011"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1011-1"><a href="dimRedForAnaTop.html#cb1011-1"></a><span class="co">#require(knitr); knit_exit()</span></span>
-<span id="cb1011-2"><a href="dimRedForAnaTop.html#cb1011-2"></a><span class="kw">rm</span>(sce.pca, tmpCol)</span></code></pre></div>
+<div class="sourceCode" id="cb913"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb913-1"><a href="dimRedForAnaTop.html#cb913-1"></a><span class="co">#require(knitr); knit_exit()</span></span>
+<span id="cb913-2"><a href="dimRedForAnaTop.html#cb913-2"></a><span class="kw">rm</span>(sce.pca, tmpCol)</span></code></pre></div>
 <p>Show cells on plane for PC1 and PC2:</p>
-<div class="sourceCode" id="cb1012"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1012-1"><a href="dimRedForAnaTop.html#cb1012-1"></a><span class="kw">plotReducedDim</span>(sce,</span>
-<span id="cb1012-2"><a href="dimRedForAnaTop.html#cb1012-2"></a>           <span class="dt">dimred =</span> <span class="st">&quot;PCA&quot;</span>,</span>
-<span id="cb1012-3"><a href="dimRedForAnaTop.html#cb1012-3"></a>           <span class="dt">ncomponents =</span> <span class="dv">3</span>,</span>
-<span id="cb1012-4"><a href="dimRedForAnaTop.html#cb1012-4"></a>           <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>) <span class="op">+</span></span>
-<span id="cb1012-5"><a href="dimRedForAnaTop.html#cb1012-5"></a>fontsize</span></code></pre></div>
+<div class="sourceCode" id="cb914"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb914-1"><a href="dimRedForAnaTop.html#cb914-1"></a><span class="kw">plotReducedDim</span>(sce,</span>
+<span id="cb914-2"><a href="dimRedForAnaTop.html#cb914-2"></a>           <span class="dt">dimred =</span> <span class="st">&quot;PCA&quot;</span>,</span>
+<span id="cb914-3"><a href="dimRedForAnaTop.html#cb914-3"></a>           <span class="dt">ncomponents =</span> <span class="dv">3</span>,</span>
+<span id="cb914-4"><a href="dimRedForAnaTop.html#cb914-4"></a>           <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>) <span class="op">+</span></span>
+<span id="cb914-5"><a href="dimRedForAnaTop.html#cb914-5"></a>fontsize</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/plot_denoisePCA-1.png" width="672" /></p>
 </div>
 <div id="visualise-expression-patterns-of-some-hvgs" class="section level2">
-<h2><span class="header-section-number">13.3</span> Visualise expression patterns of some HVGs</h2>
-<div class="sourceCode" id="cb1013"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1013-1"><a href="dimRedForAnaTop.html#cb1013-1"></a>o &lt;-<span class="st"> </span><span class="kw">order</span>(dec.sce<span class="op">$</span>bio, <span class="dt">decreasing=</span><span class="ot">TRUE</span>)</span>
-<span id="cb1013-2"><a href="dimRedForAnaTop.html#cb1013-2"></a>chosen.genes.index &lt;-<span class="st"> </span>o[<span class="dv">1</span><span class="op">:</span><span class="dv">20</span>]</span>
-<span id="cb1013-3"><a href="dimRedForAnaTop.html#cb1013-3"></a>dec.sce <span class="op">%&gt;%</span></span>
-<span id="cb1013-4"><a href="dimRedForAnaTop.html#cb1013-4"></a><span class="st">    </span><span class="kw">data.frame</span>() <span class="op">%&gt;%</span></span>
-<span id="cb1013-5"><a href="dimRedForAnaTop.html#cb1013-5"></a><span class="st">    </span>tibble<span class="op">::</span><span class="kw">rownames_to_column</span>(<span class="st">&quot;ensembl_gene_id&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb1013-6"><a href="dimRedForAnaTop.html#cb1013-6"></a><span class="st">    </span><span class="kw">right_join</span>(<span class="kw">data.frame</span>(<span class="kw">rowData</span>(sce)[chosen.genes.index,]), <span class="dt">by=</span><span class="st">&quot;ensembl_gene_id&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb1013-7"><a href="dimRedForAnaTop.html#cb1013-7"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(ensembl_gene_id, Symbol, bio, FDR) <span class="op">%&gt;%</span></span>
-<span id="cb1013-8"><a href="dimRedForAnaTop.html#cb1013-8"></a><span class="st">    </span><span class="kw">arrange</span>(<span class="op">-</span>bio)</span></code></pre></div>
+<h2><span class="header-section-number">12.3</span> Visualise expression patterns of some HVGs</h2>
+<div class="sourceCode" id="cb915"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb915-1"><a href="dimRedForAnaTop.html#cb915-1"></a>o &lt;-<span class="st"> </span><span class="kw">order</span>(dec.sce<span class="op">$</span>bio, <span class="dt">decreasing=</span><span class="ot">TRUE</span>)</span>
+<span id="cb915-2"><a href="dimRedForAnaTop.html#cb915-2"></a>chosen.genes.index &lt;-<span class="st"> </span>o[<span class="dv">1</span><span class="op">:</span><span class="dv">20</span>]</span>
+<span id="cb915-3"><a href="dimRedForAnaTop.html#cb915-3"></a>dec.sce <span class="op">%&gt;%</span></span>
+<span id="cb915-4"><a href="dimRedForAnaTop.html#cb915-4"></a><span class="st">    </span><span class="kw">data.frame</span>() <span class="op">%&gt;%</span></span>
+<span id="cb915-5"><a href="dimRedForAnaTop.html#cb915-5"></a><span class="st">    </span>tibble<span class="op">::</span><span class="kw">rownames_to_column</span>(<span class="st">&quot;ensembl_gene_id&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb915-6"><a href="dimRedForAnaTop.html#cb915-6"></a><span class="st">    </span><span class="kw">right_join</span>(<span class="kw">data.frame</span>(<span class="kw">rowData</span>(sce)[chosen.genes.index,]), <span class="dt">by=</span><span class="st">&quot;ensembl_gene_id&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb915-7"><a href="dimRedForAnaTop.html#cb915-7"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(ensembl_gene_id, Symbol, bio, FDR) <span class="op">%&gt;%</span></span>
+<span id="cb915-8"><a href="dimRedForAnaTop.html#cb915-8"></a><span class="st">    </span><span class="kw">arrange</span>(<span class="op">-</span>bio)</span></code></pre></div>
 <pre><code>##    ensembl_gene_id   Symbol       bio           FDR
 ## 1  ENSG00000244734      HBB 10.969829  0.000000e+00
 ## 2  ENSG00000188536     HBA2  8.722135  0.000000e+00
@@ -1414,70 +1420,70 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## 18 ENSG00000170345      FOS  1.203750  2.080415e-06
 ## 19 ENSG00000004939   SLC4A1  1.118489  1.112527e-73
 ## 20 ENSG00000090382      LYZ  1.114020  4.912100e-90</code></pre>
-<div class="sourceCode" id="cb1015"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1015-1"><a href="dimRedForAnaTop.html#cb1015-1"></a><span class="kw">rm</span>(dec.sce)</span></code></pre></div>
+<div class="sourceCode" id="cb917"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb917-1"><a href="dimRedForAnaTop.html#cb917-1"></a><span class="kw">rm</span>(dec.sce)</span></code></pre></div>
 <p>On PCA plot:</p>
-<div class="sourceCode" id="cb1016"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1016-1"><a href="dimRedForAnaTop.html#cb1016-1"></a><span class="co"># make and store PCA plot for top HVG 1:</span></span>
-<span id="cb1016-2"><a href="dimRedForAnaTop.html#cb1016-2"></a>pca1 &lt;-<span class="st"> </span><span class="kw">plotReducedDim</span>(sce,</span>
-<span id="cb1016-3"><a href="dimRedForAnaTop.html#cb1016-3"></a>               <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>,</span>
-<span id="cb1016-4"><a href="dimRedForAnaTop.html#cb1016-4"></a>               <span class="dt">colour_by=</span><span class="kw">rowData</span>(sce)[chosen.genes.index[<span class="dv">1</span>],<span class="st">&quot;ensembl_gene_id&quot;</span>]) <span class="op">+</span></span>
-<span id="cb1016-5"><a href="dimRedForAnaTop.html#cb1016-5"></a>fontsize  <span class="co"># + coord_fixed()</span></span>
-<span id="cb1016-6"><a href="dimRedForAnaTop.html#cb1016-6"></a><span class="co"># make and store PCA plot for top HVG 2:</span></span>
-<span id="cb1016-7"><a href="dimRedForAnaTop.html#cb1016-7"></a>pca2 &lt;-<span class="st"> </span><span class="kw">plotReducedDim</span>(sce,</span>
-<span id="cb1016-8"><a href="dimRedForAnaTop.html#cb1016-8"></a>               <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>,</span>
-<span id="cb1016-9"><a href="dimRedForAnaTop.html#cb1016-9"></a>               <span class="dt">colour_by=</span><span class="kw">rowData</span>(sce)[chosen.genes.index[<span class="dv">2</span>],<span class="st">&quot;ensembl_gene_id&quot;</span>]) <span class="op">+</span></span>
-<span id="cb1016-10"><a href="dimRedForAnaTop.html#cb1016-10"></a>fontsize <span class="co"># + coord_fixed()</span></span>
-<span id="cb1016-11"><a href="dimRedForAnaTop.html#cb1016-11"></a></span>
-<span id="cb1016-12"><a href="dimRedForAnaTop.html#cb1016-12"></a>pca1</span></code></pre></div>
+<div class="sourceCode" id="cb918"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb918-1"><a href="dimRedForAnaTop.html#cb918-1"></a><span class="co"># make and store PCA plot for top HVG 1:</span></span>
+<span id="cb918-2"><a href="dimRedForAnaTop.html#cb918-2"></a>pca1 &lt;-<span class="st"> </span><span class="kw">plotReducedDim</span>(sce,</span>
+<span id="cb918-3"><a href="dimRedForAnaTop.html#cb918-3"></a>               <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>,</span>
+<span id="cb918-4"><a href="dimRedForAnaTop.html#cb918-4"></a>               <span class="dt">colour_by=</span><span class="kw">rowData</span>(sce)[chosen.genes.index[<span class="dv">1</span>],<span class="st">&quot;ensembl_gene_id&quot;</span>]) <span class="op">+</span></span>
+<span id="cb918-5"><a href="dimRedForAnaTop.html#cb918-5"></a>fontsize  <span class="co"># + coord_fixed()</span></span>
+<span id="cb918-6"><a href="dimRedForAnaTop.html#cb918-6"></a><span class="co"># make and store PCA plot for top HVG 2:</span></span>
+<span id="cb918-7"><a href="dimRedForAnaTop.html#cb918-7"></a>pca2 &lt;-<span class="st"> </span><span class="kw">plotReducedDim</span>(sce,</span>
+<span id="cb918-8"><a href="dimRedForAnaTop.html#cb918-8"></a>               <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>,</span>
+<span id="cb918-9"><a href="dimRedForAnaTop.html#cb918-9"></a>               <span class="dt">colour_by=</span><span class="kw">rowData</span>(sce)[chosen.genes.index[<span class="dv">2</span>],<span class="st">&quot;ensembl_gene_id&quot;</span>]) <span class="op">+</span></span>
+<span id="cb918-10"><a href="dimRedForAnaTop.html#cb918-10"></a>fontsize <span class="co"># + coord_fixed()</span></span>
+<span id="cb918-11"><a href="dimRedForAnaTop.html#cb918-11"></a></span>
+<span id="cb918-12"><a href="dimRedForAnaTop.html#cb918-12"></a>pca1</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/plot_count_pca_HVGtop2-1.png" width="672" /></p>
-<div class="sourceCode" id="cb1017"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1017-1"><a href="dimRedForAnaTop.html#cb1017-1"></a>pca2</span></code></pre></div>
+<div class="sourceCode" id="cb919"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb919-1"><a href="dimRedForAnaTop.html#cb919-1"></a>pca2</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/plot_count_pca_HVGtop2-2.png" width="672" /></p>
-<div class="sourceCode" id="cb1018"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1018-1"><a href="dimRedForAnaTop.html#cb1018-1"></a><span class="co"># display plots next to each other:</span></span>
-<span id="cb1018-2"><a href="dimRedForAnaTop.html#cb1018-2"></a><span class="co"># multiplot(pca1, pca2, cols=2)</span></span>
-<span id="cb1018-3"><a href="dimRedForAnaTop.html#cb1018-3"></a></span>
-<span id="cb1018-4"><a href="dimRedForAnaTop.html#cb1018-4"></a>pca1 <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(. <span class="op">~</span><span class="st"> </span>sce<span class="op">$</span>source_name) <span class="op">+</span><span class="st"> </span><span class="kw">coord_fixed</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb920"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb920-1"><a href="dimRedForAnaTop.html#cb920-1"></a><span class="co"># display plots next to each other:</span></span>
+<span id="cb920-2"><a href="dimRedForAnaTop.html#cb920-2"></a><span class="co"># multiplot(pca1, pca2, cols=2)</span></span>
+<span id="cb920-3"><a href="dimRedForAnaTop.html#cb920-3"></a></span>
+<span id="cb920-4"><a href="dimRedForAnaTop.html#cb920-4"></a>pca1 <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(. <span class="op">~</span><span class="st"> </span>sce<span class="op">$</span>source_name) <span class="op">+</span><span class="st"> </span><span class="kw">coord_fixed</span>()</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/plot_count_pca_HVGtop2_facet-1.png" width="1152" /></p>
-<div class="sourceCode" id="cb1019"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1019-1"><a href="dimRedForAnaTop.html#cb1019-1"></a>pca2 <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(. <span class="op">~</span><span class="st"> </span>sce<span class="op">$</span>source_name) <span class="op">+</span><span class="st"> </span><span class="kw">coord_fixed</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb921"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb921-1"><a href="dimRedForAnaTop.html#cb921-1"></a>pca2 <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(. <span class="op">~</span><span class="st"> </span>sce<span class="op">$</span>source_name) <span class="op">+</span><span class="st"> </span><span class="kw">coord_fixed</span>()</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/plot_count_pca_HVGtop2_facet-2.png" width="1152" /></p>
-<div class="sourceCode" id="cb1020"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1020-1"><a href="dimRedForAnaTop.html#cb1020-1"></a><span class="kw">rm</span>(pca1, pca2)</span></code></pre></div>
+<div class="sourceCode" id="cb922"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb922-1"><a href="dimRedForAnaTop.html#cb922-1"></a><span class="kw">rm</span>(pca1, pca2)</span></code></pre></div>
 <p>On t-SNE plot:</p>
-<div class="sourceCode" id="cb1021"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1021-1"><a href="dimRedForAnaTop.html#cb1021-1"></a><span class="co"># plot TSNE, accessing counts for the gene of interest with the ID used to name rows in the count matrix:</span></span>
-<span id="cb1021-2"><a href="dimRedForAnaTop.html#cb1021-2"></a><span class="co"># make and store TSNE plot for top HVG 1:</span></span>
-<span id="cb1021-3"><a href="dimRedForAnaTop.html#cb1021-3"></a>tsne1 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(sce, <span class="dt">colour_by=</span><span class="kw">rowData</span>(sce)[chosen.genes.index[<span class="dv">1</span>],<span class="st">&quot;ensembl_gene_id&quot;</span>]) <span class="op">+</span><span class="st"> </span>fontsize</span>
-<span id="cb1021-4"><a href="dimRedForAnaTop.html#cb1021-4"></a><span class="co"># make and store TSNE plot for top HVG 2:</span></span>
-<span id="cb1021-5"><a href="dimRedForAnaTop.html#cb1021-5"></a>tsne2 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(sce, <span class="dt">colour_by=</span><span class="kw">rowData</span>(sce)[chosen.genes.index[<span class="dv">2</span>],<span class="st">&quot;ensembl_gene_id&quot;</span>]) <span class="op">+</span><span class="st"> </span>fontsize</span>
-<span id="cb1021-6"><a href="dimRedForAnaTop.html#cb1021-6"></a></span>
-<span id="cb1021-7"><a href="dimRedForAnaTop.html#cb1021-7"></a>tsne1</span></code></pre></div>
+<div class="sourceCode" id="cb923"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb923-1"><a href="dimRedForAnaTop.html#cb923-1"></a><span class="co"># plot TSNE, accessing counts for the gene of interest with the ID used to name rows in the count matrix:</span></span>
+<span id="cb923-2"><a href="dimRedForAnaTop.html#cb923-2"></a><span class="co"># make and store TSNE plot for top HVG 1:</span></span>
+<span id="cb923-3"><a href="dimRedForAnaTop.html#cb923-3"></a>tsne1 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(sce, <span class="dt">colour_by=</span><span class="kw">rowData</span>(sce)[chosen.genes.index[<span class="dv">1</span>],<span class="st">&quot;ensembl_gene_id&quot;</span>]) <span class="op">+</span><span class="st"> </span>fontsize</span>
+<span id="cb923-4"><a href="dimRedForAnaTop.html#cb923-4"></a><span class="co"># make and store TSNE plot for top HVG 2:</span></span>
+<span id="cb923-5"><a href="dimRedForAnaTop.html#cb923-5"></a>tsne2 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(sce, <span class="dt">colour_by=</span><span class="kw">rowData</span>(sce)[chosen.genes.index[<span class="dv">2</span>],<span class="st">&quot;ensembl_gene_id&quot;</span>]) <span class="op">+</span><span class="st"> </span>fontsize</span>
+<span id="cb923-6"><a href="dimRedForAnaTop.html#cb923-6"></a></span>
+<span id="cb923-7"><a href="dimRedForAnaTop.html#cb923-7"></a>tsne1</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/plot_count_tsne_HVGtop2-1.png" width="672" /></p>
-<div class="sourceCode" id="cb1022"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1022-1"><a href="dimRedForAnaTop.html#cb1022-1"></a>tsne2</span></code></pre></div>
+<div class="sourceCode" id="cb924"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb924-1"><a href="dimRedForAnaTop.html#cb924-1"></a>tsne2</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/plot_count_tsne_HVGtop2-2.png" width="672" /></p>
-<div class="sourceCode" id="cb1023"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1023-1"><a href="dimRedForAnaTop.html#cb1023-1"></a><span class="co"># display plots next to each other:</span></span>
-<span id="cb1023-2"><a href="dimRedForAnaTop.html#cb1023-2"></a><span class="co">#multiplot(tsne1, tsne2, cols=2)</span></span>
-<span id="cb1023-3"><a href="dimRedForAnaTop.html#cb1023-3"></a></span>
-<span id="cb1023-4"><a href="dimRedForAnaTop.html#cb1023-4"></a>tsne1 <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(. <span class="op">~</span><span class="st"> </span>sce<span class="op">$</span>source_name)</span></code></pre></div>
+<div class="sourceCode" id="cb925"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb925-1"><a href="dimRedForAnaTop.html#cb925-1"></a><span class="co"># display plots next to each other:</span></span>
+<span id="cb925-2"><a href="dimRedForAnaTop.html#cb925-2"></a><span class="co">#multiplot(tsne1, tsne2, cols=2)</span></span>
+<span id="cb925-3"><a href="dimRedForAnaTop.html#cb925-3"></a></span>
+<span id="cb925-4"><a href="dimRedForAnaTop.html#cb925-4"></a>tsne1 <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(. <span class="op">~</span><span class="st"> </span>sce<span class="op">$</span>source_name)</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/plot_count_tsne_HVGtop2_facet-1.png" width="1152" /></p>
-<div class="sourceCode" id="cb1024"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1024-1"><a href="dimRedForAnaTop.html#cb1024-1"></a>tsne2 <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(. <span class="op">~</span><span class="st"> </span>sce<span class="op">$</span>source_name)</span></code></pre></div>
+<div class="sourceCode" id="cb926"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb926-1"><a href="dimRedForAnaTop.html#cb926-1"></a>tsne2 <span class="op">+</span><span class="st"> </span><span class="kw">facet_wrap</span>(. <span class="op">~</span><span class="st"> </span>sce<span class="op">$</span>source_name)</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/plot_count_tsne_HVGtop2_facet-2.png" width="1152" /></p>
-<div class="sourceCode" id="cb1025"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1025-1"><a href="dimRedForAnaTop.html#cb1025-1"></a><span class="co"># display plots next to each other, splitting each by sample:</span></span>
-<span id="cb1025-2"><a href="dimRedForAnaTop.html#cb1025-2"></a><span class="co">#multiplot(tsne1 + facet_grid(. ~ sce$Sample2), tsne2 + facet_grid(. ~ sce$Sample2), cols=2)</span></span>
-<span id="cb1025-3"><a href="dimRedForAnaTop.html#cb1025-3"></a></span>
-<span id="cb1025-4"><a href="dimRedForAnaTop.html#cb1025-4"></a><span class="kw">rm</span>(tsne1, tsne2)</span></code></pre></div>
+<div class="sourceCode" id="cb927"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb927-1"><a href="dimRedForAnaTop.html#cb927-1"></a><span class="co"># display plots next to each other, splitting each by sample:</span></span>
+<span id="cb927-2"><a href="dimRedForAnaTop.html#cb927-2"></a><span class="co">#multiplot(tsne1 + facet_grid(. ~ sce$Sample2), tsne2 + facet_grid(. ~ sce$Sample2), cols=2)</span></span>
+<span id="cb927-3"><a href="dimRedForAnaTop.html#cb927-3"></a></span>
+<span id="cb927-4"><a href="dimRedForAnaTop.html#cb927-4"></a><span class="kw">rm</span>(tsne1, tsne2)</span></code></pre></div>
 <p>Write R object to file</p>
-<div class="sourceCode" id="cb1026"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1026-1"><a href="dimRedForAnaTop.html#cb1026-1"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_denoised.Rds&quot;</span>, projDir, outDirBit, setName, setSuf)</span>
-<span id="cb1026-2"><a href="dimRedForAnaTop.html#cb1026-2"></a><span class="kw">print</span>(tmpFn)</span></code></pre></div>
+<div class="sourceCode" id="cb928"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb928-1"><a href="dimRedForAnaTop.html#cb928-1"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_denoised.Rds&quot;</span>, projDir, outDirBit, setName, setSuf)</span>
+<span id="cb928-2"><a href="dimRedForAnaTop.html#cb928-2"></a><span class="kw">print</span>(tmpFn)</span></code></pre></div>
 <pre><code>## [1] &quot;/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/AnaWiSce/AnaKmWiC/Robjects/caron_sce_nz_postDeconv_5hCellPerSpl_denoised.Rds&quot;</code></pre>
-<div class="sourceCode" id="cb1028"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1028-1"><a href="dimRedForAnaTop.html#cb1028-1"></a><span class="kw">saveRDS</span>(sce, <span class="dt">file=</span>tmpFn)</span></code></pre></div>
+<div class="sourceCode" id="cb930"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb930-1"><a href="dimRedForAnaTop.html#cb930-1"></a><span class="kw">saveRDS</span>(sce, <span class="dt">file=</span>tmpFn)</span></code></pre></div>
 <p>Genes correlated with PC1:</p>
 <!-- http://bioinformatics.age.mpg.de/presentations-tutorials/presentations/modules/single-cell//bioconductor_tutorial.html -->
-<div class="sourceCode" id="cb1029"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1029-1"><a href="dimRedForAnaTop.html#cb1029-1"></a>sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
-<span id="cb1029-2"><a href="dimRedForAnaTop.html#cb1029-2"></a><span class="kw">rownames</span>(sce) &lt;-<span class="st"> </span><span class="kw">uniquifyFeatureNames</span>(<span class="kw">rowData</span>(sce)<span class="op">$</span>ensembl_gene_id,</span>
-<span id="cb1029-3"><a href="dimRedForAnaTop.html#cb1029-3"></a>                      <span class="kw">rowData</span>(sce)<span class="op">$</span>Symbol)</span>
-<span id="cb1029-4"><a href="dimRedForAnaTop.html#cb1029-4"></a>pc1 &lt;-<span class="st"> </span><span class="kw">reducedDim</span>(sce, <span class="st">&quot;PCA&quot;</span>)[,<span class="dv">1</span>]</span>
-<span id="cb1029-5"><a href="dimRedForAnaTop.html#cb1029-5"></a>design &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(<span class="op">~</span>pc1)</span>
-<span id="cb1029-6"><a href="dimRedForAnaTop.html#cb1029-6"></a><span class="kw">library</span>(limma)</span>
-<span id="cb1029-7"><a href="dimRedForAnaTop.html#cb1029-7"></a>fit &lt;-<span class="st"> </span><span class="kw">lmFit</span>(<span class="kw">logcounts</span>(sce), design)</span>
-<span id="cb1029-8"><a href="dimRedForAnaTop.html#cb1029-8"></a>fit &lt;-<span class="st"> </span><span class="kw">eBayes</span>(fit, <span class="dt">trend=</span><span class="ot">TRUE</span>, <span class="dt">robust=</span><span class="ot">TRUE</span>)</span>
-<span id="cb1029-9"><a href="dimRedForAnaTop.html#cb1029-9"></a>topTab &lt;-<span class="st"> </span><span class="kw">topTable</span>(fit)</span>
-<span id="cb1029-10"><a href="dimRedForAnaTop.html#cb1029-10"></a><span class="kw">head</span>(topTab)</span></code></pre></div>
+<div class="sourceCode" id="cb931"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb931-1"><a href="dimRedForAnaTop.html#cb931-1"></a>sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
+<span id="cb931-2"><a href="dimRedForAnaTop.html#cb931-2"></a><span class="kw">rownames</span>(sce) &lt;-<span class="st"> </span><span class="kw">uniquifyFeatureNames</span>(<span class="kw">rowData</span>(sce)<span class="op">$</span>ensembl_gene_id,</span>
+<span id="cb931-3"><a href="dimRedForAnaTop.html#cb931-3"></a>                      <span class="kw">rowData</span>(sce)<span class="op">$</span>Symbol)</span>
+<span id="cb931-4"><a href="dimRedForAnaTop.html#cb931-4"></a>pc1 &lt;-<span class="st"> </span><span class="kw">reducedDim</span>(sce, <span class="st">&quot;PCA&quot;</span>)[,<span class="dv">1</span>]</span>
+<span id="cb931-5"><a href="dimRedForAnaTop.html#cb931-5"></a>design &lt;-<span class="st"> </span><span class="kw">model.matrix</span>(<span class="op">~</span>pc1)</span>
+<span id="cb931-6"><a href="dimRedForAnaTop.html#cb931-6"></a><span class="kw">library</span>(limma)</span>
+<span id="cb931-7"><a href="dimRedForAnaTop.html#cb931-7"></a>fit &lt;-<span class="st"> </span><span class="kw">lmFit</span>(<span class="kw">logcounts</span>(sce), design)</span>
+<span id="cb931-8"><a href="dimRedForAnaTop.html#cb931-8"></a>fit &lt;-<span class="st"> </span><span class="kw">eBayes</span>(fit, <span class="dt">trend=</span><span class="ot">TRUE</span>, <span class="dt">robust=</span><span class="ot">TRUE</span>)</span>
+<span id="cb931-9"><a href="dimRedForAnaTop.html#cb931-9"></a>topTab &lt;-<span class="st"> </span><span class="kw">topTable</span>(fit)</span>
+<span id="cb931-10"><a href="dimRedForAnaTop.html#cb931-10"></a><span class="kw">head</span>(topTab)</span></code></pre></div>
 <pre><code>##            logFC   AveExpr         t P.Value adj.P.Val        B
 ## ALAS2 -0.1305501 0.4248282 -253.8128       0         0 6988.979
 ## HBD   -0.1918066 0.8269274 -247.7593       0         0 6866.706
@@ -1485,22 +1491,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## HBM   -0.1642649 0.6132294 -218.3411       0         0 6234.849
 ## HBA1  -0.2662693 1.6675081 -212.9019       0         0 6110.599
 ## HBA2  -0.2748459 1.9143801 -191.7632       0         0 5603.082</code></pre>
-<div class="sourceCode" id="cb1031"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1031-1"><a href="dimRedForAnaTop.html#cb1031-1"></a><span class="kw">rm</span>(topTab)</span></code></pre></div>
-<div class="sourceCode" id="cb1032"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1032-1"><a href="dimRedForAnaTop.html#cb1032-1"></a><span class="kw">library</span>(pheatmap)</span>
-<span id="cb1032-2"><a href="dimRedForAnaTop.html#cb1032-2"></a>de.genes &lt;-<span class="st"> </span><span class="kw">rownames</span>(<span class="kw">topTable</span>(fit, <span class="dt">coef=</span><span class="dv">2</span>, <span class="dt">n=</span><span class="dv">50</span>))</span>
-<span id="cb1032-3"><a href="dimRedForAnaTop.html#cb1032-3"></a>heat.vals &lt;-<span class="st"> </span><span class="kw">logcounts</span>(sce)[de.genes,]</span>
-<span id="cb1032-4"><a href="dimRedForAnaTop.html#cb1032-4"></a>heat.vals &lt;-<span class="st"> </span>heat.vals <span class="op">-</span><span class="st"> </span><span class="kw">rowMeans</span>(heat.vals)</span>
-<span id="cb1032-5"><a href="dimRedForAnaTop.html#cb1032-5"></a>heat.vals[heat.vals <span class="op">&gt;</span><span class="st"> </span><span class="dv">2</span>] &lt;-<span class="st"> </span><span class="dv">2</span></span>
-<span id="cb1032-6"><a href="dimRedForAnaTop.html#cb1032-6"></a>heat.vals[heat.vals <span class="op">&lt;</span><span class="st"> </span><span class="dv">-2</span>] &lt;-<span class="st"> </span><span class="dv">-2</span></span>
-<span id="cb1032-7"><a href="dimRedForAnaTop.html#cb1032-7"></a>p &lt;-<span class="st"> </span><span class="kw">pheatmap</span>(heat.vals[,<span class="kw">order</span>(pc1)], <span class="dt">cluster_cols=</span><span class="ot">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb933"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb933-1"><a href="dimRedForAnaTop.html#cb933-1"></a><span class="kw">rm</span>(topTab)</span></code></pre></div>
+<div class="sourceCode" id="cb934"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb934-1"><a href="dimRedForAnaTop.html#cb934-1"></a><span class="kw">library</span>(pheatmap)</span>
+<span id="cb934-2"><a href="dimRedForAnaTop.html#cb934-2"></a>de.genes &lt;-<span class="st"> </span><span class="kw">rownames</span>(<span class="kw">topTable</span>(fit, <span class="dt">coef=</span><span class="dv">2</span>, <span class="dt">n=</span><span class="dv">50</span>))</span>
+<span id="cb934-3"><a href="dimRedForAnaTop.html#cb934-3"></a>heat.vals &lt;-<span class="st"> </span><span class="kw">logcounts</span>(sce)[de.genes,]</span>
+<span id="cb934-4"><a href="dimRedForAnaTop.html#cb934-4"></a>heat.vals &lt;-<span class="st"> </span>heat.vals <span class="op">-</span><span class="st"> </span><span class="kw">rowMeans</span>(heat.vals)</span>
+<span id="cb934-5"><a href="dimRedForAnaTop.html#cb934-5"></a>heat.vals[heat.vals <span class="op">&gt;</span><span class="st"> </span><span class="dv">2</span>] &lt;-<span class="st"> </span><span class="dv">2</span></span>
+<span id="cb934-6"><a href="dimRedForAnaTop.html#cb934-6"></a>heat.vals[heat.vals <span class="op">&lt;</span><span class="st"> </span><span class="dv">-2</span>] &lt;-<span class="st"> </span><span class="dv">-2</span></span>
+<span id="cb934-7"><a href="dimRedForAnaTop.html#cb934-7"></a>p &lt;-<span class="st"> </span><span class="kw">pheatmap</span>(heat.vals[,<span class="kw">order</span>(pc1)], <span class="dt">cluster_cols=</span><span class="ot">FALSE</span>)</span></code></pre></div>
 <p><img src="dimRedForAna_files/figure-html/heatmap_dimRedForAna-1.png" width="672" /></p>
-<div class="sourceCode" id="cb1033"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1033-1"><a href="dimRedForAnaTop.html#cb1033-1"></a><span class="co">#plot(p$gtable)</span></span>
-<span id="cb1033-2"><a href="dimRedForAnaTop.html#cb1033-2"></a><span class="kw">rm</span>(pc1, design, fit, de.genes, heat.vals)</span>
-<span id="cb1033-3"><a href="dimRedForAnaTop.html#cb1033-3"></a><span class="kw">rm</span>(sce)</span></code></pre></div>
+<div class="sourceCode" id="cb935"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb935-1"><a href="dimRedForAnaTop.html#cb935-1"></a><span class="co">#plot(p$gtable)</span></span>
+<span id="cb935-2"><a href="dimRedForAnaTop.html#cb935-2"></a><span class="kw">rm</span>(pc1, design, fit, de.genes, heat.vals)</span>
+<span id="cb935-3"><a href="dimRedForAnaTop.html#cb935-3"></a><span class="kw">rm</span>(sce)</span></code></pre></div>
 </div>
-<div id="session-information-9" class="section level2">
-<h2><span class="header-section-number">13.4</span> Session information</h2>
-<div class="sourceCode" id="cb1034"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1034-1"><a href="dimRedForAnaTop.html#cb1034-1"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
+<div id="session-information-8" class="section level2">
+<h2><span class="header-section-number">12.4</span> Session information</h2>
+<details>
+<div class="sourceCode" id="cb936"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb936-1"><a href="dimRedForAnaTop.html#cb936-1"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
 <pre><code>## R version 4.0.3 (2020-10-10)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
 ## Running under: CentOS Linux 8
@@ -1571,6 +1578,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ## [71] viridisLite_0.4.0         tibble_3.1.1             
 ## [73] beeswarm_0.3.1            bluster_1.0.0            
 ## [75] statmod_1.4.35            ellipsis_0.3.2</code></pre>
+</details>
 
 </div>
 </div>
@@ -1579,8 +1587,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           </div>
         </div>
       </div>
-<a href="batch-correction-gsm3872442-set.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="DataIntegration-PBMMCTop.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="featSelecTop.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="batch-correction-gsm3872442-set.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
