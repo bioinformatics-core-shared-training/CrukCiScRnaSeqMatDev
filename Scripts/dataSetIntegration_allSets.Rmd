@@ -32,13 +32,15 @@ params:
 <!--
   setSuf: "_5hCellPerSpl"
 -->
-  
-# Data integration - all Caron sample types {#dsi{{setSuf}}_allSetsTop}
 
-<!--
-**CODE NEEDS UPDATING**
-**as were other data set integration chapters with fewr sample types** 
--->
+```{r}
+setSuf <- params$setSuf
+if(params$bookType == "mk") {setSuf <- "_allCells"}
+if(exists("isChild")) { setSuf <- "{{setSuf}}" }
+anaStg <- gsub("_", "-", setSuf)
+```
+ 
+# Data integration - all Caron sample types {#dsi`r anaStg`-allSetsTop}
 
 ```{r variables_dsi{{setSuf}}_allSets}
 projDir <- params$projDir
