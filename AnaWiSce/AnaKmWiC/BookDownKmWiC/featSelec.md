@@ -3,7 +3,7 @@ title: "CRUK CI Summer School 2020 - introduction to single-cell RNA-seq analysi
 subtitle: 'Feature selection'
 
 author: "Stephane Ballereau, Zeynep Kalender Atak, Katarzyna Kania"
-#date: 'May 19, 2021'
+#date: 'May 21, 2021'
 date: July 2020
 #bibliography: bibliography.bib
 #csl: biomed-central.csl
@@ -460,7 +460,7 @@ g <- g + scale_x_discrete(breaks=rownames(dec.sce)[chosen.genes.index.tmp],
 g
 ```
 
-<img src="featSelec_files/figure-html/plot_count_violoin_HVGbot20-1.png" width="672" />
+<img src="featSelec_files/figure-html/plot_count_violin_HVGbot20-1.png" width="672" />
 
 ```r
 rm(chosen.genes.index.tmp, tmpName)

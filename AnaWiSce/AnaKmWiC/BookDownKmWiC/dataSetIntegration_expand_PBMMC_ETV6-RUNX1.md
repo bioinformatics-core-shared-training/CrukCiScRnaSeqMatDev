@@ -90,7 +90,16 @@ params:
   setSuf: "_allCells"
 -->
 
-# Data integration - PBMMC and ETV6-RUNX {#dsi_allCells_PBMMC_ETV6-RUNX1Top}
+
+```r
+# need string for analysis name to use in header identifier
+setSuf <- params$setSuf
+if(params$bookType == "mk") {setSuf <- "_5hCellPerSpl"}
+if(exists("isChild")) { setSuf <- "_allCells" }
+anaStg <- gsub("_", "-", setSuf)
+```
+
+# Data integration - PBMMC and ETV6-RUNX {#dsi-allCells-PBMMC-ETV6-RUNX1Top}
 
 
 ```r
@@ -131,13 +140,13 @@ Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datas
 
 Large single-cell RNA sequencing (scRNA-seq) projects usually need to generate data across multiple batches due to logistical constraints. However, the processing of different batches is often subject to uncontrollable differences, e.g., changes in operator, differences in reagent quality. This results in systematic differences in the observed expression in cells from different batches, which we refer to as “batch effects”. Batch effects are problematic as they can be major drivers of heterogeneity in the data, masking the relevant biological differences and complicating interpretation of the results.
 
-## Load data
-
 Computational correction of these effects is critical for eliminating batch-to-batch variation, allowing data across multiple batches to be combined for common downstream analysis. However, existing methods based on linear models (Ritchie et al. 2015; Leek et al. 2012) assume that the composition of cell populations are either known or the same across batches. To overcome these limitations, bespoke methods have been developed for batch correction of single-cell data (Haghverdi et al. 2018; Butler et al. 2018; Lin et al. 2019) that do not require a priori knowledge about the composition of the population. This allows them to be used in workflows for exploratory analyses of scRNA-seq data where such knowledge is usually unavailable.
 
-## Loading the data
+## Load the data
 
-We will load the R file keeping the SCE object with the normalised counts, and subset 1000 cells per sample.
+We will load the R file keeping the SCE object with the normalised counts.
+
+<!-- and subset 1000 cells per sample. -->
 
 
 ```r
@@ -181,6 +190,8 @@ sce
 colnames(rowData(sce))[colnames(rowData(sce)) == "strand"] <- "strandNum"
 ```
 
+<!-- TODO see renameSamples_dsi -->
+
 We next subset the data for the PBMMC,ETV6-RUNX1 sample group:
 
 
@@ -205,7 +216,7 @@ if(setSuf == "_allCells")
 {
   for(spx in splVec)
   {
-    #nbCellsToGet <- min(ncol(sce), nbCells)
+    #nbCellsToGet <- min(ncol(sce), nbCells) # DEV only, faster with fewer cells.
   	vec.bc <- colData(sce) %>%
   		data.frame() %>%
   		filter(Sample.Name == spx) %>%
@@ -231,6 +242,7 @@ nbSpl <- length(all.sce)
 ```
 
 We then apply the standard workflow to each sample separately:
+
 * normalisation,
 * variance modelling
 * dimensionality reduction
@@ -360,7 +372,7 @@ snn.gr <- buildSNNGraph(uncorrected, use.dimred="PCA")
 # identify cluster with the walk trap method
 clusters <- igraph::cluster_walktrap(snn.gr)$membership
 # get number of cells for each {cluster, batch} pair
-tab <- table(Cluster=clusters, Batch=uncorrected$batch)
+#tab <- table(Cluster=clusters, Batch=uncorrected$batch)
 #tab
 tmpMat <- data.frame("clusters"=clusters, "batch"=uncorrected$batch)
 ```
@@ -395,6 +407,7 @@ We can also visualize the uncorrected coordinates using a t-SNE plot. The strong
 ```r
 set.seed(1111001)
 uncorrected <- runTSNE(uncorrected, dimred="PCA")
+# draw:
 p <- plotTSNE(uncorrected,
 	      colour_by="batch",
 	      shape_by="source_name") +
@@ -469,8 +482,8 @@ rescaled2 <- runPCA(rescaled2, subset_row=chosen.hvgs, exprs_values="corrected")
 
 snn.gr <- buildSNNGraph(rescaled2, use.dimred="PCA")
 clusters.resc <- igraph::cluster_walktrap(snn.gr)$membership
-tab.resc <- table(Cluster=clusters.resc, Batch=rescaled2$batch)
-#tab.resc
+##tab.resc <- table(Cluster=clusters.resc, Batch=rescaled2$batch)
+##tab.resc
 tmpMat <- data.frame("clusters"=clusters.resc, "batch"=rescaled2$batch)
 ```
 
@@ -519,7 +532,7 @@ p + facet_wrap(~uncorrected$source_name)
 
 <img src="dataSetIntegration_expand_PBMMC_ETV6-RUNX1_files/figure-html/linReg_diagTsnePlotSplit_dsi_allCells_PBMMC_ETV6-RUNX1-1.png" width="672" />
 
-## Performing MNN correction
+## Mutual Nearest Neighbour correction
 
 ### Algorithm overview
 
@@ -1330,8 +1343,8 @@ ariVec <- vector(mode = "numeric", length = length(splVec))
 names(ariVec) <- splVec
 for (splIdx in 1:length(splVec)) {
   ariVec[splIdx] <- pairwiseRand(
-    ref=as.integer(clusters.mnn[rescaled2$batch==splVec[splIdx]]),
-    alt=as.integer(colLabels(rescaled[[splIdx]])),
+    ref=as.integer(colLabels(rescaled[[splIdx]])),
+    alt=as.integer(clusters.mnn[rescaled2$batch==splVec[splIdx]]),
     mode="index")
 }
 ariVec <- round(ariVec,2)
@@ -1359,7 +1372,7 @@ We can also break down the **adjusted Rand index (ARI)** into per-cluster ratios
 tabList <- vector(mode = "list", length = length(splVec))
 for (splIdx in 1:length(splVec)) {
   tabList[[splIdx]] <- pairwiseRand(
-	  ref=as.integer(colLabels(rescaled[[splIdx]])),
+    ref=as.integer(colLabels(rescaled[[splIdx]])),
     alt=as.integer(clusters.mnn[rescaled2$batch==splVec[splIdx]])
 	)
 }

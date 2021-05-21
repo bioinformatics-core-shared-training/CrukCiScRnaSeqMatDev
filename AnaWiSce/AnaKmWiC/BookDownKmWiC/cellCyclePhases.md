@@ -85,8 +85,6 @@ fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_uncorr.Rds",
 uncorrected <- readRDS(file=fn)
 
 # Read object in:
-#tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clust.Rds",
-#                 projDir, outDirBit, setName, setSuf)
 tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s%s_%s_clust.Rds",
                  projDir, outDirBit, setName, setSuf, dsiSuf, splSetToGet2)
 

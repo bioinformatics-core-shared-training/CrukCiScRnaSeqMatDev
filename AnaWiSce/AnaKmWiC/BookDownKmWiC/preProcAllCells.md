@@ -2131,8 +2131,8 @@ saveRDS(sce, tmpFn)
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sce_postQc%s.Rds",
 		 projDir, outDirBit, setSuf)
-print("DEV"); print(getwd()); print(tmpFn)
-#sce <- readRDS(tmpFn)
+#print("DEV"); print(getwd()); print(tmpFn)
+sce <- readRDS(tmpFn)
 ```
 
 ## Novelty
@@ -2424,8 +2424,8 @@ saveRDS(sce.nz, tmpFn)
 # Read object in:
 tmpFn <- sprintf("%s/%s/Robjects/sce_nz_postQc%s.Rds",
 		 projDir, outDirBit, setSuf)
-print("DEV"); print(getwd()); print(tmpFn)
-##sce.nz <- readRDS(tmpFn)
+#print("DEV"); print(getwd()); print(tmpFn)
+sce.nz <- readRDS(tmpFn)
 ```
 
 Compare with filter above (mind that the comparison is not fair because we used a less stringent, hard filtering on mitochondrial content):
