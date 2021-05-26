@@ -1,7 +1,7 @@
 ---
-title: "CRUK CI Summer School 2020 - introduction to single-cell RNA-seq analysis"
+title: "CRUK CI Summer School 2021 - introduction to single-cell RNA-seq analysis"
 subtitle: 'Quality Control'
-author: "Stephane Ballereau"
+author: "Stephane Ballereau, Ashley Sawle"
 output:
   html_document:
     df_print: paged
@@ -15,15 +15,6 @@ output:
     number_sections: true
   html_book:
     code_folding: hide
-params:
-  projDir: "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020"
-  inpDirBit: "AnaWiSce/Ana1"
-  outDirBit: "AnaWiSce/Ana1"
-  bookType: "mk"
-  cacheBool: FALSE
-  setName: "caron"
-  setSuf: "_allCells"
-  dirRel: "../.."
 ---
 
 # Quality Control - with 500 cells per sample {#PreProcTop}
