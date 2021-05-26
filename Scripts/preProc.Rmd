@@ -90,26 +90,26 @@ library(tidyverse)
 
 We will load both the Caron and Hca data sets.
 
-```{r sampleSheet_preProc}
-# CaronBourque2020
-cb_sampleSheetFn <- file.path(projDir, "Data/CaronBourque2020/SraRunTable.txt")
-# Human Cell Atlas
-hca_sampleSheetFn <- file.path(projDir, "Data/Hca/accList_Hca.txt")
+The meta data for the Caron data set can be obtained by the SRA Run Selector:
 
-# read sample sheet in:
-splShtColToKeep <- c("Run", "Sample.Name", "source_name")
+https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA548203&o=acc_s%3Aa
 
-cb_sampleSheet <- read.table(cb_sampleSheetFn, header=T, sep=",")
-hca_sampleSheet <- read.table(hca_sampleSheetFn, header=F, sep=",")
-colnames(hca_sampleSheet) <- "Sample.Name"
-hca_sampleSheet$Run <- hca_sampleSheet$Sample.Name
-hca_sampleSheet$source_name <- "ABMMC" # adult BMMC
+The meta data for the Hca...
 
-sampleSheet <- rbind(cb_sampleSheet[,splShtColToKeep], hca_sampleSheet[,splShtColToKeep])
 
-sampleSheet %>%
+```{r samplesheet_preProc}
+samplesheet.cb <- read_csv("Course_Materials/Data/CaronBourque2020/SraRunTable.txt")
+samplesheet.hca <- read_csv("Course_Materials/Data/Hca/accList_Hca.txt", 
+                            col_names = "Run") %>% 
+    mutate(`Sample Name`=Run, source_name = "ABMMC")
+samplesheet <- bind_rows(samplesheet.cb, samplesheet.hca) %>%
+    select(Run, SampleName=`Sample Name`, source_name)
+```
+
+```{r samplesheet_display_preProc, echo=FALSE}
+samplesheet %>%
 	as.data.frame() %>%
-	datatable(rownames = FALSE)
+	datatable(rownames = FALSE, options = list(dom="tpl", nrows=20))
 ```
 
 ## Data representation
