@@ -65,6 +65,18 @@ We will then:
 
 ## Load packages
 
+```{r libraries_preProc}
+library(SingleCellExperiment)
+library(Matrix)
+library(DropletUtils)
+library(scater)
+library(scran)
+library(igraph)
+library(biomaRt)
+library(irlba)
+library(tidyverse)
+```
+
 * SingleCellExperiment - to store the data
 * Matrix - to deal with sparse and/or large matrices
 * DropletUtils - utilities for the analysis of droplet-based, inc. cell counting
@@ -72,40 +84,7 @@ We will then:
 * scran - normalisation
 * igraph - graphs 
 * biomaRt - for gene annotation
-* ggplot2 - for plotting
 * irlba - for faster PCA
-
-```{r variables_qc}
-projDir <- params$projDir
-wrkDir <- sprintf("%s/CaronBourque2020/grch38300", projDir) 
-outDirBit <- params$outDirBit # "AnaWiSeurat/Attempt1"
-qcPlotDirBit <- "Plots/Qc"
-poolBool <- TRUE # FALSE # whether to read each sample in and pool them and write object to file, or just load that file.
-biomartBool <- TRUE # FALSE # biomaRt sometimes fails, do it once, write to file and use that copy. See geneAnnot.Rmd
-addQcBool <- TRUE
-runAll <- TRUE
-saveRds <- TRUE # overwrite existing Rds files
-dir.create(sprintf("%s/%s/%s", projDir, outDirBit, qcPlotDirBit),
-           showWarnings = FALSE,
-           recursive = TRUE)
-dir.create(sprintf("%s/%s/Robjects", projDir, outDirBit),
-	   showWarnings = FALSE)
-```
-
-```{r libraries_preProc, include=FALSE, cache=FALSE}
-library(scran)
-library(scater)
-library(DropletUtils)
-library(ggplot2)
-library(SingleCellExperiment)
-library(igraph)
-library(Matrix)
-library(biomaRt)
-library(irlba)
-library(DT)
-library(dplyr)
-library(Cairo)
-```
 
 ## Sample sheet
 
