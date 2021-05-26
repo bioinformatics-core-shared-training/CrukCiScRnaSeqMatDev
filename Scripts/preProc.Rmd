@@ -96,11 +96,10 @@ https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA548203&o=acc_s%3Aa
 
 The meta data for the Hca...
 
-
 ```{r samplesheet_preProc}
 samplesheet.cb <- read_csv("Course_Materials/Data/CaronBourque2020/SraRunTable.txt")
-samplesheet.hca <- read_csv("Course_Materials/Data/Hca/accList_Hca.txt", 
-                            col_names = "Run") %>% 
+samplesheet.hca <- read_csv("Course_Materials/Data/Hca/accList_Hca.txt",
+                            col_names = "Run") %>%
     mutate(`Sample Name`=Run, source_name = "ABMMC")
 samplesheet <- bind_rows(samplesheet.cb, samplesheet.hca) %>%
     select(Run, SampleName=`Sample Name`, source_name)
@@ -112,66 +111,83 @@ samplesheet %>%
 	datatable(rownames = FALSE, options = list(dom="tpl", nrows=20))
 ```
 
-## Data representation
+## Load the data
 
-We will use a [SingleCellExperiment](https://bioconductor.org/packages/SingleCellExperiment/) object that is described [here](https://www.nature.com/articles/s41592-019-0654-x) and stores various data types:
-
-* the count matrix
-* feature (gene) annotation
-* droplet annotation
-* outcome of downstream analysis such as dimensionality reduction
-
-```{r tenxLibStructureV3, out.width="80%"}
-tmpFn <- sprintf("%s/Images/tenxLibStructureV3.png", "..")
-knitr::include_graphics(tmpFn, auto_pdf = TRUE)
-rm(tmpFn)
-```
-
-## Example
-
-We will load the data for the first sample in the sample sheet: `r sampleSheet[1,"Run"]`. 
+We will load the data for the **SRR9264343**. 
 
 ```{r example_load}
-i <- 1
-sample.path <- sprintf("%s/%s/%s/outs/raw_feature_bc_matrix/",
-                       wrkDir,
-                       sampleSheet[i,"Run"],
-                       sampleSheet[i,"Run"])
+sample.path <- "Course_Materials/CellRanger_Outputs/SRR9264343/outs/raw_feature_bc_matrix/"
 sce.raw <- read10xCounts(sample.path, col.names=TRUE)
 sce.raw
 ```
 
-We can access these different types of data with various functions.
+## The `SingleCellExperiment` object
 
-Number of genes and droplets in the count matrix:
+The data has been loaded as a
+[SingleCellExperiment](https://bioconductor.org/packages/SingleCellExperiment/)
+object. The details of the structure of the object are described
+[here](https://www.nature.com/articles/s41592-019-0654-x). In summary, it stores
+various data types in a single object. Currently it will contain:
+
+* the count matrix
+* feature (gene) annotation
+* droplet annotation
+
+Later we will also add the outcomes of downstream analysis such as
+dimensionality reduction.
+
+### The counts matrix
+
+Compared to bulk RNA-seq, Single-cell RNA-seq data is sparse, i.e. there many
+missing values or zeroes.  This is particularly true with droplet-based methods
+such as 10X, mostly because:
+
+* any given cell does not express each gene
+* the library preparation does not capture all transcript the cell does express
+* the sequencing depth per cell is far lower and so fewer of the expressed genes
+are detected
+
+We can access the counts matrix with `counts`. Given the large number of
+droplets in a sample, count matrices can be large. They are however very sparse
+and can be stored in a 'sparse matrix' that only stores non-zero values, for
+example a `dgCMatrix` object. Transforming the raw count matrix to a sparse 
+matrix object will significantly reduce the memory required for processing the
+data.
+
+```{r countsMatrix}
+counts(sce.raw) <- as(counts(sce.raw), "dgCMatrix")
+counts(sce.raw)[1:10, 1:10]
+```
+
+Number of genes (rows) and droplets (columns) in the count matrix:
 
 ```{r example_dim}
 dim(counts(sce.raw))
 ```
 
-Features, with rowData():
+### Features
+
+Details about the "features" (in this case genes) can by accessed using the 
+`rowData` function. Currently it contains the ensembl gene ID and the gene 
+symbol, which have been derived from the 10x reference used by CellRanger. It
+also contains a "Type" column, which tells us what sort of data we are looking
+at; in this case it is "Expression" for gene expression. If we wish to, we can
+add further annotation to the features by adding extra columns to this data 
+frame.
 
 ```{r example_row}
 head(rowData(sce.raw))
 ```
 
-Samples, with colData():
+### Droplet annotation
+
+Details about the droplets can be accessed using `colData`. Currently it
+contains the sample names and droplet Barcodes. As with the feature data, we can
+add additional information about each droplet, e.g. counts of genes or the
+percentage of mitochondrial genes, to this data frame.
 
 ```{r example_col}
 head(colData(sce.raw))
-```
-
-Single-cell RNA-seq data compared to bulk RNA-seq is sparse, especially with droplet-based methods such as 10X, mostly because:
-
-* a given cell does not express each gene
-* the library preparation does not capture all transcript the cell does express
-* the sequencing depth per cell is far lower
-
-Counts, with counts(). Given the large number of droplets in a sample, count matrices can be large. They are however very sparse and can be stored in a 'sparse matrix' that only stores non-zero values, for example a 'dgCMatrix' object ('DelayedArray' class).
-
-```{r example_counts}
-counts(sce.raw) <- as(counts(sce.raw), "dgCMatrix")
-counts(sce.raw)[1:10, 1:10]
 ```
 
 ## Mapping QC
