@@ -17,19 +17,16 @@ output:
     code_folding: hide
 ---
 
-# Quality Control - with 500 cells per sample {#PreProcTop}
+# Quality Control {#PreProcTop}
 
-```{r preProc.knitr_options, echo=FALSE, results="hide", message=FALSE, dev="CairoPNG"}
-cacheBool <- params$cacheBool
-require(knitr)
-opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=cacheBool)
+```{r setup, echo=FALSE, include=FALSE, message=FALSE}
+library(DT)
+library(Cairo)
+library(knitr)
+opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE, cache=TRUE)
 opts_chunk$set(fig.width=7, fig.height=7)
-#opts_chunk$set(dev = c("png"))
-#options(bitmapType='cairo')
-#options(bitmapType='cairo-png')
-#opts_chunk$set(dev.args = list(type = "cairo"))
 opts_chunk$set(dev="CairoPNG")
-set.seed(123) # for reproducibility
+set.seed(123)
 ```
 
 ## Introduction
