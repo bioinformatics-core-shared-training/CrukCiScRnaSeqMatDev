@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 6 Dimensionality reduction for visualisation | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</title>
+  <meta name="description" content="A report for all analyses (bookdown::gitbook)." />
+  <meta name="generator" content="bookdown 0.22 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 6 Dimensionality reduction for visualisation | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="A report for all analyses (bookdown::gitbook)." />
+  <meta name="github-repo" content="rstudio/bookdown-demo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 6 Dimensionality reduction for visualisation | CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis" />
+  
+  <meta name="twitter:description" content="A report for all analyses (bookdown::gitbook)." />
+  
+
+<meta name="author" content="Stephane Ballereau, Zeynep Kalender Atak" />
+
+
+<meta name="date" content="2021-05-26" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="NormalisationCaron5hcpsTop.html"/>
+<link rel="next" href="identifying-confounding-factors-caron-set.html"/>
+<script src="libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<link href="libs/anchor-sections-1.0.1/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0.1/anchor-sections.js"></script>
+<script src="libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding-0.18/datatables.js"></script>
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.10.20/js/jquery.dataTables.min.js"></script>
+<link href="libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
+<link href="libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet" />
+<script src="libs/nouislider-7.0.10/jquery.nouislider.min.js"></script>
+<link href="libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet" />
+<script src="libs/selectize-0.12.0/selectize.min.js"></script>
+
+<script>
+/* ========================================================================
+ * Bootstrap: transition.js v3.3.7
+ * http://getbootstrap.com/javascript/#transitions
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      WebkitTransition : 'webkitTransitionEnd',
+      MozTransition    : 'transitionend',
+      OTransition      : 'oTransitionEnd otransitionend',
+      transition       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+
+    return false // explicit for ie8 (  ._.)
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false
+    var $el = this
+    $(this).one('bsTransitionEnd', function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+
+    if (!$.support.transition) return
+
+    $.event.special.bsTransitionEnd = {
+      bindType: $.support.transition.end,
+      delegateType: $.support.transition.end,
+      handle: function (e) {
+        if ($(e.target).is(this)) return e.handleObj.handler.apply(this, arguments)
+      }
+    }
+  })
+
+}(jQuery);
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: collapse.js v3.3.7
+ * http://getbootstrap.com/javascript/#collapse
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+/* jshint latedef: false */
+
++function ($) {
+  'use strict';
+
+  // COLLAPSE PUBLIC CLASS DEFINITION
+  // ================================
+
+  var Collapse = function (element, options) {
+    this.$element      = $(element)
+    this.options       = $.extend({}, Collapse.DEFAULTS, options)
+    this.$trigger      = $('[data-toggle="collapse"][href="#' + element.id + '"],' +
+                           '[data-toggle="collapse"][data-target="#' + element.id + '"]')
+    this.transitioning = null
+
+    if (this.options.parent) {
+      this.$parent = this.getParent()
+    } else {
+      this.addAriaAndCollapsedClass(this.$element, this.$trigger)
+    }
+
+    if (this.options.toggle) this.toggle()
+  }
+
+  Collapse.VERSION  = '3.3.7'
+
+  Collapse.TRANSITION_DURATION = 350
+
+  Collapse.DEFAULTS = {
+    toggle: true
+  }
+
+  Collapse.prototype.dimension = function () {
+    var hasWidth = this.$element.hasClass('width')
+    return hasWidth ? 'width' : 'height'
+  }
+
+  Collapse.prototype.show = function () {
+    if (this.transitioning || this.$element.hasClass('in')) return
+
+    var activesData
+    var actives = this.$parent && this.$parent.children('.panel').children('.in, .collapsing')
+
+    if (actives && actives.length) {
+      activesData = actives.data('bs.collapse')
+      if (activesData && activesData.transitioning) return
+    }
+
+    var startEvent = $.Event('show.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    if (actives && actives.length) {
+      Plugin.call(actives, 'hide')
+      activesData || actives.data('bs.collapse', null)
+    }
+
+    var dimension = this.dimension()
+
+    this.$element
+      .removeClass('collapse')
+      .addClass('collapsing')[dimension](0)
+      .attr('aria-expanded', true)
+
+    this.$trigger
+      .removeClass('collapsed')
+      .attr('aria-expanded', true)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse in')[dimension]('')
+      this.transitioning = 0
+      this.$element
+        .trigger('shown.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    var scrollSize = $.camelCase(['scroll', dimension].join('-'))
+
+    this.$element
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)[dimension](this.$element[0][scrollSize])
+  }
+
+  Collapse.prototype.hide = function () {
+    if (this.transitioning || !this.$element.hasClass('in')) return
+
+    var startEvent = $.Event('hide.bs.collapse')
+    this.$element.trigger(startEvent)
+    if (startEvent.isDefaultPrevented()) return
+
+    var dimension = this.dimension()
+
+    this.$element[dimension](this.$element[dimension]())[0].offsetHeight
+
+    this.$element
+      .addClass('collapsing')
+      .removeClass('collapse in')
+      .attr('aria-expanded', false)
+
+    this.$trigger
+      .addClass('collapsed')
+      .attr('aria-expanded', false)
+
+    this.transitioning = 1
+
+    var complete = function () {
+      this.transitioning = 0
+      this.$element
+        .removeClass('collapsing')
+        .addClass('collapse')
+        .trigger('hidden.bs.collapse')
+    }
+
+    if (!$.support.transition) return complete.call(this)
+
+    this.$element
+      [dimension](0)
+      .one('bsTransitionEnd', $.proxy(complete, this))
+      .emulateTransitionEnd(Collapse.TRANSITION_DURATION)
+  }
+
+  Collapse.prototype.toggle = function () {
+    this[this.$element.hasClass('in') ? 'hide' : 'show']()
+  }
+
+  Collapse.prototype.getParent = function () {
+    return $(this.options.parent)
+      .find('[data-toggle="collapse"][data-parent="' + this.options.parent + '"]')
+      .each($.proxy(function (i, element) {
+        var $element = $(element)
+        this.addAriaAndCollapsedClass(getTargetFromTrigger($element), $element)
+      }, this))
+      .end()
+  }
+
+  Collapse.prototype.addAriaAndCollapsedClass = function ($element, $trigger) {
+    var isOpen = $element.hasClass('in')
+
+    $element.attr('aria-expanded', isOpen)
+    $trigger
+      .toggleClass('collapsed', !isOpen)
+      .attr('aria-expanded', isOpen)
+  }
+
+  function getTargetFromTrigger($trigger) {
+    var href
+    var target = $trigger.attr('data-target')
+      || (href = $trigger.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') // strip for ie7
+
+    return $(target)
+  }
+
+
+  // COLLAPSE PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('bs.collapse')
+      var options = $.extend({}, Collapse.DEFAULTS, $this.data(), typeof option == 'object' && option)
+
+      if (!data && options.toggle && /show|hide/.test(option)) options.toggle = false
+      if (!data) $this.data('bs.collapse', (data = new Collapse(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  var old = $.fn.collapse
+
+  $.fn.collapse             = Plugin
+  $.fn.collapse.Constructor = Collapse
+
+
+  // COLLAPSE NO CONFLICT
+  // ====================
+
+  $.fn.collapse.noConflict = function () {
+    $.fn.collapse = old
+    return this
+  }
+
+
+  // COLLAPSE DATA-API
+  // =================
+
+  $(document).on('click.bs.collapse.data-api', '[data-toggle="collapse"]', function (e) {
+    var $this   = $(this)
+
+    if (!$this.attr('data-target')) e.preventDefault()
+
+    var $target = getTargetFromTrigger($this)
+    var data    = $target.data('bs.collapse')
+    var option  = data ? 'toggle' : $this.data()
+
+    Plugin.call($target, option)
+  })
+
+}(jQuery);
+</script>
+<script>
+window.initializeCodeFolding = function(show) {
+
+  // handlers for show-all and hide all
+  $("#rmd-show-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('show');
+    });
+  });
+  $("#rmd-hide-all-code").click(function() {
+    $('div.r-code-collapse').each(function() {
+      $(this).collapse('hide');
+    });
+  });
+
+  // index for unique code element ids
+  var currentIndex = 1;
+
+  // select all R code blocks
+  var rCodeBlocks = $('pre.sourceCode, pre.r, pre.python, pre.bash, pre.sql, pre.cpp, pre.stan');
+  rCodeBlocks.each(function() {
+
+    // create a collapsable div to wrap the code in
+    var div = $('<div class="collapse r-code-collapse"></div>');
+    if (show)
+      div.addClass('in');
+    var id = 'rcode-643E0F36' + currentIndex++;
+    div.attr('id', id);
+    $(this).before(div);
+    $(this).detach().appendTo(div);
+
+    // add a show code button right above
+    var showCodeText = $('<span>' + (show ? 'Hide' : 'Code') + '</span>');
+    var showCodeButton = $('<button type="button" class="btn btn-default btn-xs code-folding-btn pull-right"></button>');
+    showCodeButton.append(showCodeText);
+    showCodeButton
+        .attr('data-toggle', 'collapse')
+        .attr('data-target', '#' + id)
+        .attr('aria-expanded', show)
+        .attr('aria-controls', id);
+
+    var buttonRow = $('<div class="row"></div>');
+    var buttonCol = $('<div class="col-md-12"></div>');
+
+    buttonCol.append(showCodeButton);
+    buttonRow.append(buttonCol);
+
+    div.before(buttonRow);
+
+    // update state of button on show/hide
+    div.on('hidden.bs.collapse', function () {
+      showCodeText.text('Code');
+    });
+    div.on('show.bs.collapse', function () {
+      showCodeText.text('Hide');
+    });
+  });
+
+}
+</script>
+<script>
+/* ========================================================================
+ * Bootstrap: dropdown.js v3.3.7
+ * http://getbootstrap.com/javascript/#dropdowns
+ * ========================================================================
+ * Copyright 2011-2016 Twitter, Inc.
+ * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+ * ======================================================================== */
+
+
++function ($) {
+  'use strict';
+
+  // DROPDOWN CLASS DEFINITION
+  // =========================
+
+  var backdrop = '.dropdown-backdrop'
+  var toggle   = '[data-toggle="dropdown"]'
+  var Dropdown = function (element) {
+    $(element).on('click.bs.dropdown', this.toggle)
+  }
+
+  Dropdown.VERSION = '3.3.7'
+
+  function getParent($this) {
+    var selector = $this.attr('data-target')
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && /#[A-Za-z]/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+    }
+
+    var $parent = selector && $(selector)
+
+    return $parent && $parent.length ? $parent : $this.parent()
+  }
+
+  function clearMenus(e) {
+    if (e && e.which === 3) return
+    $(backdrop).remove()
+    $(toggle).each(function () {
+      var $this         = $(this)
+      var $parent       = getParent($this)
+      var relatedTarget = { relatedTarget: this }
+
+      if (!$parent.hasClass('open')) return
+
+      if (e && e.type == 'click' && /input|textarea/i.test(e.target.tagName) && $.contains($parent[0], e.target)) return
+
+      $parent.trigger(e = $.Event('hide.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this.attr('aria-expanded', 'false')
+      $parent.removeClass('open').trigger($.Event('hidden.bs.dropdown', relatedTarget))
+    })
+  }
+
+  Dropdown.prototype.toggle = function (e) {
+    var $this = $(this)
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    clearMenus()
+
+    if (!isActive) {
+      if ('ontouchstart' in document.documentElement && !$parent.closest('.navbar-nav').length) {
+        // if mobile we use a backdrop because click events don't delegate
+        $(document.createElement('div'))
+          .addClass('dropdown-backdrop')
+          .insertAfter($(this))
+          .on('click', clearMenus)
+      }
+
+      var relatedTarget = { relatedTarget: this }
+      $parent.trigger(e = $.Event('show.bs.dropdown', relatedTarget))
+
+      if (e.isDefaultPrevented()) return
+
+      $this
+        .trigger('focus')
+        .attr('aria-expanded', 'true')
+
+      $parent
+        .toggleClass('open')
+        .trigger($.Event('shown.bs.dropdown', relatedTarget))
+    }
+
+    return false
+  }
+
+  Dropdown.prototype.keydown = function (e) {
+    if (!/(38|40|27|32)/.test(e.which) || /input|textarea/i.test(e.target.tagName)) return
+
+    var $this = $(this)
+
+    e.preventDefault()
+    e.stopPropagation()
+
+    if ($this.is('.disabled, :disabled')) return
+
+    var $parent  = getParent($this)
+    var isActive = $parent.hasClass('open')
+
+    if (!isActive && e.which != 27 || isActive && e.which == 27) {
+      if (e.which == 27) $parent.find(toggle).trigger('focus')
+      return $this.trigger('click')
+    }
+
+    var desc = ' li:not(.disabled):visible a'
+    var $items = $parent.find('.dropdown-menu' + desc)
+
+    if (!$items.length) return
+
+    var index = $items.index(e.target)
+
+    if (e.which == 38 && index > 0)                 index--         // up
+    if (e.which == 40 && index < $items.length - 1) index++         // down
+    if (!~index)                                    index = 0
+
+    $items.eq(index).trigger('focus')
+  }
+
+
+  // DROPDOWN PLUGIN DEFINITION
+  // ==========================
+
+  function Plugin(option) {
+    return this.each(function () {
+      var $this = $(this)
+      var data  = $this.data('bs.dropdown')
+
+      if (!data) $this.data('bs.dropdown', (data = new Dropdown(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  var old = $.fn.dropdown
+
+  $.fn.dropdown             = Plugin
+  $.fn.dropdown.Constructor = Dropdown
+
+
+  // DROPDOWN NO CONFLICT
+  // ====================
+
+  $.fn.dropdown.noConflict = function () {
+    $.fn.dropdown = old
+    return this
+  }
+
+
+  // APPLY TO STANDARD DROPDOWN ELEMENTS
+  // ===================================
+
+  $(document)
+    .on('click.bs.dropdown.data-api', clearMenus)
+    .on('click.bs.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('click.bs.dropdown.data-api', toggle, Dropdown.prototype.toggle)
+    .on('keydown.bs.dropdown.data-api', toggle, Dropdown.prototype.keydown)
+    .on('keydown.bs.dropdown.data-api', '.dropdown-menu', Dropdown.prototype.keydown)
+
+}(jQuery);
+</script>
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+.row { display: flex; }
+.collapse { display: none; }
+.in { display:block }
+.pull-right > .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+.open > .dropdown-menu {
+    display: block;
+}
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1000;
+    display: none;
+    float: left;
+    min-width: 160px;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #ccc;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+}
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("show" === "hide");
+});
+</script>
+
+
+<script>
+document.write('<div class="btn-group pull-right" style="position: absolute; top: 20%; right: 2%; z-index: 200"><button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-_extension-text-contrast=""><span>Code</span> <span class="caret"></span></button><ul class="dropdown-menu" style="min-width: 50px;"><li><a id="rmd-show-all-code" href="#">Show All Code</a></li><li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li></ul></div>')
+</script>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">CRUK Functional Genomics Summer School 2020</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Preamble</a><ul>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#the-study"><i class="fa fa-check"></i><b>1.1</b> The study</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#the-plan"><i class="fa fa-check"></i><b>1.2</b> The plan</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#abbreviations"><i class="fa fa-check"></i><b>1.3</b> Abbreviations</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="SeqQualTop.html"><a href="SeqQualTop.html"><i class="fa fa-check"></i><b>2</b> Sequence Quality</a><ul>
+<li class="chapter" data-level="2.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#introduction"><i class="fa fa-check"></i><b>2.1</b> Introduction</a></li>
+<li class="chapter" data-level="2.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#caronbourque2020---fastqc"><i class="fa fa-check"></i><b>2.2</b> CaronBourque2020 - fastqc</a></li>
+<li class="chapter" data-level="2.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#caronbourque2020---multiqc"><i class="fa fa-check"></i><b>2.3</b> CaronBourque2020 - MultiQC</a><ul>
+<li class="chapter" data-level="2.3.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#sample-index-i1"><i class="fa fa-check"></i><b>2.3.1</b> sample index: I1</a></li>
+<li class="chapter" data-level="2.3.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#cell-barcode-umi-r1"><i class="fa fa-check"></i><b>2.3.2</b> cell barcode + UMI: R1</a></li>
+<li class="chapter" data-level="2.3.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#insert-r2"><i class="fa fa-check"></i><b>2.3.3</b> insert: R2</a></li>
+</ul></li>
+<li class="chapter" data-level="2.4" data-path="SeqQualTop.html"><a href="SeqQualTop.html#hca-adult-bmmc---fastqc"><i class="fa fa-check"></i><b>2.4</b> HCA adult BMMC - fastqc</a></li>
+<li class="chapter" data-level="2.5" data-path="SeqQualTop.html"><a href="SeqQualTop.html#hca-adult-bmmc---multiqc"><i class="fa fa-check"></i><b>2.5</b> HCA adult BMMC - MultiQC</a><ul>
+<li class="chapter" data-level="2.5.1" data-path="SeqQualTop.html"><a href="SeqQualTop.html#sample-index-i1-1"><i class="fa fa-check"></i><b>2.5.1</b> sample index: I1</a></li>
+<li class="chapter" data-level="2.5.2" data-path="SeqQualTop.html"><a href="SeqQualTop.html#cell-barcode-umi-r1-1"><i class="fa fa-check"></i><b>2.5.2</b> cell barcode + UMI: R1</a></li>
+<li class="chapter" data-level="2.5.3" data-path="SeqQualTop.html"><a href="SeqQualTop.html#insert-r2-1"><i class="fa fa-check"></i><b>2.5.3</b> insert: R2</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html"><i class="fa fa-check"></i><b>3</b> Alignment and feature counting</a><ul>
+<li class="chapter" data-level="3.1" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#introduction-1"><i class="fa fa-check"></i><b>3.1</b> Introduction</a></li>
+<li class="chapter" data-level="3.2" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-pipeline-in-brief"><i class="fa fa-check"></i><b>3.2</b> 10X cellranger pipeline in brief</a></li>
+<li class="chapter" data-level="3.3" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#sample-sheet"><i class="fa fa-check"></i><b>3.3</b> sample sheet</a></li>
+<li class="chapter" data-level="3.4" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-reports-for-caronbourque2020"><i class="fa fa-check"></i><b>3.4</b> 10X cellranger reports for CaronBourque2020</a></li>
+<li class="chapter" data-level="3.5" data-path="AliFeatCountTop.html"><a href="AliFeatCountTop.html#x-cellranger-reports-for-hcas-adult-bmmcs"><i class="fa fa-check"></i><b>3.5</b> 10X cellranger reports for HCA’s adult BMMCs</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="PreProcTop.html"><a href="PreProcTop.html"><i class="fa fa-check"></i><b>4</b> Quality Control - with 500 cells per sample</a><ul>
+<li class="chapter" data-level="4.1" data-path="PreProcTop.html"><a href="PreProcTop.html#introduction-2"><i class="fa fa-check"></i><b>4.1</b> Introduction</a></li>
+<li class="chapter" data-level="4.2" data-path="PreProcTop.html"><a href="PreProcTop.html#load-packages"><i class="fa fa-check"></i><b>4.2</b> Load packages</a></li>
+<li class="chapter" data-level="4.3" data-path="PreProcTop.html"><a href="PreProcTop.html#sample-sheet-1"><i class="fa fa-check"></i><b>4.3</b> Sample sheet</a></li>
+<li class="chapter" data-level="4.4" data-path="PreProcTop.html"><a href="PreProcTop.html#data-representation"><i class="fa fa-check"></i><b>4.4</b> Data representation</a></li>
+<li class="chapter" data-level="4.5" data-path="PreProcTop.html"><a href="PreProcTop.html#example"><i class="fa fa-check"></i><b>4.5</b> Example</a></li>
+<li class="chapter" data-level="4.6" data-path="PreProcTop.html"><a href="PreProcTop.html#mapping-qc"><i class="fa fa-check"></i><b>4.6</b> Mapping QC</a><ul>
+<li class="chapter" data-level="4.6.1" data-path="PreProcTop.html"><a href="PreProcTop.html#gene-body-coverage"><i class="fa fa-check"></i><b>4.6.1</b> Gene body coverage</a></li>
+<li class="chapter" data-level="4.6.2" data-path="PreProcTop.html"><a href="PreProcTop.html#amplification-rate"><i class="fa fa-check"></i><b>4.6.2</b> Amplification rate</a></li>
+</ul></li>
+<li class="chapter" data-level="4.7" data-path="PreProcTop.html"><a href="PreProcTop.html#cell-calling-for-droplet-data"><i class="fa fa-check"></i><b>4.7</b> Cell calling for droplet data</a><ul>
+<li class="chapter" data-level="4.7.1" data-path="PreProcTop.html"><a href="PreProcTop.html#mixture-model"><i class="fa fa-check"></i><b>4.7.1</b> Mixture model</a></li>
+<li class="chapter" data-level="4.7.2" data-path="PreProcTop.html"><a href="PreProcTop.html#barcode-rank-plot"><i class="fa fa-check"></i><b>4.7.2</b> Barcode rank plot</a></li>
+<li class="chapter" data-level="4.7.3" data-path="PreProcTop.html"><a href="PreProcTop.html#inflection-point"><i class="fa fa-check"></i><b>4.7.3</b> Inflection point</a></li>
+<li class="chapter" data-level="4.7.4" data-path="PreProcTop.html"><a href="PreProcTop.html#cellranger-v1-and-v2"><i class="fa fa-check"></i><b>4.7.4</b> Cellranger v1 and v2</a></li>
+<li class="chapter" data-level="4.7.5" data-path="PreProcTop.html"><a href="PreProcTop.html#dropletutils-and-emptydrops"><i class="fa fa-check"></i><b>4.7.5</b> DropletUtils and EmptyDrops</a></li>
+</ul></li>
+<li class="chapter" data-level="4.8" data-path="PreProcTop.html"><a href="PreProcTop.html#load-filtered-matrices"><i class="fa fa-check"></i><b>4.8</b> Load filtered matrices</a></li>
+<li class="chapter" data-level="4.9" data-path="PreProcTop.html"><a href="PreProcTop.html#properties-of-scrna-seq-data"><i class="fa fa-check"></i><b>4.9</b> Properties of scRNA-seq data</a></li>
+<li class="chapter" data-level="4.10" data-path="PreProcTop.html"><a href="PreProcTop.html#quality-control"><i class="fa fa-check"></i><b>4.10</b> Quality control</a><ul>
+<li class="chapter" data-level="4.10.1" data-path="PreProcTop.html"><a href="PreProcTop.html#qc-metric-distribution"><i class="fa fa-check"></i><b>4.10.1</b> QC metric distribution</a></li>
+</ul></li>
+<li class="chapter" data-level="4.11" data-path="PreProcTop.html"><a href="PreProcTop.html#identification-of-low-quality-cells-with-adaptive-thresholds"><i class="fa fa-check"></i><b>4.11</b> Identification of low-quality cells with adaptive thresholds</a><ul>
+<li class="chapter" data-level="4.11.1" data-path="PreProcTop.html"><a href="PreProcTop.html#library-size"><i class="fa fa-check"></i><b>4.11.1</b> Library size</a></li>
+<li class="chapter" data-level="4.11.2" data-path="PreProcTop.html"><a href="PreProcTop.html#number-of-genes"><i class="fa fa-check"></i><b>4.11.2</b> Number of genes</a></li>
+<li class="chapter" data-level="4.11.3" data-path="PreProcTop.html"><a href="PreProcTop.html#mitochondrial-content"><i class="fa fa-check"></i><b>4.11.3</b> Mitochondrial content</a></li>
+<li class="chapter" data-level="4.11.4" data-path="PreProcTop.html"><a href="PreProcTop.html#summary"><i class="fa fa-check"></i><b>4.11.4</b> Summary</a></li>
+<li class="chapter" data-level="4.11.5" data-path="PreProcTop.html"><a href="PreProcTop.html#all-steps-at-once"><i class="fa fa-check"></i><b>4.11.5</b> All steps at once</a></li>
+<li class="chapter" data-level="4.11.6" data-path="PreProcTop.html"><a href="PreProcTop.html#assumptions"><i class="fa fa-check"></i><b>4.11.6</b> Assumptions</a></li>
+</ul></li>
+<li class="chapter" data-level="4.12" data-path="PreProcTop.html"><a href="PreProcTop.html#experimental-factors"><i class="fa fa-check"></i><b>4.12</b> Experimental factors</a><ul>
+<li class="chapter" data-level="4.12.1" data-path="PreProcTop.html"><a href="PreProcTop.html#identify-poor-quality-batches"><i class="fa fa-check"></i><b>4.12.1</b> Identify poor-quality batches</a><ul>
+<li class="chapter" data-level="4.12.1.1" data-path="PreProcTop.html"><a href="PreProcTop.html#number-of-genes-detected"><i class="fa fa-check"></i><b>4.12.1.1</b> Number of genes detected</a><ul>
+<li class="chapter" data-level="4.12.1.1.1" data-path="PreProcTop.html"><a href="PreProcTop.html#mitochondrial-content-1"><i class="fa fa-check"></i><b>4.12.1.1.1</b> Mitochondrial content</a></li>
+</ul></li>
+<li class="chapter" data-level="4.12.1.2" data-path="PreProcTop.html"><a href="PreProcTop.html#samples-to-check"><i class="fa fa-check"></i><b>4.12.1.2</b> Samples to check</a></li>
+</ul></li>
+<li class="chapter" data-level="4.12.2" data-path="PreProcTop.html"><a href="PreProcTop.html#qc-metrics-space"><i class="fa fa-check"></i><b>4.12.2</b> QC metrics space</a></li>
+<li class="chapter" data-level="4.12.3" data-path="PreProcTop.html"><a href="PreProcTop.html#qc-pca"><i class="fa fa-check"></i><b>4.12.3</b> QC PCA</a></li>
+<li class="chapter" data-level="4.12.4" data-path="PreProcTop.html"><a href="PreProcTop.html#other-diagnostic-plots"><i class="fa fa-check"></i><b>4.12.4</b> Other diagnostic plots</a></li>
+<li class="chapter" data-level="4.12.5" data-path="PreProcTop.html"><a href="PreProcTop.html#filter-low-quality-cells-out"><i class="fa fa-check"></i><b>4.12.5</b> Filter low-quality cells out</a></li>
+</ul></li>
+<li class="chapter" data-level="4.13" data-path="PreProcTop.html"><a href="PreProcTop.html#novelty"><i class="fa fa-check"></i><b>4.13</b> Novelty</a></li>
+<li class="chapter" data-level="4.14" data-path="PreProcTop.html"><a href="PreProcTop.html#qc-based-on-sparsity"><i class="fa fa-check"></i><b>4.14</b> QC based on sparsity</a><ul>
+<li class="chapter" data-level="4.14.1" data-path="PreProcTop.html"><a href="PreProcTop.html#remove-genes-that-are-not-expressed-at-all"><i class="fa fa-check"></i><b>4.14.1</b> Remove genes that are not expressed at all</a></li>
+<li class="chapter" data-level="4.14.2" data-path="PreProcTop.html"><a href="PreProcTop.html#sparsity-plots"><i class="fa fa-check"></i><b>4.14.2</b> Sparsity plots</a></li>
+<li class="chapter" data-level="4.14.3" data-path="PreProcTop.html"><a href="PreProcTop.html#filters"><i class="fa fa-check"></i><b>4.14.3</b> Filters</a></li>
+<li class="chapter" data-level="4.14.4" data-path="PreProcTop.html"><a href="PreProcTop.html#separate-caron-and-hca-batches"><i class="fa fa-check"></i><b>4.14.4</b> Separate Caron and Hca batches</a></li>
+<li class="chapter" data-level="4.14.5" data-path="PreProcTop.html"><a href="PreProcTop.html#caron-only"><i class="fa fa-check"></i><b>4.14.5</b> Caron only</a></li>
+<li class="chapter" data-level="4.14.6" data-path="PreProcTop.html"><a href="PreProcTop.html#hca-only"><i class="fa fa-check"></i><b>4.14.6</b> Hca only</a></li>
+</ul></li>
+<li class="chapter" data-level="4.15" data-path="PreProcTop.html"><a href="PreProcTop.html#session-information"><i class="fa fa-check"></i><b>4.15</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html"><i class="fa fa-check"></i><b>5</b> Normalisation - Caron set</a><ul>
+<li class="chapter" data-level="5.1" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#scaling-normalization"><i class="fa fa-check"></i><b>5.1</b> Scaling normalization</a><ul>
+<li class="chapter" data-level="5.1.1" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#cpm"><i class="fa fa-check"></i><b>5.1.1</b> CPM</a></li>
+<li class="chapter" data-level="5.1.2" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#deseqs-size-factor"><i class="fa fa-check"></i><b>5.1.2</b> DESeq’s size factor</a></li>
+<li class="chapter" data-level="5.1.3" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#weighted-trimmed-mean-of-m-values"><i class="fa fa-check"></i><b>5.1.3</b> Weighted Trimmed mean of M-values</a></li>
+<li class="chapter" data-level="5.1.4" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#library-size-normalization"><i class="fa fa-check"></i><b>5.1.4</b> Library size normalization</a></li>
+<li class="chapter" data-level="5.1.5" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#deconvolution"><i class="fa fa-check"></i><b>5.1.5</b> Deconvolution</a><ul>
+<li class="chapter" data-level="5.1.5.1" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#cluster-cells"><i class="fa fa-check"></i><b>5.1.5.1</b> Cluster cells</a></li>
+<li class="chapter" data-level="5.1.5.2" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#compute-size-factors"><i class="fa fa-check"></i><b>5.1.5.2</b> Compute size factors</a></li>
+<li class="chapter" data-level="5.1.5.3" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#apply-size-factors"><i class="fa fa-check"></i><b>5.1.5.3</b> Apply size factors</a></li>
+<li class="chapter" data-level="5.1.5.4" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#save-object"><i class="fa fa-check"></i><b>5.1.5.4</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="5.2" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#sctransform"><i class="fa fa-check"></i><b>5.2</b> SCTransform</a><ul>
+<li class="chapter" data-level="5.2.1" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#inspect-data"><i class="fa fa-check"></i><b>5.2.1</b> Inspect data</a></li>
+<li class="chapter" data-level="5.2.2" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#transformation"><i class="fa fa-check"></i><b>5.2.2</b> Transformation</a></li>
+<li class="chapter" data-level="5.2.3" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#save-sce-object"><i class="fa fa-check"></i><b>5.2.3</b> Save SCE object</a></li>
+</ul></li>
+<li class="chapter" data-level="5.3" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#visualisation"><i class="fa fa-check"></i><b>5.3</b> Visualisation</a><ul>
+<li class="chapter" data-level="5.3.1" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#log-raw-counts"><i class="fa fa-check"></i><b>5.3.1</b> log raw counts</a></li>
+<li class="chapter" data-level="5.3.2" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#log-cpm"><i class="fa fa-check"></i><b>5.3.2</b> log CPM</a></li>
+<li class="chapter" data-level="5.3.3" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#scran"><i class="fa fa-check"></i><b>5.3.3</b> scran</a></li>
+<li class="chapter" data-level="5.3.4" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#sctransform-1"><i class="fa fa-check"></i><b>5.3.4</b> SCTransform</a></li>
+</ul></li>
+<li class="chapter" data-level="5.4" data-path="NormalisationCaron5hcpsTop.html"><a href="NormalisationCaron5hcpsTop.html#session-information-1"><i class="fa fa-check"></i><b>5.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html"><i class="fa fa-check"></i><b>6</b> Dimensionality reduction for visualisation</a><ul>
+<li class="chapter" data-level="6.1" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#principal-component-analysis"><i class="fa fa-check"></i><b>6.1</b> Principal Component Analysis</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#description"><i class="fa fa-check"></i><b>6.1.1</b> Description</a></li>
+<li class="chapter" data-level="6.1.2" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#example-1"><i class="fa fa-check"></i><b>6.1.2</b> Example</a></li>
+</ul></li>
+<li class="chapter" data-level="6.2" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#load-packages-1"><i class="fa fa-check"></i><b>6.2</b> Load packages</a></li>
+<li class="chapter" data-level="6.3" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#load-data"><i class="fa fa-check"></i><b>6.3</b> Load data</a></li>
+<li class="chapter" data-level="6.4" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#pca"><i class="fa fa-check"></i><b>6.4</b> PCA</a><ul>
+<li class="chapter" data-level="6.4.1" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#correlation-between-pcs-and-the-total-number-of-features-detected"><i class="fa fa-check"></i><b>6.4.1</b> Correlation between PCs and the total number of features detected</a></li>
+</ul></li>
+<li class="chapter" data-level="6.5" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#t-sne-t-distributed-stochastic-neighbor-embedding"><i class="fa fa-check"></i><b>6.5</b> t-SNE: t-Distributed Stochastic Neighbor Embedding</a><ul>
+<li class="chapter" data-level="6.5.1" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#perplexity"><i class="fa fa-check"></i><b>6.5.1</b> Perplexity</a></li>
+<li class="chapter" data-level="6.5.2" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#stochasticity"><i class="fa fa-check"></i><b>6.5.2</b> Stochasticity</a></li>
+</ul></li>
+<li class="chapter" data-level="6.6" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#umap"><i class="fa fa-check"></i><b>6.6</b> UMAP</a></li>
+<li class="chapter" data-level="6.7" data-path="dimRedForVizTop.html"><a href="dimRedForVizTop.html#session-information-2"><i class="fa fa-check"></i><b>6.7</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html"><i class="fa fa-check"></i><b>7</b> Identifying confounding factors - Caron set</a><ul>
+<li class="chapter" data-level="7.1" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html#load-object"><i class="fa fa-check"></i><b>7.1</b> Load object</a></li>
+<li class="chapter" data-level="7.2" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html#pca-1"><i class="fa fa-check"></i><b>7.2</b> PCA</a></li>
+<li class="chapter" data-level="7.3" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html#normalised-counts"><i class="fa fa-check"></i><b>7.3</b> Normalised counts</a></li>
+<li class="chapter" data-level="7.4" data-path="identifying-confounding-factors-caron-set.html"><a href="identifying-confounding-factors-caron-set.html#session-information-3"><i class="fa fa-check"></i><b>7.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="featSelecTop.html"><a href="featSelecTop.html"><i class="fa fa-check"></i><b>8</b> Feature selection</a><ul>
+<li class="chapter" data-level="8.1" data-path="featSelecTop.html"><a href="featSelecTop.html#load-data-1"><i class="fa fa-check"></i><b>8.1</b> Load data</a></li>
+<li class="chapter" data-level="8.2" data-path="featSelecTop.html"><a href="featSelecTop.html#feature-selection-with-scran"><i class="fa fa-check"></i><b>8.2</b> Feature selection with scran</a><ul>
+<li class="chapter" data-level="8.2.1" data-path="featSelecTop.html"><a href="featSelecTop.html#modelling-and-removing-technical-noise"><i class="fa fa-check"></i><b>8.2.1</b> Modelling and removing technical noise</a></li>
+<li class="chapter" data-level="8.2.2" data-path="featSelecTop.html"><a href="featSelecTop.html#choosing-some-hvgs"><i class="fa fa-check"></i><b>8.2.2</b> Choosing some HVGs</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="featSelecTop.html"><a href="featSelecTop.html#session-information-4"><i class="fa fa-check"></i><b>8.3</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html"><i class="fa fa-check"></i><b>9</b> Dimensionality reduction for analysis</a><ul>
+<li class="chapter" data-level="9.1" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#load-data-2"><i class="fa fa-check"></i><b>9.1</b> Load data</a></li>
+<li class="chapter" data-level="9.2" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#denoising-expression-values-using-pca"><i class="fa fa-check"></i><b>9.2</b> Denoising expression values using PCA</a></li>
+<li class="chapter" data-level="9.3" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#visualise-expression-patterns-of-some-hvgs"><i class="fa fa-check"></i><b>9.3</b> Visualise expression patterns of some HVGs</a></li>
+<li class="chapter" data-level="9.4" data-path="dimRedForAnaTop.html"><a href="dimRedForAnaTop.html#session-information-5"><i class="fa fa-check"></i><b>9.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html"><i class="fa fa-check"></i><b>10</b> Batch correction - GSM3872442 set</a><ul>
+<li class="chapter" data-level="10.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#learning-objectives"><i class="fa fa-check"></i><b>10.1</b> Learning objectives</a></li>
+<li class="chapter" data-level="10.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#normalise-each-separately-and-re-pool"><i class="fa fa-check"></i><b>10.2</b> Normalise each separately and re-pool</a></li>
+<li class="chapter" data-level="10.3" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#normalise-batches-together"><i class="fa fa-check"></i><b>10.3</b> Normalise batches together</a></li>
+<li class="chapter" data-level="10.4" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#batch-correction"><i class="fa fa-check"></i><b>10.4</b> Batch correction</a><ul>
+<li class="chapter" data-level="10.4.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#gaussian-normal-linear-models"><i class="fa fa-check"></i><b>10.4.1</b> Gaussian (normal) linear models</a></li>
+</ul></li>
+<li class="chapter" data-level="10.5" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#sctransform-2"><i class="fa fa-check"></i><b>10.5</b> SCTransform</a></li>
+<li class="chapter" data-level="10.6" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#mnncorrect"><i class="fa fa-check"></i><b>10.6</b> mnnCorrect</a><ul>
+<li class="chapter" data-level="10.6.1" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#check-presence-of-batch-effect"><i class="fa fa-check"></i><b>10.6.1</b> Check presence of batch effect</a></li>
+<li class="chapter" data-level="10.6.2" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#correct-batch-effect-with-mnncorrect"><i class="fa fa-check"></i><b>10.6.2</b> Correct batch effect with mnnCorrect</a></li>
+</ul></li>
+<li class="chapter" data-level="10.7" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#fastmnn"><i class="fa fa-check"></i><b>10.7</b> fastMNN</a></li>
+<li class="chapter" data-level="10.8" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#harmony"><i class="fa fa-check"></i><b>10.8</b> Harmony</a></li>
+<li class="chapter" data-level="10.9" data-path="batch-correction-gsm3872442-set.html"><a href="batch-correction-gsm3872442-set.html#session-information-6"><i class="fa fa-check"></i><b>10.9</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="11" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><i class="fa fa-check"></i><b>11</b> Data integration - PBMMC and ETV6-RUNX</a><ul>
+<li class="chapter" data-level="11.1" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#learning-objectives-1"><i class="fa fa-check"></i><b>11.1</b> Learning objectives</a></li>
+<li class="chapter" data-level="11.2" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#abbreviations-1"><i class="fa fa-check"></i><b>11.2</b> Abbreviations</a></li>
+<li class="chapter" data-level="11.3" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#motivation"><i class="fa fa-check"></i><b>11.3</b> Motivation</a></li>
+<li class="chapter" data-level="11.4" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#load-the-data"><i class="fa fa-check"></i><b>11.4</b> Load the data</a></li>
+<li class="chapter" data-level="11.5" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#diagnosing-batch-effects"><i class="fa fa-check"></i><b>11.5</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="11.6" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#linear-regression"><i class="fa fa-check"></i><b>11.6</b> Linear regression</a></li>
+<li class="chapter" data-level="11.7" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#mutual-nearest-neighbour-correction"><i class="fa fa-check"></i><b>11.7</b> Mutual Nearest Neighbour correction</a><ul>
+<li class="chapter" data-level="11.7.1" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#algorithm-overview"><i class="fa fa-check"></i><b>11.7.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="11.7.2" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#application-to-the-data"><i class="fa fa-check"></i><b>11.7.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="11.8" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#correction-diagnostics"><i class="fa fa-check"></i><b>11.8</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="11.8.1" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#mixing-between-batches"><i class="fa fa-check"></i><b>11.8.1</b> Mixing between batches</a></li>
+<li class="chapter" data-level="11.8.2" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#preserving-biological-heterogeneity"><i class="fa fa-check"></i><b>11.8.2</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="11.8.2.1" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-after-mnn-correction"><i class="fa fa-check"></i><b>11.8.2.1</b> Comparison between within-batch clusters and across-batch clusters obtained after MNN correction</a></li>
+<li class="chapter" data-level="11.8.2.2" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#coassignment-probabilities"><i class="fa fa-check"></i><b>11.8.2.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="11.8.2.3" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#rand-index"><i class="fa fa-check"></i><b>11.8.2.3</b> Rand index</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="11.9" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#encouraging-consistency-with-marker-genes"><i class="fa fa-check"></i><b>11.9</b> Encouraging consistency with marker genes</a></li>
+<li class="chapter" data-level="11.10" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#identify-clusters-with-pbmmc-cells"><i class="fa fa-check"></i><b>11.10</b> Identify clusters with PBMMC cells</a></li>
+<li class="chapter" data-level="11.11" data-path="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-5hCellPerSpl-PBMMC-ETV6-RUNX1Top.html#session-information-7"><i class="fa fa-check"></i><b>11.11</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="12" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html"><i class="fa fa-check"></i><b>12</b> Data integration - all Caron sample types</a><ul>
+<li class="chapter" data-level="12.1" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#learning-objectives-2"><i class="fa fa-check"></i><b>12.1</b> Learning objectives</a></li>
+<li class="chapter" data-level="12.2" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#motivation-1"><i class="fa fa-check"></i><b>12.2</b> Motivation</a></li>
+<li class="chapter" data-level="12.3" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#load-the-data-1"><i class="fa fa-check"></i><b>12.3</b> Load the data</a></li>
+<li class="chapter" data-level="12.4" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#diagnosing-batch-effects-1"><i class="fa fa-check"></i><b>12.4</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="12.5" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#linear-regression-1"><i class="fa fa-check"></i><b>12.5</b> Linear regression</a></li>
+<li class="chapter" data-level="12.6" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#mutual-nearest-neighbour-correction-1"><i class="fa fa-check"></i><b>12.6</b> Mutual Nearest Neighbour correction</a><ul>
+<li class="chapter" data-level="12.6.1" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#algorithm-overview-1"><i class="fa fa-check"></i><b>12.6.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="12.6.2" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#application-to-the-data-1"><i class="fa fa-check"></i><b>12.6.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="12.7" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#correction-diagnostics-1"><i class="fa fa-check"></i><b>12.7</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="12.7.1" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#preserving-biological-heterogeneity-1"><i class="fa fa-check"></i><b>12.7.1</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="12.7.1.1" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#comparison-to-within-batch-clusters"><i class="fa fa-check"></i><b>12.7.1.1</b> Comparison to within-batch clusters</a></li>
+<li class="chapter" data-level="12.7.1.2" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#coassignment-probabilities-1"><i class="fa fa-check"></i><b>12.7.1.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="12.7.1.3" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#rand-index-1"><i class="fa fa-check"></i><b>12.7.1.3</b> Rand index</a></li>
+</ul></li>
+<li class="chapter" data-level="12.7.2" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#encouraging-consistency-with-marker-genes-1"><i class="fa fa-check"></i><b>12.7.2</b> Encouraging consistency with marker genes</a></li>
+<li class="chapter" data-level="12.7.3" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#using-the-corrected-values"><i class="fa fa-check"></i><b>12.7.3</b> Using the corrected values</a></li>
+</ul></li>
+<li class="chapter" data-level="12.8" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#challenge-same-but-with-an-ordered-merging"><i class="fa fa-check"></i><b>12.8</b> <strong>Challenge</strong> Same but with an ordered merging</a><ul>
+<li class="chapter" data-level="12.8.1" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#preserving-biological-heterogeneity-2"><i class="fa fa-check"></i><b>12.8.1</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="12.8.1.1" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#comparison-to-within-batch-clusters-1"><i class="fa fa-check"></i><b>12.8.1.1</b> Comparison to within-batch clusters</a></li>
+<li class="chapter" data-level="12.8.1.2" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#rand-index-2"><i class="fa fa-check"></i><b>12.8.1.2</b> Rand index:</a></li>
+</ul></li>
+<li class="chapter" data-level="12.8.2" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#cluster-markers"><i class="fa fa-check"></i><b>12.8.2</b> Cluster markers:</a></li>
+</ul></li>
+<li class="chapter" data-level="12.9" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#identify-clusters-with-pbmmc-cells-1"><i class="fa fa-check"></i><b>12.9</b> Identify clusters with PBMMC cells</a></li>
+<li class="chapter" data-level="12.10" data-path="dsi-5hCellPerSpl-allSetsTop.html"><a href="dsi-5hCellPerSpl-allSetsTop.html#session-information-8"><i class="fa fa-check"></i><b>12.10</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="13" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><i class="fa fa-check"></i><b>13</b> Clustering with ‘PBMMC,ETV6-RUNX1’ and ’_5hCellPerSpl’ {#clusteringPBMMC-ETV6-RUNX1-5hCellPerSplTop}</a><ul>
+<li class="chapter" data-level="13.1" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#load-data-3"><i class="fa fa-check"></i><b>13.1</b> Load data</a></li>
+<li class="chapter" data-level="13.2" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#clustering-cells-into-putative-subpopulations"><i class="fa fa-check"></i><b>13.2</b> Clustering cells into putative subpopulations</a><ul>
+<li class="chapter" data-level="13.2.1" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#hierarchical-clustering"><i class="fa fa-check"></i><b>13.2.1</b> Hierarchical clustering</a><ul>
+<li class="chapter" data-level="13.2.1.1" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#clustering"><i class="fa fa-check"></i><b>13.2.1.1</b> Clustering</a></li>
+<li class="chapter" data-level="13.2.1.2" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#separatedness"><i class="fa fa-check"></i><b>13.2.1.2</b> Separatedness</a></li>
+</ul></li>
+<li class="chapter" data-level="13.2.2" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#k-means"><i class="fa fa-check"></i><b>13.2.2</b> k-means</a><ul>
+<li class="chapter" data-level="13.2.2.1" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#description-1"><i class="fa fa-check"></i><b>13.2.2.1</b> Description</a></li>
+<li class="chapter" data-level="13.2.2.2" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#example-2"><i class="fa fa-check"></i><b>13.2.2.2</b> Example</a></li>
+<li class="chapter" data-level="13.2.2.3" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#within-cluster-sum-of-squares"><i class="fa fa-check"></i><b>13.2.2.3</b> Within-cluster sum-of-squares</a></li>
+<li class="chapter" data-level="13.2.2.4" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#silhouette"><i class="fa fa-check"></i><b>13.2.2.4</b> Silhouette</a></li>
+<li class="chapter" data-level="13.2.2.5" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#gap-statistic"><i class="fa fa-check"></i><b>13.2.2.5</b> Gap statistic</a></li>
+<li class="chapter" data-level="13.2.2.6" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#multi-metric"><i class="fa fa-check"></i><b>13.2.2.6</b> Multi-metric</a></li>
+</ul></li>
+<li class="chapter" data-level="13.2.3" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#graph-based-clustering"><i class="fa fa-check"></i><b>13.2.3</b> Graph-based clustering</a><ul>
+<li class="chapter" data-level="13.2.3.1" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#modularity"><i class="fa fa-check"></i><b>13.2.3.1</b> Modularity</a></li>
+<li class="chapter" data-level="13.2.3.2" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#walktrap-method"><i class="fa fa-check"></i><b>13.2.3.2</b> Walktrap method</a></li>
+<li class="chapter" data-level="13.2.3.3" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#louvain-method"><i class="fa fa-check"></i><b>13.2.3.3</b> Louvain method</a></li>
+<li class="chapter" data-level="13.2.3.4" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#leiden-method"><i class="fa fa-check"></i><b>13.2.3.4</b> Leiden method</a></li>
+<li class="chapter" data-level="13.2.3.5" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#modularity-to-assess-clusters-quality"><i class="fa fa-check"></i><b>13.2.3.5</b> Modularity to assess clusters quality</a></li>
+<li class="chapter" data-level="13.2.3.6" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#choose-the-number-of-clusters"><i class="fa fa-check"></i><b>13.2.3.6</b> Choose the number of clusters</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="13.3" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#comparing-two-sets-of-clusters"><i class="fa fa-check"></i><b>13.3</b> Comparing two sets of clusters</a></li>
+<li class="chapter" data-level="13.4" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#expression-of-known-marker-genes"><i class="fa fa-check"></i><b>13.4</b> Expression of known marker genes</a></li>
+<li class="chapter" data-level="13.5" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#save-data"><i class="fa fa-check"></i><b>13.5</b> Save data</a></li>
+<li class="chapter" data-level="13.6" data-path="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html"><a href="clustering-with-pbmmcetv6-runx1-and-5hcellperspl-clusteringpbmmc-etv6-runx1-5hcellperspltop.html#session-information-9"><i class="fa fa-check"></i><b>13.6</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="14" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html"><i class="fa fa-check"></i><b>14</b> Cluster marker genes</a><ul>
+<li class="chapter" data-level="14.1" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#learning-objectives-3"><i class="fa fa-check"></i><b>14.1</b> Learning objectives</a></li>
+<li class="chapter" data-level="14.2" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#load-data-4"><i class="fa fa-check"></i><b>14.2</b> Load data</a></li>
+<li class="chapter" data-level="14.3" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#detecting-genes-differentially-expressed-between-clusters"><i class="fa fa-check"></i><b>14.3</b> Detecting genes differentially expressed between clusters</a><ul>
+<li class="chapter" data-level="14.3.1" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#differential-expression-analysis"><i class="fa fa-check"></i><b>14.3.1</b> Differential expression analysis</a></li>
+<li class="chapter" data-level="14.3.2" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#heatmap"><i class="fa fa-check"></i><b>14.3.2</b> Heatmap</a></li>
+</ul></li>
+<li class="chapter" data-level="14.4" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#using-the-log-fold-change"><i class="fa fa-check"></i><b>14.4</b> Using the log-fold change</a></li>
+<li class="chapter" data-level="14.5" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#finding-cluster-specific-markers"><i class="fa fa-check"></i><b>14.5</b> Finding cluster-specific markers</a></li>
+<li class="chapter" data-level="14.6" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#using-the-wilcoxon-rank-sum-test"><i class="fa fa-check"></i><b>14.6</b> Using the Wilcoxon rank sum test</a></li>
+<li class="chapter" data-level="14.7" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#using-a-binomial-test"><i class="fa fa-check"></i><b>14.7</b> Using a binomial test</a></li>
+<li class="chapter" data-level="14.8" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#combining-multiple-marker-statistics"><i class="fa fa-check"></i><b>14.8</b> Combining multiple marker statistics</a></li>
+<li class="chapter" data-level="14.9" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#invalidity-of-p-values"><i class="fa fa-check"></i><b>14.9</b> Invalidity of p-values</a><ul>
+<li class="chapter" data-level="14.9.1" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#from-data-snooping"><i class="fa fa-check"></i><b>14.9.1</b> From data snooping</a></li>
+<li class="chapter" data-level="14.9.2" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#nature-of-replication"><i class="fa fa-check"></i><b>14.9.2</b> Nature of replication</a></li>
+</ul></li>
+<li class="chapter" data-level="14.10" data-path="clusterMarkerGenesTop.html"><a href="clusterMarkerGenesTop.html#session-information-10"><i class="fa fa-check"></i><b>14.10</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="15" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html"><i class="fa fa-check"></i><b>15</b> Differential expression and abundance between conditions</a><ul>
+<li class="chapter" data-level="15.1" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#motivation-2"><i class="fa fa-check"></i><b>15.1</b> Motivation</a></li>
+<li class="chapter" data-level="15.2" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#setting-up-the-data"><i class="fa fa-check"></i><b>15.2</b> Setting up the data</a></li>
+<li class="chapter" data-level="15.3" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#differential-expression-between-conditions"><i class="fa fa-check"></i><b>15.3</b> Differential expression between conditions</a><ul>
+<li class="chapter" data-level="15.3.1" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#creating-pseudo-bulk-samples"><i class="fa fa-check"></i><b>15.3.1</b> Creating pseudo-bulk samples</a></li>
+<li class="chapter" data-level="15.3.2" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#performing-the-de-analysis"><i class="fa fa-check"></i><b>15.3.2</b> Performing the DE analysis</a><ul>
+<li class="chapter" data-level="15.3.2.1" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#introduction-3"><i class="fa fa-check"></i><b>15.3.2.1</b> Introduction</a></li>
+<li class="chapter" data-level="15.3.2.2" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#pre-processing"><i class="fa fa-check"></i><b>15.3.2.2</b> Pre-processing</a></li>
+<li class="chapter" data-level="15.3.2.3" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#statistical-modelling"><i class="fa fa-check"></i><b>15.3.2.3</b> Statistical modelling</a></li>
+<li class="chapter" data-level="15.3.2.4" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#differential-expression-for-each-cluster"><i class="fa fa-check"></i><b>15.3.2.4</b> Differential expression for each cluster</a><ul>
+<li class="chapter" data-level="15.3.2.4.1" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#number-of-degs-by-cluster-and-direction"><i class="fa fa-check"></i><b>15.3.2.4.1</b> Number of DEGs by cluster and direction</a></li>
+<li class="chapter" data-level="15.3.2.4.2" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#list-of-degs"><i class="fa fa-check"></i><b>15.3.2.4.2</b> List of DEGs</a></li>
+<li class="chapter" data-level="15.3.2.4.3" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#number-of-clusters-skipped"><i class="fa fa-check"></i><b>15.3.2.4.3</b> Number of clusters skipped</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="15.3.3" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#putting-it-all-together"><i class="fa fa-check"></i><b>15.3.3</b> Putting it all together</a></li>
+</ul></li>
+<li class="chapter" data-level="15.4" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#differential-abundance-between-conditions"><i class="fa fa-check"></i><b>15.4</b> Differential abundance between conditions</a><ul>
+<li class="chapter" data-level="15.4.1" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#overview"><i class="fa fa-check"></i><b>15.4.1</b> Overview</a></li>
+<li class="chapter" data-level="15.4.2" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#handling-composition-effects"><i class="fa fa-check"></i><b>15.4.2</b> Handling composition effects</a><ul>
+<li class="chapter" data-level="15.4.2.1" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#background"><i class="fa fa-check"></i><b>15.4.2.1</b> Background</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="15.5" data-path="multiSplCompTop.html"><a href="multiSplCompTop.html#session-information-11"><i class="fa fa-check"></i><b>15.5</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="16" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html"><i class="fa fa-check"></i><b>16</b> Pseudotime analysis</a><ul>
+<li class="chapter" data-level="16.0.1" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#variance-modeling"><i class="fa fa-check"></i><b>16.0.1</b> Variance modeling</a></li>
+<li class="chapter" data-level="16.0.2" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#data-integration"><i class="fa fa-check"></i><b>16.0.2</b> Data integration</a></li>
+<li class="chapter" data-level="16.0.3" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#dimensionality-reduction"><i class="fa fa-check"></i><b>16.0.3</b> Dimensionality Reduction</a></li>
+<li class="chapter" data-level="16.0.4" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#clustering-1"><i class="fa fa-check"></i><b>16.0.4</b> Clustering</a></li>
+<li class="chapter" data-level="16.0.5" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#cellTypeAnnotation"><i class="fa fa-check"></i><b>16.0.5</b> Cell type classification</a></li>
+<li class="chapter" data-level="16.0.6" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#extract-t-cells"><i class="fa fa-check"></i><b>16.0.6</b> Extract T-cells</a></li>
+<li class="chapter" data-level="16.1" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#pseudoTimeSetUp"><i class="fa fa-check"></i><b>16.1</b> Setting up the data</a><ul>
+<li class="chapter" data-level="16.1.1" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#trajectory-inference-with-destiny"><i class="fa fa-check"></i><b>16.1.1</b> Trajectory inference with destiny</a></li>
+<li class="chapter" data-level="16.1.2" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#find-temporally-expressed-genes"><i class="fa fa-check"></i><b>16.1.2</b> Find temporally expressed genes</a></li>
+<li class="chapter" data-level="16.1.3" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#pseudotime-analysis-for-another-hca-sample"><i class="fa fa-check"></i><b>16.1.3</b> Pseudotime analysis for another HCA sample</a></li>
+<li class="chapter" data-level="16.1.4" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#exercise-1"><i class="fa fa-check"></i><b>16.1.4</b> Exercise 1</a></li>
+</ul></li>
+<li class="chapter" data-level="16.2" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#pseudoTime3Top"><i class="fa fa-check"></i><b>16.2</b> <strong>Pseudotime Alignment</strong></a></li>
+<li class="chapter" data-level="16.3" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#ackowledgements"><i class="fa fa-check"></i><b>16.3</b> Ackowledgements</a></li>
+<li class="chapter" data-level="16.4" data-path="pseudoTimeTop.html"><a href="pseudoTimeTop.html#session-information-12"><i class="fa fa-check"></i><b>16.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="17" data-path="annex.html"><a href="annex.html"><i class="fa fa-check"></i><b>17</b> Annex</a></li>
+<li class="chapter" data-level="18" data-path="GeneAnnotTop.html"><a href="GeneAnnotTop.html"><i class="fa fa-check"></i><b>18</b> Gene annotation</a><ul>
+<li class="chapter" data-level="18.1" data-path="GeneAnnotTop.html"><a href="GeneAnnotTop.html#introduction-4"><i class="fa fa-check"></i><b>18.1</b> Introduction</a></li>
+<li class="chapter" data-level="18.2" data-path="GeneAnnotTop.html"><a href="GeneAnnotTop.html#sample-sheet-2"><i class="fa fa-check"></i><b>18.2</b> Sample sheet</a></li>
+<li class="chapter" data-level="18.3" data-path="GeneAnnotTop.html"><a href="GeneAnnotTop.html#srr9264343"><i class="fa fa-check"></i><b>18.3</b> SRR9264343</a></li>
+<li class="chapter" data-level="18.4" data-path="GeneAnnotTop.html"><a href="GeneAnnotTop.html#session-information-13"><i class="fa fa-check"></i><b>18.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="19" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html"><i class="fa fa-check"></i><b>19</b> Quality Control - with 2-5k cells per sample</a><ul>
+<li class="chapter" data-level="19.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#introduction-5"><i class="fa fa-check"></i><b>19.1</b> Introduction</a></li>
+<li class="chapter" data-level="19.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#load-packages-2"><i class="fa fa-check"></i><b>19.2</b> Load packages</a></li>
+<li class="chapter" data-level="19.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#sample-sheet-3"><i class="fa fa-check"></i><b>19.3</b> Sample sheet</a></li>
+<li class="chapter" data-level="19.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#data-representation-1"><i class="fa fa-check"></i><b>19.4</b> Data representation</a></li>
+<li class="chapter" data-level="19.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#example-3"><i class="fa fa-check"></i><b>19.5</b> Example</a></li>
+<li class="chapter" data-level="19.6" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#mapping-qc-1"><i class="fa fa-check"></i><b>19.6</b> Mapping QC</a><ul>
+<li class="chapter" data-level="19.6.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#gene-body-coverage-1"><i class="fa fa-check"></i><b>19.6.1</b> Gene body coverage</a></li>
+<li class="chapter" data-level="19.6.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#amplification-rate-1"><i class="fa fa-check"></i><b>19.6.2</b> Amplification rate</a></li>
+</ul></li>
+<li class="chapter" data-level="19.7" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#cell-calling-for-droplet-data-1"><i class="fa fa-check"></i><b>19.7</b> Cell calling for droplet data</a><ul>
+<li class="chapter" data-level="19.7.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#mixture-model-1"><i class="fa fa-check"></i><b>19.7.1</b> Mixture model</a></li>
+<li class="chapter" data-level="19.7.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#barcode-rank-plot-1"><i class="fa fa-check"></i><b>19.7.2</b> Barcode rank plot</a></li>
+<li class="chapter" data-level="19.7.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#inflection-point-1"><i class="fa fa-check"></i><b>19.7.3</b> Inflection point</a></li>
+<li class="chapter" data-level="19.7.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#cellranger-v1-and-v2-1"><i class="fa fa-check"></i><b>19.7.4</b> Cellranger v1 and v2</a></li>
+<li class="chapter" data-level="19.7.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#dropletutils-and-emptydrops-1"><i class="fa fa-check"></i><b>19.7.5</b> DropletUtils and EmptyDrops</a></li>
+</ul></li>
+<li class="chapter" data-level="19.8" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#load-filtered-matrices-1"><i class="fa fa-check"></i><b>19.8</b> Load filtered matrices</a></li>
+<li class="chapter" data-level="19.9" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#properties-of-scrna-seq-data-1"><i class="fa fa-check"></i><b>19.9</b> Properties of scRNA-seq data</a></li>
+<li class="chapter" data-level="19.10" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#quality-control-1"><i class="fa fa-check"></i><b>19.10</b> Quality control</a><ul>
+<li class="chapter" data-level="19.10.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#qc-metric-distribution-1"><i class="fa fa-check"></i><b>19.10.1</b> QC metric distribution</a></li>
+</ul></li>
+<li class="chapter" data-level="19.11" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#identification-of-low-quality-cells-with-adaptive-thresholds-1"><i class="fa fa-check"></i><b>19.11</b> Identification of low-quality cells with adaptive thresholds</a><ul>
+<li class="chapter" data-level="19.11.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#library-size-1"><i class="fa fa-check"></i><b>19.11.1</b> Library size</a></li>
+<li class="chapter" data-level="19.11.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#number-of-genes-1"><i class="fa fa-check"></i><b>19.11.2</b> Number of genes</a></li>
+<li class="chapter" data-level="19.11.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#mitochondrial-content-2"><i class="fa fa-check"></i><b>19.11.3</b> Mitochondrial content</a></li>
+<li class="chapter" data-level="19.11.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#summary-1"><i class="fa fa-check"></i><b>19.11.4</b> Summary</a></li>
+<li class="chapter" data-level="19.11.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#all-steps-at-once-1"><i class="fa fa-check"></i><b>19.11.5</b> All steps at once</a></li>
+<li class="chapter" data-level="19.11.6" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#assumptions-1"><i class="fa fa-check"></i><b>19.11.6</b> Assumptions</a></li>
+</ul></li>
+<li class="chapter" data-level="19.12" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#experimental-factors-1"><i class="fa fa-check"></i><b>19.12</b> Experimental factors</a><ul>
+<li class="chapter" data-level="19.12.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#identify-poor-quality-batches-1"><i class="fa fa-check"></i><b>19.12.1</b> Identify poor-quality batches</a><ul>
+<li class="chapter" data-level="19.12.1.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#number-of-genes-detected-1"><i class="fa fa-check"></i><b>19.12.1.1</b> Number of genes detected</a><ul>
+<li class="chapter" data-level="19.12.1.1.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#mitochondrial-content-3"><i class="fa fa-check"></i><b>19.12.1.1.1</b> Mitochondrial content</a></li>
+</ul></li>
+<li class="chapter" data-level="19.12.1.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#samples-to-check-1"><i class="fa fa-check"></i><b>19.12.1.2</b> Samples to check</a></li>
+</ul></li>
+<li class="chapter" data-level="19.12.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#qc-metrics-space-1"><i class="fa fa-check"></i><b>19.12.2</b> QC metrics space</a></li>
+<li class="chapter" data-level="19.12.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#qc-pca-1"><i class="fa fa-check"></i><b>19.12.3</b> QC PCA</a></li>
+<li class="chapter" data-level="19.12.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#other-diagnostic-plots-1"><i class="fa fa-check"></i><b>19.12.4</b> Other diagnostic plots</a></li>
+<li class="chapter" data-level="19.12.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#filter-low-quality-cells-out-1"><i class="fa fa-check"></i><b>19.12.5</b> Filter low-quality cells out</a></li>
+</ul></li>
+<li class="chapter" data-level="19.13" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#novelty-1"><i class="fa fa-check"></i><b>19.13</b> Novelty</a></li>
+<li class="chapter" data-level="19.14" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#qc-based-on-sparsity-1"><i class="fa fa-check"></i><b>19.14</b> QC based on sparsity</a><ul>
+<li class="chapter" data-level="19.14.1" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#remove-genes-that-are-not-expressed-at-all-1"><i class="fa fa-check"></i><b>19.14.1</b> Remove genes that are not expressed at all</a></li>
+<li class="chapter" data-level="19.14.2" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#sparsity-plots-1"><i class="fa fa-check"></i><b>19.14.2</b> Sparsity plots</a></li>
+<li class="chapter" data-level="19.14.3" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#filters-1"><i class="fa fa-check"></i><b>19.14.3</b> Filters</a></li>
+<li class="chapter" data-level="19.14.4" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#separate-caron-and-hca-batches-1"><i class="fa fa-check"></i><b>19.14.4</b> Separate Caron and Hca batches</a></li>
+<li class="chapter" data-level="19.14.5" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#caron-only-1"><i class="fa fa-check"></i><b>19.14.5</b> Caron only</a></li>
+<li class="chapter" data-level="19.14.6" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#hca-only-1"><i class="fa fa-check"></i><b>19.14.6</b> Hca only</a></li>
+</ul></li>
+<li class="chapter" data-level="19.15" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#subsample-hca-set"><i class="fa fa-check"></i><b>19.15</b> Subsample Hca set</a></li>
+<li class="chapter" data-level="19.16" data-path="PreProcAllCellsTop.html"><a href="PreProcAllCellsTop.html#session-information-14"><i class="fa fa-check"></i><b>19.16</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="20" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html"><i class="fa fa-check"></i><b>20</b> Normalisation - with 2-5k cells per sample</a><ul>
+<li class="chapter" data-level="20.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#caron"><i class="fa fa-check"></i><b>20.1</b> Caron</a><ul>
+<li class="chapter" data-level="20.1.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#library-size-normalization-1"><i class="fa fa-check"></i><b>20.1.1</b> Library size normalization</a></li>
+<li class="chapter" data-level="20.1.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#deconvolution-1"><i class="fa fa-check"></i><b>20.1.2</b> Deconvolution</a></li>
+<li class="chapter" data-level="20.1.3" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#compute-size-factors-1"><i class="fa fa-check"></i><b>20.1.3</b> Compute size factors</a><ul>
+<li class="chapter" data-level="20.1.3.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#apply-size-factors-1"><i class="fa fa-check"></i><b>20.1.3.1</b> Apply size factors</a></li>
+<li class="chapter" data-level="20.1.3.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#save-object-1"><i class="fa fa-check"></i><b>20.1.3.2</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="20.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#hca"><i class="fa fa-check"></i><b>20.2</b> Hca</a><ul>
+<li class="chapter" data-level="20.2.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#library-size-normalization-2"><i class="fa fa-check"></i><b>20.2.1</b> Library size normalization</a></li>
+<li class="chapter" data-level="20.2.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#deconvolution-2"><i class="fa fa-check"></i><b>20.2.2</b> Deconvolution</a></li>
+<li class="chapter" data-level="20.2.3" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#compute-size-factors-2"><i class="fa fa-check"></i><b>20.2.3</b> Compute size factors</a><ul>
+<li class="chapter" data-level="20.2.3.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#apply-size-factors-2"><i class="fa fa-check"></i><b>20.2.3.1</b> Apply size factors</a></li>
+<li class="chapter" data-level="20.2.3.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#save-object-2"><i class="fa fa-check"></i><b>20.2.3.2</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="20.3" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#sctransform-3"><i class="fa fa-check"></i><b>20.3</b> SCTransform</a><ul>
+<li class="chapter" data-level="20.3.1" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#caron-1"><i class="fa fa-check"></i><b>20.3.1</b> Caron</a></li>
+<li class="chapter" data-level="20.3.2" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#hca-1"><i class="fa fa-check"></i><b>20.3.2</b> Hca</a></li>
+</ul></li>
+<li class="chapter" data-level="20.4" data-path="NormalisationAllCellsTop.html"><a href="NormalisationAllCellsTop.html#session-information-15"><i class="fa fa-check"></i><b>20.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="21" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html"><i class="fa fa-check"></i><b>21</b> Normalisation - GSM3872434 set</a><ul>
+<li class="chapter" data-level="21.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#scaling-normalization-1"><i class="fa fa-check"></i><b>21.1</b> Scaling normalization</a><ul>
+<li class="chapter" data-level="21.1.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#cpm-1"><i class="fa fa-check"></i><b>21.1.1</b> CPM</a></li>
+<li class="chapter" data-level="21.1.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#deseqs-size-factor-1"><i class="fa fa-check"></i><b>21.1.2</b> DESeq’s size factor</a></li>
+<li class="chapter" data-level="21.1.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#weighted-trimmed-mean-of-m-values-1"><i class="fa fa-check"></i><b>21.1.3</b> Weighted Trimmed mean of M-values</a></li>
+<li class="chapter" data-level="21.1.4" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#library-size-factor-distribution"><i class="fa fa-check"></i><b>21.1.4</b> Library size factor distribution</a></li>
+<li class="chapter" data-level="21.1.5" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#deconvolution-3"><i class="fa fa-check"></i><b>21.1.5</b> Deconvolution</a><ul>
+<li class="chapter" data-level="21.1.5.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#cluster-cells-1"><i class="fa fa-check"></i><b>21.1.5.1</b> Cluster cells</a></li>
+<li class="chapter" data-level="21.1.5.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#compute-size-factors-3"><i class="fa fa-check"></i><b>21.1.5.2</b> Compute size factors</a></li>
+<li class="chapter" data-level="21.1.5.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#apply-size-factors-3"><i class="fa fa-check"></i><b>21.1.5.3</b> Apply size factors</a></li>
+<li class="chapter" data-level="21.1.5.4" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#save-object-3"><i class="fa fa-check"></i><b>21.1.5.4</b> Save object</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="21.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#sctransform-4"><i class="fa fa-check"></i><b>21.2</b> SCTransform</a><ul>
+<li class="chapter" data-level="21.2.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#inspect-data-1"><i class="fa fa-check"></i><b>21.2.1</b> Inspect data</a></li>
+<li class="chapter" data-level="21.2.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#transformation-1"><i class="fa fa-check"></i><b>21.2.2</b> Transformation</a></li>
+<li class="chapter" data-level="21.2.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#save-sce-object-1"><i class="fa fa-check"></i><b>21.2.3</b> Save SCE object</a></li>
+</ul></li>
+<li class="chapter" data-level="21.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#visualisation-1"><i class="fa fa-check"></i><b>21.3</b> Visualisation</a><ul>
+<li class="chapter" data-level="21.3.1" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#log-raw-counts-1"><i class="fa fa-check"></i><b>21.3.1</b> log raw counts</a></li>
+<li class="chapter" data-level="21.3.2" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#log-cpm-1"><i class="fa fa-check"></i><b>21.3.2</b> log CPM</a></li>
+<li class="chapter" data-level="21.3.3" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#scran-1"><i class="fa fa-check"></i><b>21.3.3</b> scran</a></li>
+<li class="chapter" data-level="21.3.4" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#sctransform-5"><i class="fa fa-check"></i><b>21.3.4</b> SCTransform</a></li>
+</ul></li>
+<li class="chapter" data-level="21.4" data-path="NormalisationGSM3872434Top.html"><a href="NormalisationGSM3872434Top.html#session-information-16"><i class="fa fa-check"></i><b>21.4</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="22" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html"><i class="fa fa-check"></i><b>22</b> Data integration - PBMMC</a><ul>
+<li class="chapter" data-level="22.1" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#abbreviations-2"><i class="fa fa-check"></i><b>22.1</b> Abbreviations</a></li>
+<li class="chapter" data-level="22.2" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#motivation-3"><i class="fa fa-check"></i><b>22.2</b> Motivation</a></li>
+<li class="chapter" data-level="22.3" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#loading-the-data"><i class="fa fa-check"></i><b>22.3</b> Loading the data</a></li>
+<li class="chapter" data-level="22.4" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#diagnosing-batch-effects-2"><i class="fa fa-check"></i><b>22.4</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="22.5" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#linear-regression-2"><i class="fa fa-check"></i><b>22.5</b> Linear regression</a></li>
+<li class="chapter" data-level="22.6" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#performing-mnn-correction"><i class="fa fa-check"></i><b>22.6</b> Performing MNN correction</a><ul>
+<li class="chapter" data-level="22.6.1" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#algorithm-overview-2"><i class="fa fa-check"></i><b>22.6.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="22.6.2" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#application-to-the-data-2"><i class="fa fa-check"></i><b>22.6.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="22.7" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#correction-diagnostics-2"><i class="fa fa-check"></i><b>22.7</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="22.7.1" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#mixing-between-batches-1"><i class="fa fa-check"></i><b>22.7.1</b> Mixing between batches</a></li>
+</ul></li>
+<li class="chapter" data-level="22.8" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#preserving-biological-heterogeneity-3"><i class="fa fa-check"></i><b>22.8</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="22.8.1" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#comparison-to-within-batch-clusters-2"><i class="fa fa-check"></i><b>22.8.1</b> Comparison to within-batch clusters</a></li>
+<li class="chapter" data-level="22.8.2" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#encouraging-consistency-with-marker-genes-2"><i class="fa fa-check"></i><b>22.8.2</b> Encouraging consistency with marker genes</a></li>
+</ul></li>
+<li class="chapter" data-level="22.9" data-path="DataIntegration-PBMMCTop.html"><a href="DataIntegration-PBMMCTop.html#session-information-17"><i class="fa fa-check"></i><b>22.9</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="23" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html"><i class="fa fa-check"></i><b>23</b> Data integration - ETV6-RUNX1</a><ul>
+<li class="chapter" data-level="23.1" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#abbreviations-3"><i class="fa fa-check"></i><b>23.1</b> Abbreviations</a></li>
+<li class="chapter" data-level="23.2" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#motivation-4"><i class="fa fa-check"></i><b>23.2</b> Motivation</a></li>
+<li class="chapter" data-level="23.3" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#loading-the-data-1"><i class="fa fa-check"></i><b>23.3</b> Loading the data</a></li>
+<li class="chapter" data-level="23.4" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#diagnosing-batch-effects-3"><i class="fa fa-check"></i><b>23.4</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="23.5" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#linear-regression-3"><i class="fa fa-check"></i><b>23.5</b> Linear regression</a></li>
+<li class="chapter" data-level="23.6" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#performing-mnn-correction-1"><i class="fa fa-check"></i><b>23.6</b> Performing MNN correction</a><ul>
+<li class="chapter" data-level="23.6.1" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#algorithm-overview-3"><i class="fa fa-check"></i><b>23.6.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="23.6.2" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#application-to-the-data-3"><i class="fa fa-check"></i><b>23.6.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="23.7" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#correction-diagnostics-3"><i class="fa fa-check"></i><b>23.7</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="23.7.1" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#mixing-between-batches-2"><i class="fa fa-check"></i><b>23.7.1</b> Mixing between batches</a></li>
+<li class="chapter" data-level="23.7.2" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#preserving-biological-heterogeneity-4"><i class="fa fa-check"></i><b>23.7.2</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="23.7.2.1" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-after-mnn-correction-1"><i class="fa fa-check"></i><b>23.7.2.1</b> Comparison between within-batch clusters and across-batch clusters obtained after MNN correction</a></li>
+<li class="chapter" data-level="23.7.2.2" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#coassignment-probabilities-2"><i class="fa fa-check"></i><b>23.7.2.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="23.7.2.3" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#rand-index-3"><i class="fa fa-check"></i><b>23.7.2.3</b> Rand index</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="23.8" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#encouraging-consistency-with-marker-genes-3"><i class="fa fa-check"></i><b>23.8</b> Encouraging consistency with marker genes</a></li>
+<li class="chapter" data-level="23.9" data-path="dataSetIntegration-ETV6-RUNX1Top.html"><a href="dataSetIntegration-ETV6-RUNX1Top.html#session-information-18"><i class="fa fa-check"></i><b>23.9</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="24" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html"><i class="fa fa-check"></i><b>24</b> Data integration - HDD</a><ul>
+<li class="chapter" data-level="24.1" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#abbreviations-4"><i class="fa fa-check"></i><b>24.1</b> Abbreviations</a></li>
+<li class="chapter" data-level="24.2" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#motivation-5"><i class="fa fa-check"></i><b>24.2</b> Motivation</a></li>
+<li class="chapter" data-level="24.3" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#load-data-5"><i class="fa fa-check"></i><b>24.3</b> Load data</a></li>
+<li class="chapter" data-level="24.4" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#loading-the-data-2"><i class="fa fa-check"></i><b>24.4</b> Loading the data</a></li>
+<li class="chapter" data-level="24.5" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#diagnosing-batch-effects-4"><i class="fa fa-check"></i><b>24.5</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="24.6" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#linear-regression-4"><i class="fa fa-check"></i><b>24.6</b> Linear regression</a></li>
+<li class="chapter" data-level="24.7" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#performing-mnn-correction-2"><i class="fa fa-check"></i><b>24.7</b> Performing MNN correction</a><ul>
+<li class="chapter" data-level="24.7.1" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#algorithm-overview-4"><i class="fa fa-check"></i><b>24.7.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="24.7.2" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#application-to-the-data-4"><i class="fa fa-check"></i><b>24.7.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="24.8" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#correction-diagnostics-4"><i class="fa fa-check"></i><b>24.8</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="24.8.1" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#mixing-between-batches-3"><i class="fa fa-check"></i><b>24.8.1</b> Mixing between batches</a></li>
+<li class="chapter" data-level="24.8.2" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#preserving-biological-heterogeneity-5"><i class="fa fa-check"></i><b>24.8.2</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="24.8.2.1" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-after-mnn-correction-2"><i class="fa fa-check"></i><b>24.8.2.1</b> Comparison between within-batch clusters and across-batch clusters obtained after MNN correction</a></li>
+<li class="chapter" data-level="24.8.2.2" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#coassignment-probabilities-3"><i class="fa fa-check"></i><b>24.8.2.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="24.8.2.3" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#rand-index-4"><i class="fa fa-check"></i><b>24.8.2.3</b> Rand index</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="24.9" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#encouraging-consistency-with-marker-genes-4"><i class="fa fa-check"></i><b>24.9</b> Encouraging consistency with marker genes</a></li>
+<li class="chapter" data-level="24.10" data-path="dataSetIntegration-HHDTop.html"><a href="dataSetIntegration-HHDTop.html#session-information-19"><i class="fa fa-check"></i><b>24.10</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="25" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html"><i class="fa fa-check"></i><b>25</b> Data integration - PRE-T</a><ul>
+<li class="chapter" data-level="25.1" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#abbreviations-5"><i class="fa fa-check"></i><b>25.1</b> Abbreviations</a></li>
+<li class="chapter" data-level="25.2" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#motivation-6"><i class="fa fa-check"></i><b>25.2</b> Motivation</a></li>
+<li class="chapter" data-level="25.3" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#load-data-6"><i class="fa fa-check"></i><b>25.3</b> Load data</a></li>
+<li class="chapter" data-level="25.4" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#loading-the-data-3"><i class="fa fa-check"></i><b>25.4</b> Loading the data</a></li>
+<li class="chapter" data-level="25.5" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#diagnosing-batch-effects-5"><i class="fa fa-check"></i><b>25.5</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="25.6" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#linear-regression-5"><i class="fa fa-check"></i><b>25.6</b> Linear regression</a></li>
+<li class="chapter" data-level="25.7" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#performing-mnn-correction-3"><i class="fa fa-check"></i><b>25.7</b> Performing MNN correction</a><ul>
+<li class="chapter" data-level="25.7.1" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#algorithm-overview-5"><i class="fa fa-check"></i><b>25.7.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="25.7.2" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#application-to-the-data-5"><i class="fa fa-check"></i><b>25.7.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="25.8" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#correction-diagnostics-5"><i class="fa fa-check"></i><b>25.8</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="25.8.1" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#mixing-between-batches-4"><i class="fa fa-check"></i><b>25.8.1</b> Mixing between batches</a></li>
+<li class="chapter" data-level="25.8.2" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#preserving-biological-heterogeneity-6"><i class="fa fa-check"></i><b>25.8.2</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="25.8.2.1" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-after-mnn-correction-3"><i class="fa fa-check"></i><b>25.8.2.1</b> Comparison between within-batch clusters and across-batch clusters obtained after MNN correction</a></li>
+<li class="chapter" data-level="25.8.2.2" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#coassignment-probabilities-4"><i class="fa fa-check"></i><b>25.8.2.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="25.8.2.3" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#rand-index-5"><i class="fa fa-check"></i><b>25.8.2.3</b> Rand index</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="25.9" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#encouraging-consistency-with-marker-genes-5"><i class="fa fa-check"></i><b>25.9</b> Encouraging consistency with marker genes</a></li>
+<li class="chapter" data-level="25.10" data-path="DataIntegrationPretTop.html"><a href="DataIntegrationPretTop.html#session-information-20"><i class="fa fa-check"></i><b>25.10</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="26" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><i class="fa fa-check"></i><b>26</b> Data integration - PBMMC and ETV6-RUNX</a><ul>
+<li class="chapter" data-level="26.1" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#learning-objectives-4"><i class="fa fa-check"></i><b>26.1</b> Learning objectives</a></li>
+<li class="chapter" data-level="26.2" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#abbreviations-6"><i class="fa fa-check"></i><b>26.2</b> Abbreviations</a></li>
+<li class="chapter" data-level="26.3" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#motivation-7"><i class="fa fa-check"></i><b>26.3</b> Motivation</a></li>
+<li class="chapter" data-level="26.4" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#load-the-data-2"><i class="fa fa-check"></i><b>26.4</b> Load the data</a></li>
+<li class="chapter" data-level="26.5" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#diagnosing-batch-effects-6"><i class="fa fa-check"></i><b>26.5</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="26.6" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#linear-regression-6"><i class="fa fa-check"></i><b>26.6</b> Linear regression</a></li>
+<li class="chapter" data-level="26.7" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#mutual-nearest-neighbour-correction-2"><i class="fa fa-check"></i><b>26.7</b> Mutual Nearest Neighbour correction</a><ul>
+<li class="chapter" data-level="26.7.1" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#algorithm-overview-6"><i class="fa fa-check"></i><b>26.7.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="26.7.2" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#application-to-the-data-6"><i class="fa fa-check"></i><b>26.7.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="26.8" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#correction-diagnostics-6"><i class="fa fa-check"></i><b>26.8</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="26.8.1" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#mixing-between-batches-5"><i class="fa fa-check"></i><b>26.8.1</b> Mixing between batches</a></li>
+<li class="chapter" data-level="26.8.2" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#preserving-biological-heterogeneity-7"><i class="fa fa-check"></i><b>26.8.2</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="26.8.2.1" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#comparison-between-within-batch-clusters-and-across-batch-clusters-obtained-after-mnn-correction-4"><i class="fa fa-check"></i><b>26.8.2.1</b> Comparison between within-batch clusters and across-batch clusters obtained after MNN correction</a></li>
+<li class="chapter" data-level="26.8.2.2" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#coassignment-probabilities-5"><i class="fa fa-check"></i><b>26.8.2.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="26.8.2.3" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#rand-index-6"><i class="fa fa-check"></i><b>26.8.2.3</b> Rand index</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="26.9" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#encouraging-consistency-with-marker-genes-6"><i class="fa fa-check"></i><b>26.9</b> Encouraging consistency with marker genes</a></li>
+<li class="chapter" data-level="26.10" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#identify-clusters-with-pbmmc-cells-2"><i class="fa fa-check"></i><b>26.10</b> Identify clusters with PBMMC cells</a></li>
+<li class="chapter" data-level="26.11" data-path="dsi-allCells-PBMMC-ETV6-RUNX1Top.html"><a href="dsi-allCells-PBMMC-ETV6-RUNX1Top.html#session-information-21"><i class="fa fa-check"></i><b>26.11</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="27" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html"><i class="fa fa-check"></i><b>27</b> Data integration - all Caron sample types</a><ul>
+<li class="chapter" data-level="27.1" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#learning-objectives-5"><i class="fa fa-check"></i><b>27.1</b> Learning objectives</a></li>
+<li class="chapter" data-level="27.2" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#motivation-8"><i class="fa fa-check"></i><b>27.2</b> Motivation</a></li>
+<li class="chapter" data-level="27.3" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#load-the-data-3"><i class="fa fa-check"></i><b>27.3</b> Load the data</a></li>
+<li class="chapter" data-level="27.4" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#diagnosing-batch-effects-7"><i class="fa fa-check"></i><b>27.4</b> Diagnosing batch effects</a></li>
+<li class="chapter" data-level="27.5" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#linear-regression-7"><i class="fa fa-check"></i><b>27.5</b> Linear regression</a></li>
+<li class="chapter" data-level="27.6" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#mutual-nearest-neighbour-correction-3"><i class="fa fa-check"></i><b>27.6</b> Mutual Nearest Neighbour correction</a><ul>
+<li class="chapter" data-level="27.6.1" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#algorithm-overview-7"><i class="fa fa-check"></i><b>27.6.1</b> Algorithm overview</a></li>
+<li class="chapter" data-level="27.6.2" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#application-to-the-data-7"><i class="fa fa-check"></i><b>27.6.2</b> Application to the data</a></li>
+</ul></li>
+<li class="chapter" data-level="27.7" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#correction-diagnostics-7"><i class="fa fa-check"></i><b>27.7</b> Correction diagnostics</a><ul>
+<li class="chapter" data-level="27.7.1" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#preserving-biological-heterogeneity-8"><i class="fa fa-check"></i><b>27.7.1</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="27.7.1.1" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#comparison-to-within-batch-clusters-3"><i class="fa fa-check"></i><b>27.7.1.1</b> Comparison to within-batch clusters</a></li>
+<li class="chapter" data-level="27.7.1.2" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#coassignment-probabilities-6"><i class="fa fa-check"></i><b>27.7.1.2</b> Coassignment probabilities</a></li>
+<li class="chapter" data-level="27.7.1.3" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#rand-index-7"><i class="fa fa-check"></i><b>27.7.1.3</b> Rand index</a></li>
+</ul></li>
+<li class="chapter" data-level="27.7.2" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#encouraging-consistency-with-marker-genes-7"><i class="fa fa-check"></i><b>27.7.2</b> Encouraging consistency with marker genes</a></li>
+<li class="chapter" data-level="27.7.3" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#using-the-corrected-values-1"><i class="fa fa-check"></i><b>27.7.3</b> Using the corrected values</a></li>
+</ul></li>
+<li class="chapter" data-level="27.8" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#challenge-same-but-with-an-ordered-merging-1"><i class="fa fa-check"></i><b>27.8</b> <strong>Challenge</strong> Same but with an ordered merging</a><ul>
+<li class="chapter" data-level="27.8.1" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#preserving-biological-heterogeneity-9"><i class="fa fa-check"></i><b>27.8.1</b> Preserving biological heterogeneity</a><ul>
+<li class="chapter" data-level="27.8.1.1" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#comparison-to-within-batch-clusters-4"><i class="fa fa-check"></i><b>27.8.1.1</b> Comparison to within-batch clusters</a></li>
+<li class="chapter" data-level="27.8.1.2" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#rand-index-8"><i class="fa fa-check"></i><b>27.8.1.2</b> Rand index:</a></li>
+</ul></li>
+<li class="chapter" data-level="27.8.2" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#cluster-markers-1"><i class="fa fa-check"></i><b>27.8.2</b> Cluster markers:</a></li>
+</ul></li>
+<li class="chapter" data-level="27.9" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#identify-clusters-with-pbmmc-cells-3"><i class="fa fa-check"></i><b>27.9</b> Identify clusters with PBMMC cells</a></li>
+<li class="chapter" data-level="27.10" data-path="dsi-allCells-allSetsTop.html"><a href="dsi-allCells-allSetsTop.html#session-information-22"><i class="fa fa-check"></i><b>27.10</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="28" data-path="cellCyclePhasesTop.html"><a href="cellCyclePhasesTop.html"><i class="fa fa-check"></i><b>28</b> Cell cycle assignment</a><ul>
+<li class="chapter" data-level="28.1" data-path="cellCyclePhasesTop.html"><a href="cellCyclePhasesTop.html#load-data-7"><i class="fa fa-check"></i><b>28.1</b> Load data</a></li>
+<li class="chapter" data-level="28.2" data-path="cellCyclePhasesTop.html"><a href="cellCyclePhasesTop.html#motivation-9"><i class="fa fa-check"></i><b>28.2</b> Motivation</a></li>
+<li class="chapter" data-level="28.3" data-path="cellCyclePhasesTop.html"><a href="cellCyclePhasesTop.html#using-the-cyclins"><i class="fa fa-check"></i><b>28.3</b> Using the cyclins</a></li>
+<li class="chapter" data-level="28.4" data-path="cellCyclePhasesTop.html"><a href="cellCyclePhasesTop.html#using-the-cyclone-classifier"><i class="fa fa-check"></i><b>28.4</b> Using the cyclone() classifier</a></li>
+<li class="chapter" data-level="28.5" data-path="cellCyclePhasesTop.html"><a href="cellCyclePhasesTop.html#regressing-out-cell-cycle-phase"><i class="fa fa-check"></i><b>28.5</b> Regressing out cell cycle phase</a></li>
+<li class="chapter" data-level="28.6" data-path="cellCyclePhasesTop.html"><a href="cellCyclePhasesTop.html#session-information-23"><i class="fa fa-check"></i><b>28.6</b> Session information</a></li>
+</ul></li>
+<li class="chapter" data-level="29" data-path="doubletDetectionTop.html"><a href="doubletDetectionTop.html"><i class="fa fa-check"></i><b>29</b> Doublet detection</a><ul>
+<li class="chapter" data-level="29.1" data-path="doubletDetectionTop.html"><a href="doubletDetectionTop.html#learning-objectives-6"><i class="fa fa-check"></i><b>29.1</b> Learning objectives</a></li>
+<li class="chapter" data-level="29.2" data-path="doubletDetectionTop.html"><a href="doubletDetectionTop.html#set-up-analysis"><i class="fa fa-check"></i><b>29.2</b> Set up analysis</a></li>
+<li class="chapter" data-level="29.3" data-path="doubletDetectionTop.html"><a href="doubletDetectionTop.html#load-data-8"><i class="fa fa-check"></i><b>29.3</b> Load data</a></li>
+<li class="chapter" data-level="29.4" data-path="doubletDetectionTop.html"><a href="doubletDetectionTop.html#overview-1"><i class="fa fa-check"></i><b>29.4</b> Overview</a></li>
+<li class="chapter" data-level="29.5" data-path="doubletDetectionTop.html"><a href="doubletDetectionTop.html#doublet-detection-by-simulation"><i class="fa fa-check"></i><b>29.5</b> Doublet detection by simulation</a></li>
+<li class="chapter" data-level="29.6" data-path="doubletDetectionTop.html"><a href="doubletDetectionTop.html#further-comments"><i class="fa fa-check"></i><b>29.6</b> Further comments</a></li>
+<li class="chapter" data-level="29.7" data-path="doubletDetectionTop.html"><a href="doubletDetectionTop.html#session-information-24"><i class="fa fa-check"></i><b>29.7</b> Session information</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="dimRedForVizTop" class="section level1">
+<h1><span class="header-section-number">Chapter 6</span> Dimensionality reduction for visualisation</h1>
+<!--
+Should have Caron and HCA separately
+-->
+<div class="sourceCode" id="cb363"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb363-1"><a href="dimRedForVizTop.html#cb363-1"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb363-2"><a href="dimRedForVizTop.html#cb363-2"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
+<span id="cb363-3"><a href="dimRedForVizTop.html#cb363-3"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span></code></pre></div>
+<div class="sourceCode" id="cb364"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb364-1"><a href="dimRedForVizTop.html#cb364-1"></a><span class="kw">library</span>(Cairo)</span></code></pre></div>
+<p>In part 1 we gathered the data, aligned reads, checked quality, and normalised read counts. We will now identify genes to focus on, use visualisation to explore the data, collapse the data set, cluster cells by their expression profile and identify genes that best characterise these cell populations. These main steps are shown below <span class="citation">(<span class="citeproc-not-found" data-reference-id="ANDREWS2018114"><strong>???</strong></span>)</span>.</p>
+<p><img src="../../Images/Andrews2017_Fig1.png" style="margin:auto; display:block" /></p>
+<!--knitr::include_graphics(tmpFn, auto_pdf = TRUE)-->
+<p>We’ll first explain dimensionality reduction for visualisation, using Principal Component Analysis, t-SNE and UMAP.</p>
+<div id="principal-component-analysis" class="section level2">
+<h2><span class="header-section-number">6.1</span> Principal Component Analysis</h2>
+<p>In a single cell RNA-seq (scRNASeq) data set, each cell is described by the expression level of thoushands of genes.</p>
+<p>The total number of genes measured is referred to as dimensionality. Each gene measured is one dimension in the space characterising the data set. Many genes will little vary across cells and thus be uninformative when comparing cells. Also, because some genes will have correlated expression patterns, some information is redundant. Moreover, we can represent data in three dimensions, not more. So reducing the number of useful dimensions is necessary.</p>
+<div id="description" class="section level3">
+<h3><span class="header-section-number">6.1.1</span> Description</h3>
+<p>The data set: a matrix with one row per sample and one variable per column. Here samples are cells and each variable is the normalised read count for a given gene.</p>
+<p>The space: each cell is associated to a point in a multi-dimensional space where each gene is a dimension.</p>
+<p>The aim: to find a new set of variables defining a space with fewer dimensions while losing as little information as possible.</p>
+<p>Out of a set of variables (read counts), PCA defines new variables called Principal Components (PCs) that best capture the variability observed amongst samples (cells), see <span class="citation">(<span class="citeproc-not-found" data-reference-id="field2012discovering"><strong>???</strong></span>)</span> for example.</p>
+<p>The number of variables does not change. Only the fraction of variance captured by each variable differs.
+The first PC explains the highest proportion of variance possible (bound by prperties of PCA).
+The second PC explains the highest proportion of variance not explained by the first PC.
+PCs each explain a decreasing amount of variance not explained by the previous ones.
+Each PC is a dimension in the new space.</p>
+<p>The total amount of variance explained by the first few PCs is usually such that excluding remaining PCs, ie dimensions, loses little information. The stronger the correlation between the initial variables, the stronger the reduction in dimensionality. PCs to keep can be chosen as those capturing at least as much as the average variance per initial variable or using a scree plot, see below.</p>
+<p>PCs are linear combinations of the initial variables. PCs represent the same amount of information as the initial set and enable its restoration. The data is not altered. We only look at it in a different way.</p>
+<p>About the mapping function from the old to the new space:</p>
+<ul>
+<li>it is linear</li>
+<li>it is inverse, to restore the original space</li>
+<li>it relies on orthogonal PCs so that the total variance remains the same.</li>
+</ul>
+<p>Two transformations of the data are necessary:</p>
+<ul>
+<li>center the data so that the sample mean for each column is 0 so the covariance matrix of the intial matrix takes a simple form</li>
+<li>scale variance to 1, ie standardize, to avoid PCA loading on variables with large variance.</li>
+</ul>
+</div>
+<div id="example-1" class="section level3">
+<h3><span class="header-section-number">6.1.2</span> Example</h3>
+<p>Here we will make a simple data set of 100 samples and 2 variables, perform PCA and visualise on the initial plane the data set and PCs <span class="citation">(<span class="citeproc-not-found" data-reference-id="pca_blog_Patcher2014"><strong>???</strong></span>)</span>.</p>
+<div class="sourceCode" id="cb365"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb365-1"><a href="dimRedForVizTop.html#cb365-1"></a><span class="kw">library</span>(ggplot2)</span>
+<span id="cb365-2"><a href="dimRedForVizTop.html#cb365-2"></a>fontsize &lt;-<span class="st"> </span><span class="kw">theme</span>(<span class="dt">axis.text=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">12</span>),</span>
+<span id="cb365-3"><a href="dimRedForVizTop.html#cb365-3"></a>                  <span class="dt">axis.title=</span><span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>))</span></code></pre></div>
+<p>Let’s make and plot a data set.</p>
+<div class="sourceCode" id="cb366"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb366-1"><a href="dimRedForVizTop.html#cb366-1"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)            <span class="co">#sets the seed for random number generation.</span></span>
+<span id="cb366-2"><a href="dimRedForVizTop.html#cb366-2"></a> x &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">100</span>              <span class="co">#creates a vector x with numbers from 1 to 100</span></span>
+<span id="cb366-3"><a href="dimRedForVizTop.html#cb366-3"></a> ex &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">30</span>) <span class="co">#100 normally distributed rand. nos. w/ mean=0, s.d.=30</span></span>
+<span id="cb366-4"><a href="dimRedForVizTop.html#cb366-4"></a> ey &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">30</span>) <span class="co"># &quot; &quot; </span></span>
+<span id="cb366-5"><a href="dimRedForVizTop.html#cb366-5"></a> y &lt;-<span class="st"> </span><span class="dv">30</span> <span class="op">+</span><span class="st"> </span><span class="dv">2</span> <span class="op">*</span><span class="st"> </span>x         <span class="co">#sets y to be a vector that is a linear function of x</span></span>
+<span id="cb366-6"><a href="dimRedForVizTop.html#cb366-6"></a> x_obs &lt;-<span class="st"> </span>x <span class="op">+</span><span class="st"> </span>ex         <span class="co">#adds &quot;noise&quot; to x</span></span>
+<span id="cb366-7"><a href="dimRedForVizTop.html#cb366-7"></a> y_obs &lt;-<span class="st"> </span>y <span class="op">+</span><span class="st"> </span>ey         <span class="co">#adds &quot;noise&quot; to y</span></span>
+<span id="cb366-8"><a href="dimRedForVizTop.html#cb366-8"></a> P &lt;-<span class="st"> </span><span class="kw">cbind</span>(x_obs,y_obs) <span class="co">#places points in matrix</span></span>
+<span id="cb366-9"><a href="dimRedForVizTop.html#cb366-9"></a> <span class="kw">plot</span>(P,<span class="dt">asp=</span><span class="dv">1</span>,<span class="dt">col=</span><span class="dv">1</span>) <span class="co">#plot points</span></span>
+<span id="cb366-10"><a href="dimRedForVizTop.html#cb366-10"></a> <span class="kw">points</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">3</span>, <span class="dt">pch=</span><span class="dv">19</span>) <span class="co">#show center</span></span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/pca_toy_set-1.png" width="672" /></p>
+<p>Center the data and compute covariance matrix.</p>
+<div class="sourceCode" id="cb367"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb367-1"><a href="dimRedForVizTop.html#cb367-1"></a>M &lt;-<span class="st"> </span><span class="kw">cbind</span>(x_obs <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(x_obs), y_obs <span class="op">-</span><span class="st"> </span><span class="kw">mean</span>(y_obs)) <span class="co">#centered matrix</span></span>
+<span id="cb367-2"><a href="dimRedForVizTop.html#cb367-2"></a>MCov &lt;-<span class="st"> </span><span class="kw">cov</span>(M)          <span class="co">#creates covariance matrix</span></span></code></pre></div>
+<p>Compute the principal axes, ie eigenvectors and corresponding eigenvalues.</p>
+<p>An eigenvector is a direction and an eigenvalue is a number measuring the spread of the data in that direction. The eigenvector with the highest eigenvalue is the first principal component.</p>
+<p>The eigenvectors of the covariance matrix provide the principal axes, and the eigenvalues quantify the fraction of variance explained in each component.</p>
+<div class="sourceCode" id="cb368"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb368-1"><a href="dimRedForVizTop.html#cb368-1"></a>eigenValues &lt;-<span class="st"> </span><span class="kw">eigen</span>(MCov)<span class="op">$</span>values       <span class="co">#compute eigenvalues</span></span>
+<span id="cb368-2"><a href="dimRedForVizTop.html#cb368-2"></a>eigenVectors &lt;-<span class="st"> </span><span class="kw">eigen</span>(MCov)<span class="op">$</span>vectors     <span class="co">#compute eigenvectors</span></span>
+<span id="cb368-3"><a href="dimRedForVizTop.html#cb368-3"></a></span>
+<span id="cb368-4"><a href="dimRedForVizTop.html#cb368-4"></a><span class="co"># or use &#39;singular value decomposition&#39; of the matrix</span></span>
+<span id="cb368-5"><a href="dimRedForVizTop.html#cb368-5"></a>d &lt;-<span class="st"> </span><span class="kw">svd</span>(M)<span class="op">$</span>d          <span class="co">#the singular values</span></span>
+<span id="cb368-6"><a href="dimRedForVizTop.html#cb368-6"></a>v &lt;-<span class="st"> </span><span class="kw">svd</span>(M)<span class="op">$</span>v          <span class="co">#the right singular vectors</span></span></code></pre></div>
+<p>Let’s plot the principal axes.</p>
+<p>First PC:</p>
+<div class="sourceCode" id="cb369"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb369-1"><a href="dimRedForVizTop.html#cb369-1"></a><span class="co"># PC 1:</span></span>
+<span id="cb369-2"><a href="dimRedForVizTop.html#cb369-2"></a> <span class="kw">plot</span>(P,<span class="dt">asp=</span><span class="dv">1</span>,<span class="dt">col=</span><span class="dv">1</span>) <span class="co">#plot points</span></span>
+<span id="cb369-3"><a href="dimRedForVizTop.html#cb369-3"></a> <span class="kw">points</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">3</span>, <span class="dt">pch=</span><span class="dv">19</span>) <span class="co">#show center</span></span>
+<span id="cb369-4"><a href="dimRedForVizTop.html#cb369-4"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">1</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">1</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/pca_show_PC1-1.png" width="672" /></p>
+<p>Second PC:</p>
+<div class="sourceCode" id="cb370"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb370-1"><a href="dimRedForVizTop.html#cb370-1"></a> <span class="kw">plot</span>(P,<span class="dt">asp=</span><span class="dv">1</span>,<span class="dt">col=</span><span class="dv">1</span>) <span class="co">#plot points</span></span>
+<span id="cb370-2"><a href="dimRedForVizTop.html#cb370-2"></a> <span class="kw">points</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">3</span>, <span class="dt">pch=</span><span class="dv">19</span>) <span class="co">#show center</span></span>
+<span id="cb370-3"><a href="dimRedForVizTop.html#cb370-3"></a><span class="co"># PC 1:</span></span>
+<span id="cb370-4"><a href="dimRedForVizTop.html#cb370-4"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">1</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">1</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span>
+<span id="cb370-5"><a href="dimRedForVizTop.html#cb370-5"></a><span class="co"># PC 2:</span></span>
+<span id="cb370-6"><a href="dimRedForVizTop.html#cb370-6"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">2</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">2</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/pca_show_PC2-1.png" width="672" /></p>
+<p>Add the projections of the points onto the first PC:</p>
+<div class="sourceCode" id="cb371"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb371-1"><a href="dimRedForVizTop.html#cb371-1"></a><span class="kw">plot</span>(P,<span class="dt">asp=</span><span class="dv">1</span>,<span class="dt">col=</span><span class="dv">1</span>) <span class="co">#plot points</span></span>
+<span id="cb371-2"><a href="dimRedForVizTop.html#cb371-2"></a><span class="kw">points</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">3</span>, <span class="dt">pch=</span><span class="dv">19</span>) <span class="co">#show center</span></span>
+<span id="cb371-3"><a href="dimRedForVizTop.html#cb371-3"></a><span class="co"># PC 1:</span></span>
+<span id="cb371-4"><a href="dimRedForVizTop.html#cb371-4"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">1</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">1</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span>
+<span id="cb371-5"><a href="dimRedForVizTop.html#cb371-5"></a><span class="co"># PC 2:</span></span>
+<span id="cb371-6"><a href="dimRedForVizTop.html#cb371-6"></a><span class="kw">lines</span>(x_obs,eigenVectors[<span class="dv">2</span>,<span class="dv">2</span>]<span class="op">/</span>eigenVectors[<span class="dv">1</span>,<span class="dv">2</span>]<span class="op">*</span>M[x]<span class="op">+</span><span class="kw">mean</span>(y_obs),<span class="dt">col=</span><span class="dv">8</span>)</span>
+<span id="cb371-7"><a href="dimRedForVizTop.html#cb371-7"></a><span class="co"># add projecions:</span></span>
+<span id="cb371-8"><a href="dimRedForVizTop.html#cb371-8"></a>trans &lt;-<span class="st"> </span>(M<span class="op">%*%</span>v[,<span class="dv">1</span>])<span class="op">%*%</span>v[,<span class="dv">1</span>] <span class="co">#compute projections of points</span></span>
+<span id="cb371-9"><a href="dimRedForVizTop.html#cb371-9"></a>P_proj &lt;-<span class="st"> </span><span class="kw">scale</span>(trans, <span class="dt">center=</span><span class="op">-</span><span class="kw">cbind</span>(<span class="kw">mean</span>(x_obs),<span class="kw">mean</span>(y_obs)), <span class="dt">scale=</span><span class="ot">FALSE</span>) </span>
+<span id="cb371-10"><a href="dimRedForVizTop.html#cb371-10"></a><span class="kw">points</span>(P_proj, <span class="dt">col=</span><span class="dv">4</span>,<span class="dt">pch=</span><span class="dv">19</span>,<span class="dt">cex=</span><span class="fl">0.5</span>) <span class="co">#plot projections</span></span>
+<span id="cb371-11"><a href="dimRedForVizTop.html#cb371-11"></a><span class="kw">segments</span>(x_obs,y_obs,P_proj[,<span class="dv">1</span>],P_proj[,<span class="dv">2</span>],<span class="dt">col=</span><span class="dv">4</span>,<span class="dt">lty=</span><span class="dv">2</span>) <span class="co">#connect to points</span></span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/pca_add_projection_onto_PC1-1.png" width="672" /></p>
+<p>Compute PCs with prcomp().</p>
+<div class="sourceCode" id="cb372"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb372-1"><a href="dimRedForVizTop.html#cb372-1"></a>pca_res &lt;-<span class="st"> </span><span class="kw">prcomp</span>(M)</span></code></pre></div>
+<div class="sourceCode" id="cb373"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb373-1"><a href="dimRedForVizTop.html#cb373-1"></a><span class="kw">summary</span>(pca_res)</span></code></pre></div>
+<pre><code>## Importance of components:
+##                           PC1    PC2
+## Standard deviation     73.827 28.279
+## Proportion of Variance  0.872  0.128
+## Cumulative Proportion   0.872  1.000</code></pre>
+<div class="sourceCode" id="cb375"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb375-1"><a href="dimRedForVizTop.html#cb375-1"></a>var_explained &lt;-<span class="st"> </span>pca_res<span class="op">$</span>sdev<span class="op">^</span><span class="dv">2</span><span class="op">/</span><span class="kw">sum</span>(pca_res<span class="op">$</span>sdev<span class="op">^</span><span class="dv">2</span>)</span>
+<span id="cb375-2"><a href="dimRedForVizTop.html#cb375-2"></a>var_explained</span></code></pre></div>
+<pre><code>## [1] 0.8720537 0.1279463</code></pre>
+<p>Check amount of variance captured by PCs on a scree plot.</p>
+<div class="sourceCode" id="cb377"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb377-1"><a href="dimRedForVizTop.html#cb377-1"></a><span class="co"># Show scree plot:</span></span>
+<span id="cb377-2"><a href="dimRedForVizTop.html#cb377-2"></a><span class="kw">plot</span>(pca_res)</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/pca_scree-1.png" width="672" /></p>
+<p>Plot with ggplot.</p>
+<div class="sourceCode" id="cb378"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb378-1"><a href="dimRedForVizTop.html#cb378-1"></a>df_pc &lt;-<span class="st"> </span><span class="kw">data.frame</span>(pca_res<span class="op">$</span>x)</span>
+<span id="cb378-2"><a href="dimRedForVizTop.html#cb378-2"></a>g &lt;-<span class="st"> </span><span class="kw">ggplot</span>(df_pc, <span class="kw">aes</span>(PC1, PC2)) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb378-3"><a href="dimRedForVizTop.html#cb378-3"></a><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">size=</span><span class="dv">2</span>) <span class="op">+</span><span class="st">   </span><span class="co"># draw points</span></span>
+<span id="cb378-4"><a href="dimRedForVizTop.html#cb378-4"></a><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;PCA&quot;</span>, </span>
+<span id="cb378-5"><a href="dimRedForVizTop.html#cb378-5"></a>       <span class="dt">subtitle=</span><span class="st">&quot;With principal components PC1 and PC2 as X and Y axis&quot;</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb378-6"><a href="dimRedForVizTop.html#cb378-6"></a><span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="fl">1.2</span> <span class="op">*</span><span class="st"> </span><span class="kw">c</span>(<span class="kw">min</span>(df_pc<span class="op">$</span>PC1), <span class="kw">max</span>(df_pc<span class="op">$</span>PC1)), </span>
+<span id="cb378-7"><a href="dimRedForVizTop.html#cb378-7"></a>                  <span class="dt">ylim =</span> <span class="fl">1.2</span> <span class="op">*</span><span class="st"> </span><span class="kw">c</span>(<span class="kw">min</span>(df_pc<span class="op">$</span>PC2), <span class="kw">max</span>(df_pc<span class="op">$</span>PC2)))</span>
+<span id="cb378-8"><a href="dimRedForVizTop.html#cb378-8"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">geom_hline</span>(<span class="dt">yintercept=</span><span class="dv">0</span>)</span>
+<span id="cb378-9"><a href="dimRedForVizTop.html#cb378-9"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">geom_vline</span>(<span class="dt">xintercept=</span><span class="dv">0</span>)</span>
+<span id="cb378-10"><a href="dimRedForVizTop.html#cb378-10"></a>g</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/pca_show_PC_plane_with_ggplot-1.png" width="672" /></p>
+<p>Or use ggfortify autoplot().</p>
+<div class="sourceCode" id="cb379"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb379-1"><a href="dimRedForVizTop.html#cb379-1"></a><span class="co"># ggfortify</span></span>
+<span id="cb379-2"><a href="dimRedForVizTop.html#cb379-2"></a><span class="kw">library</span>(ggfortify)</span>
+<span id="cb379-3"><a href="dimRedForVizTop.html#cb379-3"></a>g &lt;-<span class="st"> </span><span class="kw">autoplot</span>(pca_res)</span>
+<span id="cb379-4"><a href="dimRedForVizTop.html#cb379-4"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">geom_hline</span>(<span class="dt">yintercept=</span><span class="dv">0</span>)</span>
+<span id="cb379-5"><a href="dimRedForVizTop.html#cb379-5"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st"> </span><span class="kw">geom_vline</span>(<span class="dt">xintercept=</span><span class="dv">0</span>)</span>
+<span id="cb379-6"><a href="dimRedForVizTop.html#cb379-6"></a>g</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/pca_show_PC_plane_with_ggfortify-1.png" width="672" /></p>
+<p>Going from 2D to 3D (figure from <span class="citation">(<span class="citeproc-not-found" data-reference-id="nlpcaPlot"><strong>???</strong></span>)</span>):</p>
+<p><img src="../../Images/hemberg_pca.png" style="margin:auto; display:block" /></p>
+</div>
+</div>
+<div id="load-packages-1" class="section level2">
+<h2><span class="header-section-number">6.2</span> Load packages</h2>
+<div class="sourceCode" id="cb380"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb380-1"><a href="dimRedForVizTop.html#cb380-1"></a><span class="kw">library</span>(scater) <span class="co"># for QC and plots</span></span></code></pre></div>
+</div>
+<div id="load-data" class="section level2">
+<h2><span class="header-section-number">6.3</span> Load data</h2>
+<p>We will load the R file keeping the SCE object with the normalised counts for 500 cells per sample.</p>
+<div class="sourceCode" id="cb381"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb381-1"><a href="dimRedForVizTop.html#cb381-1"></a>setName &lt;-<span class="st"> &quot;caron&quot;</span></span>
+<span id="cb381-2"><a href="dimRedForVizTop.html#cb381-2"></a>setSuf &lt;-<span class="st"> &quot;_5hCellPerSpl&quot;</span></span>
+<span id="cb381-3"><a href="dimRedForVizTop.html#cb381-3"></a></span>
+<span id="cb381-4"><a href="dimRedForVizTop.html#cb381-4"></a><span class="co"># Read object in:</span></span>
+<span id="cb381-5"><a href="dimRedForVizTop.html#cb381-5"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds&quot;</span>, projDir, outDirBit, setName, setSuf)</span>
+<span id="cb381-6"><a href="dimRedForVizTop.html#cb381-6"></a><span class="kw">print</span>(tmpFn)</span></code></pre></div>
+<pre><code>## [1] &quot;/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020/AnaWiSce/AnaCourse1/Robjects/caron_sce_nz_postDeconv_5hCellPerSpl.Rds&quot;</code></pre>
+<div class="sourceCode" id="cb383"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb383-1"><a href="dimRedForVizTop.html#cb383-1"></a><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(tmpFn))</span>
+<span id="cb383-2"><a href="dimRedForVizTop.html#cb383-2"></a>{</span>
+<span id="cb383-3"><a href="dimRedForVizTop.html#cb383-3"></a>    knitr<span class="op">::</span><span class="kw">knit_exit</span>()</span>
+<span id="cb383-4"><a href="dimRedForVizTop.html#cb383-4"></a>}</span>
+<span id="cb383-5"><a href="dimRedForVizTop.html#cb383-5"></a>sce &lt;-<span class="st"> </span><span class="kw">readRDS</span>(tmpFn)</span>
+<span id="cb383-6"><a href="dimRedForVizTop.html#cb383-6"></a>sce</span></code></pre></div>
+<pre><code>## class: SingleCellExperiment 
+## dim: 16629 5500 
+## metadata(0):
+## assays(2): counts logcounts
+## rownames(16629): ENSG00000237491 ENSG00000225880 ... ENSG00000275063
+##   ENSG00000271254
+## rowData names(11): ensembl_gene_id external_gene_name ... detected
+##   gene_sparsity
+## colnames: NULL
+## colData names(16): Barcode Run ... cell_sparsity sizeFactor
+## reducedDimNames(0):
+## altExpNames(0):</code></pre>
+<div class="sourceCode" id="cb385"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb385-1"><a href="dimRedForVizTop.html#cb385-1"></a><span class="kw">head</span>(<span class="kw">rowData</span>(sce))</span></code></pre></div>
+<pre><code>## DataFrame with 6 rows and 11 columns
+##                 ensembl_gene_id external_gene_name chromosome_name
+##                     &lt;character&gt;        &lt;character&gt;     &lt;character&gt;
+## ENSG00000237491 ENSG00000237491          LINC01409               1
+## ENSG00000225880 ENSG00000225880          LINC00115               1
+## ENSG00000230368 ENSG00000230368             FAM41C               1
+## ENSG00000230699 ENSG00000230699                                  1
+## ENSG00000188976 ENSG00000188976              NOC2L               1
+## ENSG00000187961 ENSG00000187961             KLHL17               1
+##                 start_position end_position    strand      Symbol
+##                      &lt;integer&gt;    &lt;integer&gt; &lt;integer&gt; &lt;character&gt;
+## ENSG00000237491         778747       810065         1  AL669831.5
+## ENSG00000225880         826206       827522        -1   LINC00115
+## ENSG00000230368         868071       876903        -1      FAM41C
+## ENSG00000230699         911435       914948         1  AL645608.3
+## ENSG00000188976         944203       959309        -1       NOC2L
+## ENSG00000187961         960584       965719         1      KLHL17
+##                            Type       mean  detected gene_sparsity
+##                     &lt;character&gt;  &lt;numeric&gt; &lt;numeric&gt;     &lt;numeric&gt;
+## ENSG00000237491 Gene Expression 0.02785355  2.706672      0.977951
+## ENSG00000225880 Gene Expression 0.01376941  1.340222      0.985699
+## ENSG00000230368 Gene Expression 0.02027381  1.946076      0.980821
+## ENSG00000230699 Gene Expression 0.00144251  0.144251      0.997704
+## ENSG00000188976 Gene Expression 0.17711393 14.511645      0.835565
+## ENSG00000187961 Gene Expression 0.00354070  0.348825      0.995935</code></pre>
+<div class="sourceCode" id="cb387"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb387-1"><a href="dimRedForVizTop.html#cb387-1"></a><span class="co">#any(duplicated(rowData(nz.sce)$ensembl_gene_id))</span></span>
+<span id="cb387-2"><a href="dimRedForVizTop.html#cb387-2"></a><span class="co"># some function(s) used below complain about &#39;strand&#39; already being used in row data,</span></span>
+<span id="cb387-3"><a href="dimRedForVizTop.html#cb387-3"></a><span class="co"># so rename that column now:</span></span>
+<span id="cb387-4"><a href="dimRedForVizTop.html#cb387-4"></a><span class="kw">colnames</span>(<span class="kw">rowData</span>(sce))[<span class="kw">colnames</span>(<span class="kw">rowData</span>(sce)) <span class="op">==</span><span class="st"> &quot;strand&quot;</span>] &lt;-<span class="st"> &quot;strandNum&quot;</span></span></code></pre></div>
+</div>
+<div id="pca" class="section level2">
+<h2><span class="header-section-number">6.4</span> PCA</h2>
+<p>Perform PCA, keep outcome in same object.</p>
+<div class="sourceCode" id="cb388"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb388-1"><a href="dimRedForVizTop.html#cb388-1"></a>nbPcToComp &lt;-<span class="st"> </span><span class="dv">50</span></span>
+<span id="cb388-2"><a href="dimRedForVizTop.html#cb388-2"></a><span class="co"># compute PCA:</span></span>
+<span id="cb388-3"><a href="dimRedForVizTop.html#cb388-3"></a><span class="co">#sce &lt;- runPCA(sce, ncomponents = nbPcToComp, method = &quot;irlba&quot;)</span></span>
+<span id="cb388-4"><a href="dimRedForVizTop.html#cb388-4"></a>sce &lt;-<span class="st"> </span><span class="kw">runPCA</span>(sce, <span class="dt">ncomponents =</span> nbPcToComp)</span></code></pre></div>
+<p>Display scree plot.</p>
+<div class="sourceCode" id="cb389"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb389-1"><a href="dimRedForVizTop.html#cb389-1"></a><span class="co"># with reducedDim</span></span>
+<span id="cb389-2"><a href="dimRedForVizTop.html#cb389-2"></a>sce.pca &lt;-<span class="st"> </span><span class="kw">reducedDim</span>(sce, <span class="st">&quot;PCA&quot;</span>)</span>
+<span id="cb389-3"><a href="dimRedForVizTop.html#cb389-3"></a><span class="kw">attributes</span>(sce.pca)<span class="op">$</span>percentVar</span></code></pre></div>
+<pre><code>##  [1] 16.5531107 10.0199888  4.3629600  3.7422222  1.9514046  1.7700235
+##  [7]  1.6280021  1.2600210  1.1413238  0.8701746  0.7881998  0.6933591
+## [13]  0.6465512  0.5898302  0.5307767  0.4365192  0.3893798  0.3791947
+## [19]  0.3639489  0.3434668  0.3324412  0.2924477  0.2857375  0.2708208
+## [25]  0.2674348  0.2620022  0.2529266  0.2422967  0.2388725  0.2374630
+## [31]  0.2339333  0.2312881  0.2296763  0.2261449  0.2229721  0.2218208
+## [37]  0.2215260  0.2195930  0.2168220  0.2151280  0.2129703  0.2114219
+## [43]  0.2099425  0.2091484  0.2073056  0.2054996  0.2046071  0.2042045
+## [49]  0.2038521  0.2028053</code></pre>
+<div class="sourceCode" id="cb391"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb391-1"><a href="dimRedForVizTop.html#cb391-1"></a><span class="kw">barplot</span>(<span class="kw">attributes</span>(sce.pca)<span class="op">$</span>percentVar,</span>
+<span id="cb391-2"><a href="dimRedForVizTop.html#cb391-2"></a>        <span class="dt">main=</span><span class="kw">sprintf</span>(<span class="st">&quot;Scree plot for the %s first PCs&quot;</span>, nbPcToComp),</span>
+<span id="cb391-3"><a href="dimRedForVizTop.html#cb391-3"></a>        <span class="dt">names.arg=</span><span class="dv">1</span><span class="op">:</span>nbPcToComp,</span>
+<span id="cb391-4"><a href="dimRedForVizTop.html#cb391-4"></a>        <span class="dt">cex.names =</span> <span class="fl">0.8</span>)</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/sce_pca_scree_plot-1.png" width="672" /></p>
+<p>Display cells on a plot for the first 2 PCs, colouring by ‘Sample’ and setting size to match ‘total_features’.</p>
+<p>The proximity of cells reflects the similarity of their expression profiles.</p>
+<div class="sourceCode" id="cb392"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb392-1"><a href="dimRedForVizTop.html#cb392-1"></a>g &lt;-<span class="st"> </span><span class="kw">plotPCA</span>(sce,</span>
+<span id="cb392-2"><a href="dimRedForVizTop.html#cb392-2"></a>        <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb392-3"><a href="dimRedForVizTop.html#cb392-3"></a>        <span class="dt">size_by =</span> <span class="st">&quot;sum&quot;</span></span>
+<span id="cb392-4"><a href="dimRedForVizTop.html#cb392-4"></a>)         </span>
+<span id="cb392-5"><a href="dimRedForVizTop.html#cb392-5"></a>g</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/sce_pca_plotColorBySample-1.png" width="672" /></p>
+<p>One can also split the plot by sample.</p>
+<div class="sourceCode" id="cb393"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb393-1"><a href="dimRedForVizTop.html#cb393-1"></a>g &lt;-<span class="st"> </span>g <span class="op">+</span><span class="st">  </span><span class="kw">facet_wrap</span>(sce<span class="op">$</span>source_name <span class="op">~</span><span class="st"> </span>.)</span>
+<span id="cb393-2"><a href="dimRedForVizTop.html#cb393-2"></a>g</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/sce_pca_plotColorBySample_facetBySample-1.png" width="1152" /></p>
+<p>Or plot several PCs at once, using plotReducedDim():</p>
+<div class="sourceCode" id="cb394"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb394-1"><a href="dimRedForVizTop.html#cb394-1"></a><span class="kw">plotReducedDim</span>(sce, <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">ncomponents=</span><span class="dv">3</span>, </span>
+<span id="cb394-2"><a href="dimRedForVizTop.html#cb394-2"></a>        <span class="dt">colour_by =</span> <span class="st">&quot;Sample.Name&quot;</span>) <span class="op">+</span><span class="st"> </span>fontsize</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/sce_pca_plotReducedDim-1.png" width="672" /></p>
+<div id="correlation-between-pcs-and-the-total-number-of-features-detected" class="section level3">
+<h3><span class="header-section-number">6.4.1</span> Correlation between PCs and the total number of features detected</h3>
+<p>The PCA plot above shows cells as symbols whose size depends on the total number of features or library size. It suggests there may be a correlation between PCs and these variables. Let’s check:</p>
+<div class="sourceCode" id="cb395"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb395-1"><a href="dimRedForVizTop.html#cb395-1"></a><span class="kw">colData</span>(sce)<span class="op">$</span>source_name &lt;-<span class="st"> </span><span class="kw">factor</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>source_name)</span>
+<span id="cb395-2"><a href="dimRedForVizTop.html#cb395-2"></a><span class="kw">colData</span>(sce)<span class="op">$</span>block &lt;-<span class="st"> </span><span class="kw">factor</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>block)</span>
+<span id="cb395-3"><a href="dimRedForVizTop.html#cb395-3"></a>r2mat &lt;-<span class="st"> </span><span class="kw">getExplanatoryPCs</span>(sce)</span>
+<span id="cb395-4"><a href="dimRedForVizTop.html#cb395-4"></a><span class="co">#r2mat &lt;- getExplanatoryPCs(sce,</span></span>
+<span id="cb395-5"><a href="dimRedForVizTop.html#cb395-5"></a><span class="co">#                           variables = c(&quot;Run&quot;, &quot;source_name&quot;))</span></span>
+<span id="cb395-6"><a href="dimRedForVizTop.html#cb395-6"></a><span class="co">#                           #variables = c(&quot;Run&quot;, &quot;Sample.Name&quot;))</span></span>
+<span id="cb395-7"><a href="dimRedForVizTop.html#cb395-7"></a><span class="co">#                           #variables = c(&quot;Run&quot;, &quot;Sample.Name&quot;, &quot;source_name&quot;))</span></span>
+<span id="cb395-8"><a href="dimRedForVizTop.html#cb395-8"></a></span>
+<span id="cb395-9"><a href="dimRedForVizTop.html#cb395-9"></a>r2mat</span></code></pre></div>
+<pre><code>##      Barcode      Run Sample.Name source_name         sum    detected
+## PC1      NaN 31.19206    31.19206    6.832312  0.78375254  6.27337092
+## PC2      NaN 39.34643    39.34643   25.662855  5.25084021  0.09729984
+## PC3      NaN 26.52168    26.52168   15.602707 37.70434045 46.35383380
+## PC4      NaN 60.16877    60.16877   46.786763  4.07129265  4.76770624
+## PC5      NaN 29.51006    29.51006   11.510990  4.47573115  7.04988227
+## PC6      NaN 45.52405    45.52405   15.277803  0.51188492  0.02608563
+## PC7      NaN 37.88650    37.88650   30.240815  0.05544668  0.94875299
+## PC8      NaN 56.10658    56.10658   45.833901  0.40672700  0.19891021
+## PC9      NaN 22.89370    22.89370   11.311513  3.38048004  3.34248462
+## PC10     NaN 36.83412    36.83412    2.715106  0.08205300  0.58453373
+##      subsets_Mito_sum subsets_Mito_detected subsets_Mito_percent       total
+## PC1       5.997587644            18.4166606           4.54957617  0.78375254
+## PC2       0.004462683             1.5357613          16.48789805  5.25084021
+## PC3      24.652807031             9.3220632           3.22468580 37.70434045
+## PC4       0.580352132             0.7908534           0.09236766  4.07129265
+## PC5       9.434101761            17.9512413           7.94959368  4.47573115
+## PC6      11.954946849            14.0284466          38.80948618  0.51188492
+## PC7       0.082920314             1.7025755           0.36780972  0.05544668
+## PC8       0.480586751             3.5317294           6.68352338  0.40672700
+## PC9       4.050632836             4.7046742           1.55733687  3.38048004
+## PC10      0.025858060             0.1133214           0.68597039  0.08205300
+##          block setName     discard    outlier cell_sparsity   sizeFactor
+## PC1   6.832312      NA  0.04444383  0.2296869    6.27289382 5.197542e+00
+## PC2  25.662855      NA  8.43564022  9.2039749    0.09799246 1.941465e-02
+## PC3  15.602707      NA  5.93493152  9.1094043   46.37551341 3.707371e+01
+## PC4  46.786763      NA  2.77398719  4.3293501    4.75796689 5.966918e+00
+## PC5  11.510990      NA  0.85156882  0.3470523    7.04816034 4.575358e+00
+## PC6  15.277803      NA 19.45181700 16.1908399    0.02593408 5.747692e-06
+## PC7  30.240815      NA  0.76305157  1.3702499    0.94864939 1.979993e-01
+## PC8  45.833901      NA  0.99037548  1.0249066    0.19815769 2.156675e-01
+## PC9  11.311513      NA  0.28760449  0.1623147    3.34504092 3.569516e+00
+## PC10  2.715106      NA  0.24819364  0.0366594    0.58349267 3.839716e-01</code></pre>
+<div class="sourceCode" id="cb397"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb397-1"><a href="dimRedForVizTop.html#cb397-1"></a>dat &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">colData</span>(sce)[,<span class="kw">c</span>(<span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb397-2"><a href="dimRedForVizTop.html#cb397-2"></a>                 <span class="st">&quot;source_name&quot;</span>,</span>
+<span id="cb397-3"><a href="dimRedForVizTop.html#cb397-3"></a>                 <span class="st">&quot;sum&quot;</span>,</span>
+<span id="cb397-4"><a href="dimRedForVizTop.html#cb397-4"></a>                 <span class="st">&quot;detected&quot;</span>,</span>
+<span id="cb397-5"><a href="dimRedForVizTop.html#cb397-5"></a>                 <span class="co">#&quot;percent_top_200&quot;,</span></span>
+<span id="cb397-6"><a href="dimRedForVizTop.html#cb397-6"></a>                 <span class="st">&quot;subsets_Mito_percent&quot;</span>)],</span>
+<span id="cb397-7"><a href="dimRedForVizTop.html#cb397-7"></a>                 <span class="kw">reducedDim</span>(sce,<span class="st">&quot;PCA&quot;</span>))</span>
+<span id="cb397-8"><a href="dimRedForVizTop.html#cb397-8"></a>dat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(dat)</span>
+<span id="cb397-9"><a href="dimRedForVizTop.html#cb397-9"></a>dat<span class="op">$</span>sum &lt;-<span class="st"> </span><span class="kw">log2</span>(dat<span class="op">$</span>sum)</span>
+<span id="cb397-10"><a href="dimRedForVizTop.html#cb397-10"></a><span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(<span class="dt">x=</span>sum, <span class="dt">y=</span>PC1, <span class="dt">shape=</span>source_name, <span class="dt">col=</span>Sample.Name)) <span class="op">+</span></span>
+<span id="cb397-11"><a href="dimRedForVizTop.html#cb397-11"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb397-12"><a href="dimRedForVizTop.html#cb397-12"></a><span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm, <span class="dt">inherit.aes =</span> <span class="ot">FALSE</span>, <span class="kw">aes</span>(<span class="dt">x=</span>sum, <span class="dt">y=</span>PC1)) </span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/sce_pca_plotQC_total_features-1.png" width="672" /></p>
+<div class="sourceCode" id="cb398"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb398-1"><a href="dimRedForVizTop.html#cb398-1"></a><span class="co">#ggplot(dat, aes(x=percent_top_200, y=PC2, shape=source_name, col=Sample.Name)) +</span></span>
+<span id="cb398-2"><a href="dimRedForVizTop.html#cb398-2"></a><span class="co">#    geom_point() +</span></span>
+<span id="cb398-3"><a href="dimRedForVizTop.html#cb398-3"></a><span class="co">#    geom_smooth(method=lm, inherit.aes = FALSE, aes(x=percent_top_200, y=PC2)) </span></span>
+<span id="cb398-4"><a href="dimRedForVizTop.html#cb398-4"></a><span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(<span class="dt">x=</span>detected, <span class="dt">y=</span>PC3, <span class="dt">shape=</span>source_name, <span class="dt">col=</span>Sample.Name)) <span class="op">+</span></span>
+<span id="cb398-5"><a href="dimRedForVizTop.html#cb398-5"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb398-6"><a href="dimRedForVizTop.html#cb398-6"></a><span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm, <span class="dt">inherit.aes =</span> <span class="ot">FALSE</span>, <span class="kw">aes</span>(<span class="dt">x=</span>detected, <span class="dt">y=</span>PC3)) </span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/sce_pca_plotQC_total_features-2.png" width="672" /></p>
+<div class="sourceCode" id="cb399"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb399-1"><a href="dimRedForVizTop.html#cb399-1"></a><span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(<span class="dt">x=</span>subsets_Mito_percent, <span class="dt">y=</span>PC2, <span class="dt">shape=</span>source_name, <span class="dt">col=</span>Sample.Name)) <span class="op">+</span></span>
+<span id="cb399-2"><a href="dimRedForVizTop.html#cb399-2"></a><span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span></span>
+<span id="cb399-3"><a href="dimRedForVizTop.html#cb399-3"></a><span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm, <span class="dt">inherit.aes =</span> <span class="ot">FALSE</span>, <span class="kw">aes</span>(<span class="dt">x=</span>subsets_Mito_percent, <span class="dt">y=</span>PC2)) </span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/sce_pca_plotQC_total_features-3.png" width="672" /></p>
+<div class="sourceCode" id="cb400"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb400-1"><a href="dimRedForVizTop.html#cb400-1"></a><span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(<span class="dt">x=</span>source_name, <span class="dt">y=</span>PC7, <span class="dt">shape=</span>source_name, <span class="dt">col=</span>Sample.Name)) <span class="op">+</span></span>
+<span id="cb400-2"><a href="dimRedForVizTop.html#cb400-2"></a><span class="st">    </span><span class="kw">geom_boxplot</span>()</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/sce_pca_plotQC_total_features-4.png" width="672" /></p>
+</div>
+</div>
+<div id="t-sne-t-distributed-stochastic-neighbor-embedding" class="section level2">
+<h2><span class="header-section-number">6.5</span> t-SNE: t-Distributed Stochastic Neighbor Embedding</h2>
+<!-- https://biocellgen-public.svi.edu.au/mig_2019_scrnaseq-workshop/public/latent-spaces.html -->
+<p>The Stochastic Neighbor Embedding (SNE) approach address two shortcomings of PCA that captures the global covariance structure with a linear combination of initial variables: by preserving the local structure allowing for non-linear projections. It uses two distributions of the pairwise similarities between data points: in the input data set and in the low-dimensional space.</p>
+<p>SNE aims at preserving neighbourhoods. For each points, it computes probabilities of chosing each other point as its neighbour based on a Normal distribution depending on 1) the distance matrix and 2) the size of the neighbourhood (perplexity). SNE aims at finding a low-dimension space (eg 2D-plane) such that the similarity matrix deriving from it is as similar as possible as that from the high-dimension space. To address the fact that in low dimension, points are brought together, the similarity matrix in the low-dimension is allowed to follow a t-distribution.</p>
+<p>Two characteristics matter:</p>
+<ul>
+<li>perplexity, to indicate the relative importance of the local and global patterns in structure of the data set, usually use a value of 50,</li>
+<li>stochasticity; running the analysis will produce a different map every time, unless the seed is set.</li>
+</ul>
+<p>See <a href="https://distill.pub/2016/misread-tsne/">misread-tsne</a>.</p>
+<div id="perplexity" class="section level3">
+<h3><span class="header-section-number">6.5.1</span> Perplexity</h3>
+<p>Compute t-SNE with default perplexity, ie 50.</p>
+<div class="sourceCode" id="cb401"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb401-1"><a href="dimRedForVizTop.html#cb401-1"></a><span class="co"># runTSNE default perpexity if min(50, floor(ncol(object)/5))</span></span>
+<span id="cb401-2"><a href="dimRedForVizTop.html#cb401-2"></a>sce &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">perplexity=</span><span class="dv">50</span>, <span class="dt">rand_seed=</span><span class="dv">123</span>)</span></code></pre></div>
+<p>Plot t-SNE:</p>
+<div class="sourceCode" id="cb402"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb402-1"><a href="dimRedForVizTop.html#cb402-1"></a>tsne50 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(sce,</span>
+<span id="cb402-2"><a href="dimRedForVizTop.html#cb402-2"></a>           <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb402-3"><a href="dimRedForVizTop.html#cb402-3"></a>           <span class="dt">size_by=</span><span class="st">&quot;sum&quot;</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb402-4"><a href="dimRedForVizTop.html#cb402-4"></a><span class="st">           </span>fontsize <span class="op">+</span><span class="st"> </span></span>
+<span id="cb402-5"><a href="dimRedForVizTop.html#cb402-5"></a><span class="st">           </span><span class="kw">ggtitle</span>(<span class="st">&quot;Perplexity = 50&quot;</span>)</span>
+<span id="cb402-6"><a href="dimRedForVizTop.html#cb402-6"></a>tsne50</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/plotTSNE_perp50-1.png" width="672" /></p>
+<!-- Split by sample type: -->
+<p>Compute t-SNE for several perplexity values:</p>
+<div class="sourceCode" id="cb403"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb403-1"><a href="dimRedForVizTop.html#cb403-1"></a>tsne5.run &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">use_dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">perplexity=</span><span class="dv">5</span>, <span class="dt">rand_seed=</span><span class="dv">123</span>)</span>
+<span id="cb403-2"><a href="dimRedForVizTop.html#cb403-2"></a>tsne5 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(tsne5.run, <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>) <span class="op">+</span><span class="st"> </span>fontsize <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Perplexity = 5&quot;</span>)</span>
+<span id="cb403-3"><a href="dimRedForVizTop.html#cb403-3"></a></span>
+<span id="cb403-4"><a href="dimRedForVizTop.html#cb403-4"></a><span class="co">#tsne200.run &lt;- runTSNE(sce, use_dimred=&quot;PCA&quot;, perplexity=200, rand_seed=123)</span></span>
+<span id="cb403-5"><a href="dimRedForVizTop.html#cb403-5"></a><span class="co">#tsne200 &lt;- plotTSNE(tsne200.run, colour_by=&quot;Sample.Name&quot;) + fontsize + ggtitle(&quot;Perplexity = 200&quot;)</span></span>
+<span id="cb403-6"><a href="dimRedForVizTop.html#cb403-6"></a></span>
+<span id="cb403-7"><a href="dimRedForVizTop.html#cb403-7"></a>tsne500.run &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">use_dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">perplexity=</span><span class="dv">500</span>, <span class="dt">rand_seed=</span><span class="dv">123</span>)</span>
+<span id="cb403-8"><a href="dimRedForVizTop.html#cb403-8"></a>tsne500 &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(tsne500.run, <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>) <span class="op">+</span><span class="st"> </span>fontsize <span class="op">+</span><span class="st"> </span><span class="kw">ggtitle</span>(<span class="st">&quot;Perplexity = 500&quot;</span>)</span>
+<span id="cb403-9"><a href="dimRedForVizTop.html#cb403-9"></a></span>
+<span id="cb403-10"><a href="dimRedForVizTop.html#cb403-10"></a><span class="co">#tsne1000.run &lt;- runTSNE(sce, use_dimred=&quot;PCA&quot;, perplexity=1000, rand_seed=123)</span></span>
+<span id="cb403-11"><a href="dimRedForVizTop.html#cb403-11"></a><span class="co">#tsne1000 &lt;- plotTSNE(tsne1000.run, colour_by=&quot;Sample.Name&quot;) + fontsize + ggtitle(&quot;Perplexity = 1000&quot;)</span></span></code></pre></div>
+<div class="sourceCode" id="cb404"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb404-1"><a href="dimRedForVizTop.html#cb404-1"></a>tsne5</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/plotTSNE_perpRange-1.png" width="576" /></p>
+<div class="sourceCode" id="cb405"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb405-1"><a href="dimRedForVizTop.html#cb405-1"></a><span class="co">#tsne50</span></span>
+<span id="cb405-2"><a href="dimRedForVizTop.html#cb405-2"></a><span class="co">#tsne200</span></span>
+<span id="cb405-3"><a href="dimRedForVizTop.html#cb405-3"></a>tsne500</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/plotTSNE_perpRange-2.png" width="576" /></p>
+</div>
+<div id="stochasticity" class="section level3">
+<h3><span class="header-section-number">6.5.2</span> Stochasticity</h3>
+<p>Use a different seed with the same perplexity 50.</p>
+<div class="sourceCode" id="cb406"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb406-1"><a href="dimRedForVizTop.html#cb406-1"></a>tsne50.b &lt;-<span class="st"> </span><span class="kw">runTSNE</span>(sce, <span class="dt">use_dimred=</span><span class="st">&quot;PCA&quot;</span>, <span class="dt">perplexity=</span><span class="dv">50</span>, <span class="dt">rand_seed=</span><span class="dv">456</span>)</span>
+<span id="cb406-2"><a href="dimRedForVizTop.html#cb406-2"></a></span>
+<span id="cb406-3"><a href="dimRedForVizTop.html#cb406-3"></a>tsne50.b &lt;-<span class="st"> </span><span class="kw">plotTSNE</span>(tsne50.b,</span>
+<span id="cb406-4"><a href="dimRedForVizTop.html#cb406-4"></a>           <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb406-5"><a href="dimRedForVizTop.html#cb406-5"></a>           <span class="dt">size_by=</span><span class="st">&quot;sum&quot;</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb406-6"><a href="dimRedForVizTop.html#cb406-6"></a><span class="st">         </span>fontsize <span class="op">+</span><span class="st"> </span></span>
+<span id="cb406-7"><a href="dimRedForVizTop.html#cb406-7"></a><span class="st">         </span><span class="kw">ggtitle</span>(<span class="st">&quot;Perplexity = 50, seed 456&quot;</span>)</span>
+<span id="cb406-8"><a href="dimRedForVizTop.html#cb406-8"></a>tsne50.b</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/plotTSNE_stocha-1.png" width="672" /></p>
+</div>
+</div>
+<div id="umap" class="section level2">
+<h2><span class="header-section-number">6.6</span> UMAP</h2>
+<p>Another neighbour graph method. Similar to t-SNE, but that is determistic, faster and claims to preserve both local and global structures.</p>
+<p>Compute UMAP.</p>
+<div class="sourceCode" id="cb407"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb407-1"><a href="dimRedForVizTop.html#cb407-1"></a><span class="kw">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb407-2"><a href="dimRedForVizTop.html#cb407-2"></a>sce &lt;-<span class="st"> </span><span class="kw">runUMAP</span>(sce, <span class="dt">dimred=</span><span class="st">&quot;PCA&quot;</span>)</span></code></pre></div>
+<p>Plot UMAP:</p>
+<div class="sourceCode" id="cb408"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb408-1"><a href="dimRedForVizTop.html#cb408-1"></a>sce.umap &lt;-<span class="st"> </span><span class="kw">plotUMAP</span>(sce,</span>
+<span id="cb408-2"><a href="dimRedForVizTop.html#cb408-2"></a>           <span class="dt">colour_by=</span><span class="st">&quot;Sample.Name&quot;</span>,</span>
+<span id="cb408-3"><a href="dimRedForVizTop.html#cb408-3"></a>           <span class="dt">size_by=</span><span class="st">&quot;sum&quot;</span>) <span class="op">+</span><span class="st"> </span></span>
+<span id="cb408-4"><a href="dimRedForVizTop.html#cb408-4"></a><span class="st">           </span>fontsize <span class="op">+</span><span class="st"> </span></span>
+<span id="cb408-5"><a href="dimRedForVizTop.html#cb408-5"></a><span class="st">           </span><span class="kw">ggtitle</span>(<span class="st">&quot;UMAP&quot;</span>)</span>
+<span id="cb408-6"><a href="dimRedForVizTop.html#cb408-6"></a>sce.umap</span></code></pre></div>
+<p><img src="dimRedForViz_files/figure-html/plotUMAP-1.png" width="672" /></p>
+<!-- Split by sample: -->
+<p>Save SCE object:</p>
+<div class="sourceCode" id="cb409"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb409-1"><a href="dimRedForVizTop.html#cb409-1"></a><span class="co"># save sce object to which we have added dimensionality reduction slots:</span></span>
+<span id="cb409-2"><a href="dimRedForVizTop.html#cb409-2"></a>tmpFn &lt;-<span class="st"> </span><span class="kw">sprintf</span>(<span class="st">&quot;%s/%s/Robjects/%s_sce_nz_postDeconv%s_dimRed.Rds&quot;</span>,</span>
+<span id="cb409-3"><a href="dimRedForVizTop.html#cb409-3"></a>         projDir, outDirBit, setName, setSuf)</span>
+<span id="cb409-4"><a href="dimRedForVizTop.html#cb409-4"></a><span class="kw">saveRDS</span>(sce, tmpFn)</span></code></pre></div>
+</div>
+<div id="session-information-2" class="section level2">
+<h2><span class="header-section-number">6.7</span> Session information</h2>
+<div class="sourceCode" id="cb410"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb410-1"><a href="dimRedForVizTop.html#cb410-1"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
+<pre><code>## R version 4.0.3 (2020-10-10)
+## Platform: x86_64-pc-linux-gnu (64-bit)
+## Running under: CentOS Linux 8
+## 
+## Matrix products: default
+## BLAS:   /opt/R/R-4.0.3/lib64/R/lib/libRblas.so
+## LAPACK: /opt/R/R-4.0.3/lib64/R/lib/libRlapack.so
+## 
+## locale:
+##  [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+##  [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+##  [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+##  [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+## [11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+## 
+## attached base packages:
+## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [8] methods   base     
+## 
+## other attached packages:
+##  [1] scater_1.18.6               SingleCellExperiment_1.12.0
+##  [3] SummarizedExperiment_1.20.0 Biobase_2.50.0             
+##  [5] GenomicRanges_1.42.0        GenomeInfoDb_1.26.7        
+##  [7] IRanges_2.24.1              S4Vectors_0.28.1           
+##  [9] BiocGenerics_0.36.1         MatrixGenerics_1.2.1       
+## [11] matrixStats_0.58.0          ggfortify_0.4.11           
+## [13] ggplot2_3.3.3               Cairo_1.5-12.2             
+## [15] knitr_1.33                 
+## 
+## loaded via a namespace (and not attached):
+##  [1] nlme_3.1-152              bitops_1.0-7             
+##  [3] RcppAnnoy_0.0.18          tools_4.0.3              
+##  [5] bslib_0.2.5               utf8_1.2.1               
+##  [7] R6_2.5.0                  irlba_2.3.3              
+##  [9] vipor_0.4.5               uwot_0.1.10              
+## [11] DBI_1.1.1                 mgcv_1.8-35              
+## [13] colorspace_2.0-1          withr_2.4.2              
+## [15] tidyselect_1.1.1          gridExtra_2.3            
+## [17] compiler_4.0.3            BiocNeighbors_1.8.2      
+## [19] DelayedArray_0.16.3       labeling_0.4.2           
+## [21] bookdown_0.22             sass_0.4.0               
+## [23] scales_1.1.1              stringr_1.4.0            
+## [25] digest_0.6.27             rmarkdown_2.8            
+## [27] XVector_0.30.0            pkgconfig_2.0.3          
+## [29] htmltools_0.5.1.1         sparseMatrixStats_1.2.1  
+## [31] highr_0.9                 rlang_0.4.11             
+## [33] DelayedMatrixStats_1.12.3 jquerylib_0.1.4          
+## [35] farver_2.1.0              generics_0.1.0           
+## [37] jsonlite_1.7.2            BiocParallel_1.24.1      
+## [39] dplyr_1.0.6               RCurl_1.98-1.3           
+## [41] magrittr_2.0.1            BiocSingular_1.6.0       
+## [43] GenomeInfoDbData_1.2.4    scuttle_1.0.4            
+## [45] Matrix_1.3-3              Rcpp_1.0.6               
+## [47] ggbeeswarm_0.6.0          munsell_0.5.0            
+## [49] fansi_0.4.2               viridis_0.6.1            
+## [51] lifecycle_1.0.0           stringi_1.6.1            
+## [53] yaml_2.2.1                zlibbioc_1.36.0          
+## [55] Rtsne_0.15                grid_4.0.3               
+## [57] crayon_1.4.1              lattice_0.20-44          
+## [59] cowplot_1.1.1             beachmat_2.6.4           
+## [61] splines_4.0.3             pillar_1.6.1             
+## [63] codetools_0.2-18          glue_1.4.2               
+## [65] evaluate_0.14             vctrs_0.3.8              
+## [67] gtable_0.3.0              purrr_0.3.4              
+## [69] tidyr_1.1.3               assertthat_0.2.1         
+## [71] xfun_0.23                 rsvd_1.0.5               
+## [73] RSpectra_0.16-0           viridisLite_0.4.0        
+## [75] tibble_3.1.2              beeswarm_0.3.1           
+## [77] ellipsis_0.3.2</code></pre>
+
+<div class="sourceCode" id="cb412"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb412-1"><a href="dimRedForVizTop.html#cb412-1"></a>projDir &lt;-<span class="st"> </span>params<span class="op">$</span>projDir</span>
+<span id="cb412-2"><a href="dimRedForVizTop.html#cb412-2"></a>dirRel &lt;-<span class="st"> </span>params<span class="op">$</span>dirRel</span>
+<span id="cb412-3"><a href="dimRedForVizTop.html#cb412-3"></a>outDirBit &lt;-<span class="st"> </span>params<span class="op">$</span>outDirBit</span>
+<span id="cb412-4"><a href="dimRedForVizTop.html#cb412-4"></a>cacheBool &lt;-<span class="st"> </span>params<span class="op">$</span>cacheBool</span></code></pre></div>
+<div class="sourceCode" id="cb413"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb413-1"><a href="dimRedForVizTop.html#cb413-1"></a><span class="kw">library</span>(knitr)</span></code></pre></div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="NormalisationCaron5hcpsTop.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="identifying-confounding-factors-caron-set.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": "https://github.com/rstudio/bookdown-demo/edit/master/dimRedForViz.Rmd",
+"text": "Edit"
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["KmWiC2.pdf", "KmWiC2.epub"],
+"toc": {
+"collapse": "subsection",
+"scroll_highlight": true
+},
+"code_folding": "hide"
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>
