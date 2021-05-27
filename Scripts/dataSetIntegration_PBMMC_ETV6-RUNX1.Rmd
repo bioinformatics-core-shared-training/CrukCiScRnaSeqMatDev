@@ -1,7 +1,7 @@
 ---
 title: "CRUK CI Summer School 2020 - introduction to single-cell RNA-seq analysis"
 subtitle: 'Data integration'
-author: "Stephane Ballereau"
+author: "Stephane Ballereau, Abbi Edwards"
 output:
   html_notebook:
     code_folding: hide
@@ -69,7 +69,6 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(eval = TRUE) 
 options(stringsAsFactors = FALSE)
 opts_chunk$set(fig.width=7, fig.height=7)
-#opts_chunk$set(dev = c("png"))
 options(bitmapType='cairo')
 knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
@@ -81,7 +80,6 @@ library(scater)
 library(scran)
 library(batchelor)
 library(bluster)
-#library(dplyr)
 library(tidyverse)
 library(pheatmap)
 library(clustree)
@@ -91,7 +89,7 @@ fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=
 ```
 
 
-Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. Its text is reproduced below with few modifications to adapt it to the data set under scrutiny here.
+Source: ['Integrating Datasets'](https://osca.bioconductor.org/integrating-datasets.html) chapter in the OSCA book. 
 
 ## Abbreviations
  
@@ -108,75 +106,21 @@ Computational correction of these effects is critical for eliminating batch-to-b
 
 ## Load the data
 
-We will load the R file keeping the SCE object with the normalised counts.
+We will load the SCE R object with the normalised counts from after the dimmensionality reduction. This object has each of the 7 individual samples SCE 
+objects in a `large list`. Each sample has been subsets to 500 cells per sample for demonstration purposes.
 
-<!-- and subset 1000 cells per sample. -->
 
-```{r load_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
-##setName <- "caron"
-#setSuf <- ""
-##setSuf <- "_allCells"
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s.Rds",
-                 projDir, outDirBit, setName, setSuf)
-print(tmpFn)
-
-if(!file.exists(tmpFn))
-{
-	knitr::knit_exit()
-}
-sce <- readRDS(tmpFn)
+```{r load_PBMMC_ETV6-RUNX1}
+all.sce <- readRDS("DataIntergration_all_sce.rds")
 sce
-colnames(rowData(sce))[colnames(rowData(sce)) == "strand"] <- "strandNum"
 ```
 
 <!-- TODO see renameSamples_dsi -->
 
-We next subset the data for the `r splSetToGet` sample group:
+We load the samplesheet with all the metadata from SRA:
 
 ```{r subset_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
-# CaronBourque2020
-cb_sampleSheetFn <- file.path(projDir, "Data/CaronBourque2020/SraRunTable.txt")
-cb_sampleSheet <- read.table(cb_sampleSheetFn, header=T, sep=",")
-#splVec <- cb_sampleSheet %>% filter(source_name == splSetToGet) %>%
-splVec <- cb_sampleSheet %>% filter(source_name %in% splSetVec) %>%
-	pull(Sample.Name) %>% unique
-
-sourceNames <- unique(colData(sce)$source_name)
-sceOrig <- sce
-sce <- sceOrig[,sce$source_name %in% splSetVec ]
-nbCells <- 1000
-#nbCells <- 3000
-all.sce <- list()
-
-# if '_allCells', then downsample for faster run
-# else (ie _5hCellPerSpl so far), do not downsample.
-if(setSuf == "_allCells")
-{
-  for(spx in splVec)
-  {
-    #nbCellsToGet <- min(ncol(sce), nbCells) # DEV only, faster with fewer cells.
-  	vec.bc <- colData(sce) %>%
-  		data.frame() %>%
-  		filter(Sample.Name == spx) %>%
-  		###slice_sample(n=nbCellsToGet) %>%
-  		pull(Barcode)
-  	tmpInd <- which(colData(sce)$Barcode %in% vec.bc)
-	
-  	all.sce[[spx]] <- sce[,tmpInd]
-  }
-} else {
-  for(spx in splVec)
-  {
-  	vec.bc <- colData(sce) %>%
-  		data.frame() %>%
-  		filter(Sample.Name == spx) %>%
-  		pull(Barcode)
-  	tmpInd <- which(colData(sce)$Barcode %in% vec.bc)
-	
-  	all.sce[[spx]] <- sce[,tmpInd]
-  }
-}  
-nbSpl <- length(all.sce)
+sampleSheet <- read_csv("../Course_Materials/Data/CaronBourque2020/SraRunTable.txt")
 ```
 
 We then apply the standard workflow to each sample separately:
