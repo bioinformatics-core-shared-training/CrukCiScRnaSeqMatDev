@@ -112,15 +112,7 @@ objects in a `large list`. Each sample has been subsets to 500 cells per sample 
 
 ```{r load_PBMMC_ETV6-RUNX1}
 all.sce <- readRDS("DataIntergration_all_sce.rds")
-sce
-```
-
-<!-- TODO see renameSamples_dsi -->
-
-We load the samplesheet with all the metadata from SRA:
-
-```{r subset_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
-sampleSheet <- read_csv("../Course_Materials/Data/CaronBourque2020/SraRunTable.txt")
+all.sce
 ```
 
 We then apply the standard workflow to each sample separately:
