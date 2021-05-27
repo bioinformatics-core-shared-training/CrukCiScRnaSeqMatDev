@@ -88,21 +88,11 @@ library(tidyverse)
 
 ## Sample sheet
 
-We will load both the Caron and Hca data sets.
-
-The meta data for the Caron data set can be obtained by the SRA Run Selector:
-
-https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA548203&o=acc_s%3Aa
-
-The meta data for the Hca...
+We will load both the Caron and Hca data sets. We have already prepared a sample
+meta data table that relates the sample/run ID to the sample group.
 
 ```{r samplesheet_preProc}
-samplesheet.cb <- read_csv("Course_Materials/Data/CaronBourque2020/SraRunTable.txt")
-samplesheet.hca <- read_csv("Course_Materials/Data/Hca/accList_Hca.txt",
-                            col_names = "Run") %>%
-    mutate(`Sample Name`=Run, source_name = "ABMMC")
-samplesheet <- bind_rows(samplesheet.cb, samplesheet.hca) %>%
-    select(Run, SampleName=`Sample Name`, source_name)
+samplesheet <- read_tsv("Course_Materials/Data/sample_sheet.tsv")
 ```
 
 ```{r samplesheet_display_preProc, echo=FALSE}
@@ -190,35 +180,26 @@ percentage of mitochondrial genes, to this data frame.
 head(colData(sce.raw))
 ```
 
+<!--
+
 ## Mapping QC
 
 ### Gene body coverage
 
-The plot below show the average coverage (y-axis) along the body of genes (x-axis).
-
-<!-- In `r getwd()`: -->
+The plot below show the average coverage (y-axis) along the body of genes
+(x-axis).
 
 ```{r geneBodyCoverage, out.width="80%"}
-tmpFn <- sprintf("%s/Images/1_AAACCTGAGACTTTCG-1.rseqcGeneBodyCovCheck.txt.geneBodyCoverage.curves.png", "..")
-knitr::include_graphics(tmpFn, auto_pdf = TRUE)
-rm(tmpFn)
+knitr::include_graphics("Images/geneBodyCoverage.curves.png", auto_pdf = TRUE)
 ```
 
 ### Amplification rate
 
-We will use the information stored in the 'molecule info' file to count the number of UMI and reads for each gene in each cell.
+We will use the information stored in the 'molecule info' file to count the
+number of UMI and reads for each gene in each cell.
 
 ```{r molecule_info_h5.Rds}
-##mol.info.file <- sprintf("%s/%s/%s/outs/molecule_info.h5", wrkDir, sampleSheet[i,"Run"], sampleSheet[i,"Run"])
-##mol.info <- read10xMolInfo(mol.info.file)
-# or mol.info object if issue with H5Fopen
-i <- 1
-mol.info.file <- sprintf("%s/%s/%s/outs/molecule_info_h5.Rds",
-			 wrkDir,
-			 sampleSheet[i,"Run"],
-			 sampleSheet[i,"Run"])
-mol.info <- readRDS(mol.info.file)
-rm(mol.info.file)
+mol.info <- readRDS("Course_Materials/CellRanger_Outputs/SRR9264343/outs/molecule_info_h5.Rds")
 ```
 
 ```{r amplification}
@@ -522,123 +503,63 @@ Cell calling in cellranger v3 uses a method similar to emptyDrops()
 and a 'filtered matrix' is generated that only keeps droplets deemed to contain
 a cell (or more). We will load these filtered matrices now.
 
+-->
+
 ## Load filtered matrices
 
-Each sample was analysed with cellranger separately.
-We load filtered matrices one sample at a time,
-showing for each the name and number of features and cells.
+We can load multiple samples at the same time using the `read10xCounts` command.
+This will create a single object containing the data for multiple samples. We
+can then QC and filter the samples in conjunction. As we will see later, this is 
+not always optimal when samples have been processed in multiple batches.
+
+As an example, we will begin by loading 2 samples from each sample group. This
+time we will start with the filtered counts matrix, which only contains cells
+called by CellRanger. We pass the `read10xCounts` a named vector containing the
+paths to the filtered counts matrices that we wish to load; the names of the
+vector will be used as the sample names in the Single Cell Experimen object.
 
 ```{r dataSets_load, eval=poolBool, cache.lazy = FALSE}
-# load data:
-# a bit slow
-# use 'cache.lazy = FALSE' to avoid 'long vectors not supported yet' when 'cache=TRUE'
-
-sce.list <- vector("list", length = nrow(sampleSheet))
-
-for (i in 1:nrow(sampleSheet))
-{
-	print(sprintf("'Run' %s, 'Sample.Name' %s", sampleSheet[i,"Run"], sampleSheet[i,"Sample.Name"]))
-	sample.path <- sprintf("%s/%s/%s/outs/filtered_feature_bc_matrix/",
-			      sprintf("%s/%s/grch38300",
-				      projDir,
-				      ifelse(sampleSheet[i,"source_name"] == "ABMMC",
-					     "Hca",
-					     "CaronBourque2020")),
-			      sampleSheet[i,"Run"],
-			      sampleSheet[i,"Run"])
-	sce.list[[i]] <- read10xCounts(sample.path)
-	print(dim(sce.list[[i]]))
-}
+list_of_files <- samplesheet %>%
+    group_by(SampleGroup) %>% 
+    slice(1:2) %>%
+    mutate(File=str_c("Course_Materials/CellRanger_Outputs/", 
+                      Sample,
+                      "/outs/filtered_feature_bc_matrix")) %>%
+    pull(File, Sample)
+               
+sce <- read10xCounts(list_of_files)
 ```
 
-Let's combine all `r length(sce.list)` samples into a single object.
+Currently, the droplet annotation in `colData` slot of the `sce` object has two
+columns: "Sample" and "Barcode".
 
-We first check the feature lists are identical.
-
-```{r dataSets_checkRows, eval=poolBool}
-# check row names are the same
-# compare to that for the first sample
-
-rowNames1 <- rownames(sce.list[[1]])
-for (i in 2:nrow(sampleSheet))
-{
-	print(identical(rowNames1, rownames(sce.list[[i]])))
-}
+```{r}
+colData(sce)
 ```
 
-A cell barcode comprises the actual sequence and a 'group ID', e.g. AAACCTGAGAAACCAT-1.
-The latter helps distinguish cells with identical barcode sequence but come from
-different samples. As each sample was analysed separately, the group ID is set
-to 1 in all data sets. To pool these data sets we first need to change group IDs
-so cell barcodes are unique across all samples. We will use the position of the
-sample in the sample sheet. We also downsample to 2000 cells maximum per sample
-for faster computation during the course.
+The "latter"Barcode" column contains the cell/droplet barcode and comprises the
+actual sequence and a 'group ID', e.g. AAACCTGAGAAACCAT-1. The 'group ID' helps
+distinguish cells from different samples that have identical barcode sequences.
+As each sample was processed separately with CellRanger, the group ID is set to
+1 in all data sets. To pool these data sets we need to change group IDs so cell
+barcodes are unique across all samples.
 
-```{r dataSets_cbind, eval=poolBool}
-# subset 2000 cells:
-# mind that is not mentioned in Rds file names ...
-if(ncol(sce.list[[1]]) < 2000)
-{
-  sce <- sce.list[[1]]
-} else {
-  sce <- sce.list[[1]][, sample(ncol(sce.list[[1]]), 2000)]
-}
-
-colData(sce)$Barcode <- gsub("([0-9])$", 1, colData(sce)$Barcode)
-print(head(colData(sce)$Barcode))
-print(tail(colData(sce)$Barcode))
-for (i in 2:nrow(sampleSheet))
-{
-  if(ncol(sce.list[[i]]) < 2000)
-  {
-	  sce.tmp <- sce.list[[i]]
-  } else {
-    sce.tmp <- sce.list[[i]][, sample(ncol(sce.list[[i]]), 2000)]
-  }
-	colData(sce.tmp)$Barcode <- gsub("([0-9])$", i, colData(sce.tmp)$Barcode)
-	sce <- cbind(sce, sce.tmp)
-	print(tail(colData(sce)$Barcode, 2))
-}
-rm(sce.list)
-```
-
-We now add the sample sheet information to the object metadata.
+We can also add information about the sample group to the droplet annotation.
 
 ```{r dataSets_addSplSheet, eval=poolBool}
-colDataOrig <- colData(sce)
-
-# split path:
-tmpList <- strsplit(colDataOrig$Sample, split="/")
-# get Run ID, to use to match sample in the meta data and sample sheet objects:
-tmpVec <- unlist(lapply(tmpList, function(x){x[9]}))
-colData(sce)$Run <- tmpVec
-# remove path to filtered matrix files by sample name in 'Sample':
-colData(sce)$Sample <- NULL
-# merge:
-colData(sce) <- colData(sce) %>%
-  data.frame %>%
-  left_join(sampleSheet[,splShtColToKeep], "Run") %>%
-  relocate() %>%
-  DataFrame
-rm(tmpVec)
+colData(sce) <- colData(sce) %>% 
+    as.data.frame() %>%
+    mutate(SampleNum = as.numeric(as.factor(Sample))) %>%
+    mutate(Barcode = str_replace(Barcode, "1$", as.character(SampleNum))) %>%
+    left_join(samplesheet, by="Sample") %>%
+    select(-SampleNum) %>%
+    DataFrame()
 ```
 
 Let's save the object for future reference.
 
-```{r dataSets_writeRds, eval=poolBool}
-# Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds",
-		 projDir, outDirBit)
-saveRDS(sce, tmpFn)
-rm(tmpFn)
-```
-
-```{r dataSets_readRds, eval=!poolBool}
-# Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/sce_postPool.Rds",
-		 projDir, outDirBit)
-sce <- readRDS(tmpFn)
-rm(tmpFn)
+```{r dataSets_writeRds}
+saveRDS(sce, "Course_Materials/results/sce_pooled_samples.rds")
 ```
 
 ## Properties of scRNA-seq data
