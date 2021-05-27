@@ -81,6 +81,34 @@ I prefer the 'knit-merge' way as each chapter is rendered separately, each in a 
 * trajectory analysis - pseudoTime.Rmd
 * doublet detection - doubletDetect.Rmd and doubletDetect_chal1.Rmd
 
+
+## Tentative schedule
+
+**Tentative schedule** for a 1.5 day course.
+
+(Each 1h session should include a 5 min break before the next session) 
+
+### Day A 09:30 - 17:00
+
+- (**12:30 - 13:30 LUNCH**)
+- 13:30 opening <!-- Stephane -->
+- 13:30 - 14:15 Introduction <!-- []() --> <!-- Kania - lecture -->
+- 14:15 - 14:30 Preamble: data set and workflow <!-- []() --> <!-- Stephane - 'lecture' -->
+- 14:30 - 15:30? (sequencing QC ?) cellranger for alignment and cell calling <!-- []() --> <!-- Ash -->
+- 15:30 - 16:30? preprocessing <!-- []() --> <!-- Ash -->
+- 16:30 - 17:30 normalisation <!-- []() --> <!-- Stephane -->
+  
+### Day B 09:30 - 17:00
+
+- 09:30 - 11:00 dimensionality reduction, identification of confounding factors, feature selection <!-- []() --> <!-- Zeynep -->
+- 11:00 - 12:30 batch correction and data set integration <!-- []() --> <!-- Abbi -->
+- **12:30 - 13:30 LUNCH**
+- 13:30 - 14:30 clustering <!-- []() --> <!-- Stephane -->
+- 14:30 - 15:30 cluster marker genes <!-- []() --> <!-- Zeynep -->
+- 15:30 - 16:30 differential expression and abundance between conditions <!-- []() --> <!-- Stephane -->
+- 16:30 - 17:30 trajectories <!-- []() --> <!-- Zeynep -->
+- 17:30 closing <!-- Stephane -->
+
 ## TODO
 
 <!-- * add bookdown and link to it -->
