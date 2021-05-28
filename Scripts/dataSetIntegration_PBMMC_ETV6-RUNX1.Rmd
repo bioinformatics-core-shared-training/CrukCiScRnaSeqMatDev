@@ -39,7 +39,7 @@ if(exists("isChild")) { setSuf <- "{{setSuf}}" }
 anaStg <- gsub("_", "-", setSuf)
 ```
 
-# Data integration - PBMMC and ETV6-RUNX {#dsi`r anaStg`-PBMMC-ETV6-RUNX1Top}
+# Data integration - PBMMC and ETV6-RUNX samples
 
 ```{r variables_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
 projDir <- params$projDir
@@ -122,7 +122,7 @@ We then apply the standard workflow to each sample separately:
 * dimensionality reduction
 * clustering
 
-```{r stdWkf_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
+```{r standard_workflow_PBMMC_ETV6-RUNX1}
 #--- normalization ---#
 # use logNormCounts()
 all.sce <- lapply(all.sce, logNormCounts)
@@ -153,7 +153,6 @@ all.sce <- lapply(all.sce, runUMAP, dimred="PCA")
 for (n in names(all.sce)) {
     g <- buildSNNGraph(all.sce[[n]], k=10, use.dimred='PCA')
     clust <- igraph::cluster_walktrap(g)$membership
-    #colLabels(all.sce[[n]])  <- factor(clust)
     all.sce[[n]]$label  <- factor(clust)
 }
 ```
@@ -162,16 +161,15 @@ To prepare for the batch correction:
 
 * We subset all batches to the common “universe” of features. In this case, it is straightforward as both batches use Ensembl gene annotation.
 
-```{r prep_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
+```{r prep_universe_PBMMC_ETV6-RUNX1}
 allNames <- unlist(lapply(all.sce, function(x){rownames(x)}))
 allNamesNb <- table(allNames)
 universe <- names(allNamesNb)[allNamesNb==nbSpl]
-#length(universe)
 ```
 
-* The size of this common “universe” of features here is the number of features shared by all `r nbSpl` samples is: `r length(universe)`.
+* The size of this common “universe” of features here is the number of features shared by all 7 samples is: `r length(universe)`.
 
-```{r universe_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
+```{r universe_subset_PBMMC_ETV6-RUNX1}
 # Subsetting the SingleCellExperiment object.
 uni.sce <- lapply(all.sce, function(x){x[universe,]})
 # Also subsetting the variance modelling results, for convenience.
@@ -189,12 +187,11 @@ rescaled <- multiBatchNorm(uni.sce, batch = "Sample.Name")
 
 ```{r combineVar_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
 # compute average variance components across samples
-#combined.dec <- combineVar(uni.dec[[1]], uni.dec[[2]], uni.dec[[3]], uni.dec[[4]])
 combined.dec <- combineVar(uni.dec)
 # identify highly variables genes
 # here as those with a positive biological component
 chosen.hvgs <- combined.dec$bio > 0
-#sum(chosen.hvgs)
+
 ```
 
 Number of HVGs: `r sum(chosen.hvgs)`.
