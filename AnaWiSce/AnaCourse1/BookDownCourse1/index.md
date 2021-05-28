@@ -2,7 +2,7 @@
 title: "CRUK Bioinformatics Summer School 2020 - single-cell RNA-seq analysis"
 subtitle: 'Heterogeneity in childhood acute lymphoblastic leukemia with droplet-based 10X Chromium assay.'
 author: "Stephane Ballereau, Zeynep Kalender Atak"
-date: "2021-05-26"
+date: "2021-05-28"
 site: bookdown::bookdown_site
 output:
   bookdown::gitbook:

@@ -1239,7 +1239,7 @@ demo <- m.out[[cluToGet]]
 #as.data.frame(demo[1:20,c("Symbol", "Top", "p.value", "FDR", "summary.logFC")]) 
 ```
 
-Expression level for the top gene, ENSG00000117632 on violin plots:
+Expression level for the top gene,  on violin plots:
 
 
 ```r
