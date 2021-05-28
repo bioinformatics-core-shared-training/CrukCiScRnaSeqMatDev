@@ -81,12 +81,23 @@ params:
 
 # Normalisation - Caron set {#NormalisationCaron5hcpsTop}
 
-Sources: chapters on Normalisation in the [OSCA book](https://osca.bioconductor.org/normalization.html) and the '[Hemberg group material](https://scrnaseq-course.cog.sanger.ac.uk/website/index.html).
+Sources: chapters on Normalisation in the [OSCA book](https://osca.bioconductor.org/normalization.html) and the [Hemberg group materials](https://scrnaseq-course.cog.sanger.ac.uk/website/index.html).
 
 Why normalise?
 
 Systematic differences in sequencing coverage between libraries occur because of low input material, differences in cDNA capture and PCR amplification.
 Normalisation removes such differences so that differences between cells are not technical but biological, allowing meaningful comparison of expression profiles between cells. Normalisation and batch correction have different aims. Normalisation addresses technical differences only, while batch correction considers both technical and biological differences.
+
+## Learning objectives
+
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+* bla
+* bla
+* bla
+</div>
 
 
 ```r

@@ -106,7 +106,7 @@ if(!file.exists(tmpFn))
 sce <- readRDS(tmpFn)
 ```
 
-Number of genes: 18431.
+Number of genes: .
 
 Number of cells: 47830.
 

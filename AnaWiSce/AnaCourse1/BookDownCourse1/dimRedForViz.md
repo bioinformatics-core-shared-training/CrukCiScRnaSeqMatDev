@@ -3,7 +3,7 @@ title: "CRUK CI Summer School 2020 - introduction to single-cell RNA-seq analysi
 subtitle: 'Dimensionality reduction for visualisation'
 
 author: "Stephane Ballereau, Zeynep Kalender Atak, Katarzyna Kania"
-#date: 'May 26, 2021'
+#date: 'May 28, 2021'
 date: July 2020
 #bibliography: bibliography.bib
 #csl: biomed-central.csl

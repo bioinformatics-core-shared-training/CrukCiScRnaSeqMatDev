@@ -1945,7 +1945,7 @@ geneEnsId <- demo %>% data.frame %>%
 geneSymbol <- rowData(uncorrected)[geneEnsId,"Symbol"]
 ```
 
-<!-- OLD Expression level for the top gene, ENSG00000087086 on violin plots: -->
+<!-- OLD Expression level for the top gene,  on violin plots: -->
 
 
 ```r
