@@ -32,25 +32,56 @@ params:
 -->
 
 ```{r}
+params2 <- list(
+  "projDir" = "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020",
+  "dirRel" = "..",
+  "inpDirBit" = "AnaWiSce/AnaCourse1",
+  "outDirBit" = "AnaWiSce/AnaCourse1",
+  "bookType" = "km",
+  "cacheBool"  = FALSE,  
+  "setName" = "caron",
+  "splSetToGet" = "PBMMC,ETV6-RUNX1",
+  "setSuf" = "_5hCellPerSpl",
+  "dsiSuf" = '_dsi')
+
+if(interactive()) {
+  paramsToUse <- params2
+} else {
+  paramsToUse <- params
+}
+```
+
 # need string for analysis name to use in header identifier
-setSuf <- params$setSuf
-if(params$bookType == "mk") {setSuf <- "_5hCellPerSpl"}
+setSuf <- paramsToUse$setSuf
+if(paramsToUse$bookType == "mk") {setSuf <- "_5hCellPerSpl"}
 if(exists("isChild")) { setSuf <- "{{setSuf}}" }
 anaStg <- gsub("_", "-", setSuf)
 ```
 
 # Data integration - PBMMC and ETV6-RUNX samples
 
+## Learning objectives
+
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+* bla
+* bla
+* bla
+</div>
+
+
 ```{r variables_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
-projDir <- params$projDir
-dirRel <- params$dirRel
-outDirBit <- params$outDirBit
-cacheBool <- params$cacheBool
-splSetToGet <- params$splSetToGet
-setName <- params$setName
-setSuf <- params$setSuf
+projDir <- paramsToUse$projDir
+dirRel <- paramsToUse$dirRel
+outDirBit <- paramsToUse$outDirBit
+cacheBool <- paramsToUse$cacheBool
+splSetToGet <- paramsToUse$splSetToGet
+setName <- paramsToUse$setName
+setSuf <- paramsToUse$setSuf
 if(exists("isChild")) { setSuf <- "{{setSuf}}" }
-if(params$bookType == "mk"){
+if(paramsToUse$bookType == "mk"){
 	splSetToGet <- "PBMMC,ETV6-RUNX1"
 	setName <- "caron"
 	setSuf <- "_5hCellPerSpl"
@@ -138,9 +169,12 @@ all.hvgs <- lapply(all.dec, getTopHVGs, prop=0.1)
 # then compute embeddings with runTSNE() and runUMAP()
 library(BiocSingular)
 set.seed(10000)
-all.sce <- mapply(FUN=runPCA, x=all.sce, subset_row=all.hvgs,
-    MoreArgs=list(ncomponents=25, BSPARAM=RandomParam()),
-    SIMPLIFY=FALSE)
+all.sce <- mapply(FUN=runPCA,
+		  x=all.sce,
+		  subset_row=all.hvgs,
+		  MoreArgs=list(ncomponents=25,
+				BSPARAM=RandomParam()),
+		  SIMPLIFY=FALSE)
 
 set.seed(100000)
 all.sce <- lapply(all.sce, runTSNE, dimred="PCA")
@@ -166,7 +200,6 @@ allNames <- unlist(lapply(all.sce, function(x){rownames(x)}))
 allNamesNb <- table(allNames)
 universe <- names(allNamesNb)[allNamesNb==nbSpl]
 ```
-
 * The size of this common “universe” of features here is the number of features shared by all 7 samples is: `r length(universe)`.
 
 ```{r universe_subset_PBMMC_ETV6-RUNX1}
@@ -294,7 +327,7 @@ fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_uncorr.Rds",
               outDirBit,
               setName,
               setSuf,
-              splSetToGet2) # 'dsi' for data set integration
+              splSetToGet2)
 saveRDS(uncorrected, file=fn)
 ```
 
@@ -1129,7 +1162,7 @@ fn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s.Rds",
               outDirBit,
               setName,
               setSuf,
-              splSetToGet2) # 'dsi' for data set integration
+              splSetToGet2)
 saveRDS(mnn.out, file=fn)
 #saveRDS(mnn.out2, file=fn)
 ```
@@ -1516,7 +1549,9 @@ saveRDS(normNoLog, file=fn)
 
 ## Session information
 
+<details>
 ```{r sessionInfo_dsi{{setSuf}}_PBMMC_ETV6-RUNX1}
 sessionInfo()
 ```
+</details>
 
