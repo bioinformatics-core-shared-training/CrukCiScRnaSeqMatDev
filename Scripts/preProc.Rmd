@@ -1355,6 +1355,8 @@ sce.nz.hca <- readRDS(tmpFn) # TODO not used
 
 ## Session information
 
+<details>
 ```{r}
 sessionInfo()
 ```
+</details>

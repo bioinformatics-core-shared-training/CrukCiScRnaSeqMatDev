@@ -31,6 +31,19 @@ params:
 
 # Pseudotime analysis {#pseudoTimeTop}
 
+## Learning objectives
+
+<style>
+div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+* bla
+* bla
+* bla
+</div>
+
+
+
 ```{r params_pseudotime1}
 projDir <- params$projDir
 dirRel <- params$dirRel
@@ -88,7 +101,7 @@ library(cellAlign) # https://github.com/shenorrLab/cellAlign
 library(Cairo)
 ```
 
-## Extract T-cells from HCA Dataset {#pseudoTimeExtractTCell}
+## Extract T-cells from HCA ABMMC Dataset {#pseudoTimeExtractTCell}
 
 In this section, we are starting our analysis with normalized [HCA](https://preview.data.humancellatlas.org) data and perform integration, clustering and dimensionality reduction. Our aim is to extract T-cells from this dataset and proceed with pseudotime analysis in the next section. 
 
@@ -761,6 +774,8 @@ This notebook uses material from:
 
 ## Session information
 
+<details>
 ```{r sessionInfo_pseudotime}
 sessionInfo()
 ```
+</details>
