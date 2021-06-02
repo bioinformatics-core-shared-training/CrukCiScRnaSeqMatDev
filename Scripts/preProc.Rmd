@@ -798,6 +798,8 @@ sce$high_Mito_percent <- batch.reasons$high_subsets_Mito_percent
 sce$discard <- batch.reasons$discard
 ```
 
+We can visualise how the new filters look using violin plots.
+
 ```{r, fig.width=12, fig.height=12}
 p.lib <- plotColData(sce, 
             x="Sample", 
@@ -833,6 +835,10 @@ p.mt <- plotColData(sce,
 
 p.lib / p.ng / p.mt
 ```
+There are some distinct differences, most noticeable is that there is now no
+filtering using library size. The venn diagrams below show how the number of
+discarded droplets in HCA and Caron have changed for each filter in comparison
+to when the MAD filtering was applied across all samples.
 
 ```{r, fig.width=12, fig.height=8}
 libDat <- tibble(`All together`=reasons$low_lib_size, 
@@ -876,133 +882,19 @@ pc3 <- mitDat %>%
 (pc1 + pc2 + pc3) / (ph1 + ph2 + ph3)
 ```
 
-Fewer cells have been discarded, this is largely due to the change in the 
-theshold for the library size. As we can see from the violin plots
-the ABMMC samples from the HCA have a radically different library size
-distribution to the Caron samples, with all cells having > 1000 UMIs. When we
-applied the adaptive filters across all samples, these two samples caused the 
-MADs to be distorted and resulted in a threshold that was inappropriately high 
-for the Caron samples.
+The most striking difference is in the filtering of the Caron data by library
+size. As we can see from the violin plots the ABMMC samples from the HCA have a
+radically different library size distribution to the Caron samples, with all
+cells having > 1000 UMIs. When we applied the adaptive filters across all
+samples, these two samples caused the MADs to be distorted and resulted in a
+threshold that was inappropriately high for the Caron samples.
 
-### Identify poor-quality batches
+## QC PCA
 
-We will now consider the 'sample' batch to illustrate how to identify batches
-with overall low quality or different from other batches. Let's compare
-thresholds across sample groups.
-
-#### Number of genes detected
-
-```{r qc_poorBatch_detected_compute, eval=TRUE}
-# compute
-discard.nexprs <- isOutlier(sce$detected,
-			    log=TRUE,
-			    type="lower",
-			    batch=sce$Sample.Name)
-nexprs.thresholds <- attr(discard.nexprs, "thresholds")["lower",]
-nexprs.thresholds %>%
-  round(0) %>%
-  as.data.frame() %>%
-	datatable(rownames = TRUE)
-```
-
-Without block:
-
-```{r}
-# plots - without blocking
-discard.nexprs.woBlock <- isOutlier(sce$detected,
-				    log=TRUE,
-				    type="lower")
-without.blocking <- plotColData(sce, x="Sample.Name", y="detected",
-    colour_by=I(discard.nexprs.woBlock))
-
-without.blocking + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-With block:
-
-```{r}
-# plots - with blocking
-with.blocking <- plotColData(sce, x="Sample.Name", y="detected",
-    colour_by=I(discard.nexprs))
-with.blocking + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-##### Mitochondrial content
-
-```{r}
-discard.mito <- isOutlier(sce$subsets_Mito_percent,
-			  type="higher",
-			  batch=sce$Sample.Name)
-mito.thresholds <- attr(discard.mito, "thresholds")["higher",]
-mito.thresholds %>%
-  round(0) %>%
-  as.data.frame() %>%
-	datatable(rownames = TRUE)
-```
-
-Without block:
-
-```{r}
-# plots - without blocking
-discard.mito.woBlock <- isOutlier(sce$subsets_Mito_percent, type="higher")
-without.blocking <- plotColData(sce, x="Sample.Name", y="subsets_Mito_percent",
-    colour_by=I(discard.mito.woBlock))
-without.blocking + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-With block:
-
-```{r}
-# plots - with blocking
-with.blocking <- plotColData(sce, x="Sample.Name", y="subsets_Mito_percent",
-    colour_by=I(discard.mito))
-with.blocking + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-```
-
-#### Samples to check
-
-Names of samples with a 'low' threshold for the number of genes detected:
-
-```{r qc_poorBatch_detected_list}
-# names
-names(nexprs.thresholds)[isOutlier(nexprs.thresholds, type="lower")]
-```
-
-Names of samples with a 'high' threshold for mitocondrial content:
-
-```{r qc_poorBatch_mito_list}
-# names
-names(mito.thresholds)[isOutlier(mito.thresholds, type="higher")]
-```
-
-### QC metrics space
-
-A similar approach exists to identify outliers using a set of metrics together. We will the same QC metrics as above.
-
-```{r qc_metricsSpace}
-# slow
-stats <- cbind(log10(sce$sum),
-	       log10(sce$detected),
-	       sce$subsets_Mito_percent)
-
-library(robustbase)
-outlying <- adjOutlyingness(stats, only.outlyingness = TRUE)
-multi.outlier <- isOutlier(outlying, type = "higher")
-```
-
-```{r}
-summary(multi.outlier)
-```
-
-Compare with previous filtering:
-
-```{r, eval=TRUE}
-table(sce$discard, multi.outlier)
-```
-
-### QC PCA
-
-One can also perform a principal components analysis (PCA) on cells, based on the column metadata in a SingleCellExperiment object. Here we will only use the library size, the number of genes detected (which is correlated with library size) and the mitochondrial content.
+One can also perform a principal components analysis (PCA) on cells, based on
+the column metadata in a SingleCellExperiment object. Here we will only use the
+library size, the number of genes detected (which is correlated with library
+size) and the mitochondrial content.
 
 ```{r}
 sce <- runColDataPCA(sce, variables=list(
