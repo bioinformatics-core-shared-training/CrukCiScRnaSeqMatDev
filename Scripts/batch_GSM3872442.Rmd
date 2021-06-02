@@ -43,16 +43,20 @@ knitr::opts_chunk$set(dev="CairoPNG")
 set.seed(123) # for reproducibility
 ```
 
-# batch correction - GSM3872442 set
+# Batch correction - GSM3872442 set
+
+## Learning objectives
 
 <style>
 div.blue {background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 </style>
 <div class = "blue">
-**Learning objectives:**
-
-**TODO:** remove libSize+batch section and keep batch regress only.
+* bla
+* bla
+* bla
 </div>
+
+## Data
 
 GSM3872442 is a single PBMMC sample sequenced as a pool of two libraries:
 SRR9264351 and SRR9264352.
@@ -83,8 +87,6 @@ library(dplyr)
 library(BiocSingular)
 library(Cairo)
 ```
-
-## Prepare data
 
 Load object 
 
