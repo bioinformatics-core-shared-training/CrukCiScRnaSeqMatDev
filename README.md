@@ -47,7 +47,7 @@ I prefer the 'knit-merge' way as each chapter is rendered separately, each in a 
 >
 > To open the bookdown:
 > 
-> * [Bookdown index](AnaWiSce/AnaKmWiC/BookDownKmWiC/index.html)
+> * [Bookdown index](AnaWiSce/AnaCourse1/BookDownCourse1/index.html)
 > 
 > OR
 > 
