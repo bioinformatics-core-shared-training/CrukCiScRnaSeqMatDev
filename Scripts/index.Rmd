@@ -192,8 +192,11 @@ TODO: add analysis flowchart?
 * BMMC: Bone Marrow Mononuclear Cell
 * cALL: childhood ALL
 * HCA: Human Cell Atlas
+* HVG: highly variable genes
+* MNN: mutual nearest neighbors
 * PCA: Principal Component Analysis
 * UMI: Unique Molecular Identifier
+* SCE: SingleCellExperiment
 
 <!-- SETUP -->
 
