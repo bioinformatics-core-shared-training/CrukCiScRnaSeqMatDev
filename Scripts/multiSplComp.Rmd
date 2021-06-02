@@ -25,26 +25,48 @@ params:
   cacheBool: FALSE  
   splSetToGet: "PBMMC,ETV6-RUNX1"
   setName: "caron"
-  setSuf: "_allCells"
+  setSuf: "_5hCellPerSpl"
   dsiSuf: '_dsi'
 ---
 
 <!--
   setSuf: "_5hCellPerSpl"
   setSuf: "_5hCps"
+  setSuf: "_allCells"
 -->
-  
+ 
 ```{r}
-projDir <- params$projDir
-dirRel <- params$dirRel
-outDirBit <- params$outDirBit
-cacheBool <- params$cacheBool
-splSetToGet <- params$splSetToGet
-setName <- params$setName
-setSuf <- params$setSuf
-dsiSuf <- params$dsiSuf # 'dsi' for data set integration
+params2 <- list(
+  "projDir" = "/ssd/personal/baller01/20200511_FernandesM_ME_crukBiSs2020",
+  "dirRel" = "..",
+  "inpDirBit" = "AnaWiSce/AnaCourse1",
+  "outDirBit" = "AnaWiSce/AnaCourse1",
+  "bookType" = "km",
+  "cacheBool"  = FALSE,  
+  "setName" = "caron",
+  "splSetToGet" = "PBMMC,ETV6-RUNX1",
+  "setSuf" = "_5hCellPerSpl",
+  "dsiSuf" = '_dsi')
+```
 
-if(params$bookType == "mk"){
+
+```{r}
+if(interactive()) {
+  paramsToUse <- params2
+} else {
+  paramsToUse <- params
+}
+
+projDir <- paramsToUse$projDir
+dirRel <- paramsToUse$dirRel
+outDirBit <- paramsToUse$outDirBit
+cacheBool <- paramsToUse$cacheBool
+splSetToGet <- paramsToUse$splSetToGet
+setName <- paramsToUse$setName
+setSuf <- paramsToUse$setSuf
+dsiSuf <- paramsToUse$dsiSuf # 'dsi' for data set integration
+
+if(paramsToUse$bookType == "mk"){
 	setName <- "caron"
 	splSetToGet <- "PBMMC,ETV6-RUNX1"
 	setSuf <- "_5hCps"
@@ -81,7 +103,7 @@ fontsize <- theme(axis.text=element_text(size=12), axis.title=element_text(size=
 sglPlotSize <- 7
 ```
 
-# Differential expression and abundance between conditions
+# Differential expression and abundance between conditions {#multiSplCompTop}
 
 Source: [Multi-sample comparisons](https://osca.bioconductor.org/multi-sample-comparisons.html) of the OSCA book.
 
@@ -106,8 +128,10 @@ Load the SCE object:
 ##tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_clustered.Rds", projDir, outDirBit, setName, setSuf)
 
 #setSuf <- "_1kCps"
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_Fmwbl.Rds", projDir, outDirBit, setName, setSuf)
-
+##tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_Fmwbl.Rds",
+##		 projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_Fmwbl.Rds",
+		 projDir, outDirBit, setName, setSuf, splSetToGet2)
 print(tmpFn)
 
 if(!file.exists(tmpFn))
@@ -123,10 +147,9 @@ A brief inspection of the results shows clusters contain varying contributions f
 ```{r}
 library(scater)
 colLabels(sce) <- sce$clusters.mnn
-tab <- table(colLabels(sce), sce$type)
+tab <- table(colLabels(sce), sce$splType)
 tab
 ```
-
 
 ```{r}
 pheatmap::pheatmap(tab,
@@ -150,14 +173,17 @@ pheatmap::pheatmap(tab,
 On the t-SNE plots below, cells colored by type or sample ('batch of origin'). Cluster numbers are superimposed based on the median coordinate of cells assigned to that cluster. 
 
 ```{r, fig.height=0.5*figSize, fig.width=1.2*figSize}
-p1 <- plotTSNE(sce, colour_by="type", text_by="label")
-p2 <- plotTSNE(sce, colour_by="Sample.Name2")
-gridExtra::grid.arrange(p1, p2+facet_wrap(~colData(sce)$type), ncol=2)
+p1 <- plotTSNE(sce, colour_by="source_name", text_by="label", point_size=0.3)
+p2 <- plotTSNE(sce, colour_by="Sample.Name2", point_size=0.3)
+gridExtra::grid.arrange(p1, p2+facet_wrap(~colData(sce)$Sample.Name2), ncol=2)
 ```
 
 
 ```{r, cache.lazy = FALSE}
-tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_Fmwbl2.Rds", projDir, outDirBit, setName, setSuf)
+#tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_Fmwbl2.Rds",
+#		 projDir, outDirBit, setName, setSuf)
+tmpFn <- sprintf("%s/%s/Robjects/%s_sce_nz_postDeconv%s_dsi_%s_Fmwbl2.Rds",
+		 projDir, outDirBit, setName, setSuf, splSetToGet2)
 tmpList <- readRDS(tmpFn)
 
 chosen.hvgs <- tmpList$chosen.hvgs
@@ -170,11 +196,16 @@ colData(uncorrected)[1:3,]
 #--- merging ---#
 library(batchelor)
 set.seed(01001001)
+if(splSetToGet == "PBMMC,ETV6-RUNX1") {
+  mergeOrderList <- list( list(4,5,6,7), list(1,2,3) )
+} else if(splSetToGet == "allSets") {
+  mergeOrderList <- list( list(1,2,3,4), list(9,10,11), list(5,6), list(7,8) )
+}
 merged <- correctExperiments(uncorrected, 
     batch=uncorrected$Sample.Name2, 
     subset.row=chosen.hvgs,
     PARAM=FastMnnParam(
-        merge.order=list( list(1,2,3,4), list(9,10,11), list(5,6), list(7,8) )
+        merge.order=mergeOrderList
     )
 )
 
@@ -214,7 +245,7 @@ pheatmap::pheatmap(tab,
 ```{r, fig.height=0.5*figSize, fig.width=1.2*figSize}
 p1 <- plotTSNE(merged, colour_by="block", text_by="clusters.mnn")
 p2 <- plotTSNE(merged, colour_by="Sample.Name2")
-gridExtra::grid.arrange(p1, p2+facet_wrap(~colData(sce)$type), ncol=2)
+gridExtra::grid.arrange(p1, p2+facet_wrap(~colData(sce)$splType), ncol=2)
 ```
 
 ## Differential expression between conditions
@@ -505,7 +536,9 @@ We construct a common design matrix that will be used in the analysis for each l
 
 ```{r}
 # Pulling out a sample-level 'targets' data.frame:
-targets <- colData(merged)[!duplicated(merged$Sample.Name2),]
+targets <- colData(merged)[!duplicated(merged$Sample.Name2),] %>%
+  data.frame() %>%
+  select(-clusters.mnn)
 
 # Constructing the design matrix:
 design <- model.matrix(~factor(source_name), data=targets)
@@ -536,6 +569,8 @@ summarizeTestsPerLabel(is.de)
 ```
 
 For each gene, we compute the percentage of cell types in which that gene is upregulated or downregulated. (Here, we consider a gene to be non-DE if it is not retained after filtering.).
+
+<!-- TODO: add gene names -->
 
 ```{r}
 # Upregulated across most cell types.
@@ -695,6 +730,8 @@ topTags(res2, n=10)
 
 ## Session information
 
+<details>
 ```{r}
 sessionInfo()
 ```
+</details>
