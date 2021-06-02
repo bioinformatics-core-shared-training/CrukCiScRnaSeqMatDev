@@ -42,8 +42,8 @@ I prefer the 'knit-merge' way as each chapter is rendered separately, each in a 
 > The bookdown is in:
 > 
 > * AnaWiSce/ ('Analysis With SingleCellExperiment')
->   * AnaKmWiC/ ('Analysis Knit-Merge With Caching')
->     * BookDownKmWiC/ ('bookdown Knit-Merge With Caching')
+>   * AnaCourse1/ ('Analysis for course, take 1')
+>     * BookDownCourse1/ ('bookdown for course, take 1')
 >
 > To open the bookdown:
 > 
