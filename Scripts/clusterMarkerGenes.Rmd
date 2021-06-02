@@ -1013,6 +1013,8 @@ See the OSCA chapter on [Marker gene detection](https://osca.bioconductor.org/cl
 
 ## Session information
 
+<details>
 ```{r}
 sessionInfo()
 ```
+</details>
