@@ -1,4 +1,4 @@
-List of R objects created by thewhole Course1 book,
+List of R objects created by the whole Course1 book,
 including several created to keep the outcome of long tasks to avoid re-running while developping.
 
 -rw-rw---- 1 baller01 bioinformatics  25M May 21 23:58 sce_preProc_ampDf1.Rds
