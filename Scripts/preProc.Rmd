@@ -67,10 +67,7 @@ library(SingleCellExperiment)
 library(Matrix)
 library(DropletUtils)
 library(scater)
-library(scran)
-library(igraph)
 library(AnnotationHub)
-library(irlba)
 library(tidyverse)
 library(patchwork)
 library(ggvenn)
@@ -80,10 +77,7 @@ library(ggvenn)
 * Matrix - to deal with sparse and/or large matrices
 * DropletUtils - utilities for the analysis of droplet-based, inc. cell counting
 * scater - QC
-* scran - normalisation
-* igraph - graphs 
 * AnnotationHub - for gene annotation
-* irlba - for faster PCA
 
 ## Sample sheet
 
@@ -462,18 +456,6 @@ rowData(sce) %>%
 	count(Chromosome, name = "Number of Genes") %>%
 	datatable(rownames = FALSE)
 ```
-<!--
-Calculate and store QC metrics for genes with addPerFeatureQC() and for cells
-with addPerCellQC().
-
-```{r qc_addPerFeatureQC, eval=addQcBool}
-sce <- addPerFeatureQC(sce)
-head(rowData(sce)) %>%
-	as.data.frame() %>%
-	datatable(rownames = FALSE)
-```
-
--->
 
 We can add the per cell QC metrics to the droplet annotation using the function
 `addPerCellQC`. In order to get the percentage of mitochondrial UMIs in each
@@ -992,12 +974,12 @@ sceFiltered
 
 We also write the R object to file to use later if need be.
 
-```{r sce_qc_write, eval=FALSE}
-saveRDS(sceFiltered, "results/sce_postQc.Rds")
+```{r qc_write_rds, eval=FALSE}
+saveRDS(sce, "Course_Materials/results/sce_filters_marked.rds")
 ```
 
-```{r sce_qc_read, eval=FALSE, echo=FALSE}
-sceFiltered <- readRDS("results/sce_postQc.Rds")
+```{r qc_read_rds, eval=FALSE, echo=FALSE}
+sce <- readRDS("Course_Materials/results/sce_filters_marked.rds")
 ```
 
 <!--
@@ -1069,39 +1051,6 @@ The approach above identified poor-quality using thresholds on the number of
 genes detected and mitochondrial content. We will here specifically look at the
 sparsity of the data, both at the gene and cell levels.
 
-### Remove genes that are not expressed at all
-
-Genes that are not expressed at all are not informative, so we remove them:
-
-```{r sce_nz_write, eval=saveRds}
-not.expressed <- rowSums(counts(scePreQc)) == 0
-
-# store the cell-wise information
-cols.meta <- colData(scePreQc)
-rows.meta <- rowData(scePreQc)
-
-nz.counts <- counts(scePreQc)[!not.expressed, ]
-sce.nz <- SingleCellExperiment(list(counts=nz.counts))
-
-# reset the column data on the new object
-colData(sce.nz) <- cols.meta
-rowData(sce.nz) <- rows.meta[!not.expressed, ]
-
-sce.nz
-
-# Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz.Rds",
-		 projDir, outDirBit)
-saveRDS(sce.nz, tmpFn)
-```
-
-```{r sce_nz_read, eval=!saveRds}
-# Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz.Rds",
-		 projDir, outDirBit)
-sce.nz <- readRDS(tmpFn)
-```
-
 ### Sparsity plots
 
 We will compute:
@@ -1109,29 +1058,25 @@ We will compute:
 * the cell sparsity: for each cell, the proportion of genes that are not detected
 * the gene sparsity: for each gene, the proportion of cells in which it is not detected
 
-```{r sparsity_compute, eval=saveRds}
-# compute - SLOW
-cell_sparsity <- apply(counts(sce.nz) == 0, 2, sum)/nrow(counts(sce.nz))
-gene_sparsity <- apply(counts(sce.nz) == 0, 1, sum)/ncol(counts(sce.nz))
 
-colData(sce.nz)$cell_sparsity <- cell_sparsity
-rowData(sce.nz)$gene_sparsity <- gene_sparsity
+To help calculate the gene sparsity we can generate QC metrics for genes with
+`addPerFeatureQC`. This adds two columns to the gene annotation (`rowData`):
 
-# write outcome to file for later use
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz_sparsityCellGene.Rds",
-		 projDir, outDirBit)
-saveRDS(list("colData" = colData(sce.nz),
-	     "rowData" = rowData(sce.nz)),
-	tmpFn)
+* **mean** - the mean UMI count for the gene across all cells  
+* **detected** - the percentage of cells in which the gene was detected
+
+```{r qc_addPerFeatureQC, eval=addQcBool}
+sce <- addPerFeatureQC(sce)
+head(rowData(sce)) %>%
+	as.data.frame() %>%
+	datatable(rownames = FALSE)
 ```
+Now we can calculate sparsity using the "detected" columns in the `colData` and 
+the `rowData`.
 
-```{r sparsity_readRds, eval=!saveRds}
-# Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/sce_nz_sparsityCellGene.Rds",
-		 projDir, outDirBit)
-tmpList <- readRDS(tmpFn)
-cell_sparsity <- tmpList$colData$cell_sparsity
-gene_sparsity <- tmpList$rowData$gene_sparsity
+```{r sparsity_compute}
+colData(sce)$cell_sparsity <- 1 - (colData(sce)$detected / nrow(sce))
+rowData(sce)$gene_sparsity <- (100 - rowData(sce)$detected) / 100
 ```
 
 We now plot the distribution of these two metrics.
@@ -1139,28 +1084,30 @@ We now plot the distribution of these two metrics.
 The cell sparsity plot shows that cells have between 85% and 99% 0's, which is typical.
 
 ```{r}
-hist(cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
+hist(sce$cell_sparsity, breaks=50, col="grey80", xlab="Cell sparsity", main="")
 ```
 
 The gene sparsity plot shows that a large number of genes are almost never detected, which is also regularly observed.
 
 ```{r}
-hist(gene_sparsity, breaks=50, col="grey80", xlab="Gene sparsity", main="")
+hist(rowData(sce)$gene_sparsity, breaks=50, col="grey80", xlab="Gene sparsity", main="")
 ```
 
-### Filters
+### Filter by sparsity
 
-We also remove cells with sparsity higher than 0.99, and/or mitochondrial content higher than 20%.
+We will remove cells with sparsity higher than 0.99, and/or mitochondrial
+content higher than 20%.
 
-Genes detected in a few cells only are unlikely to be informative and would hinder normalisation. We will remove genes that are expressed in fewer than 20 cells.
+Genes detected in a few cells only are unlikely to be informative and would
+hinder normalisation. We will remove genes that are expressed in fewer than 20
+cells.
 
 ```{r sparsity_filter}
-# filter
-sparse.cells <- cell_sparsity > 0.99
-mito.cells <- sce.nz$subsets_Mito_percent > 20
+sparse.cells <- sce$cell_sparsity > 0.99
+mito.cells <- sce$subsets_Mito_percent > 20
 
-min.cells <- 1 - (20/length(cell_sparsity))
-sparse.genes <- gene_sparsity > min.cells
+min.cells <- 1 - (20 / ncol(sce))
+sparse.genes <- rowData(sce)$gene_sparsity > min.cells
 ```
 
 Number of genes removed:
@@ -1176,16 +1123,8 @@ table(sparse.cells, mito.cells)
 ```
 
 ```{r sparsity_ditch, eval=saveRds}
-# remove cells from the SCE object that are poor quality
-# remove the sparse genes, then re-set the counts and row data accordingly
-cols.meta <- colData(sce.nz)
-rows.meta <- rowData(sce.nz)
-
-counts.nz <- counts(sce.nz)[!sparse.genes, !(sparse.cells | mito.cells)]
-sce.nz <- SingleCellExperiment(assays=list(counts=counts.nz))
-colData(sce.nz) <- cols.meta[!(sparse.cells | mito.cells),]
-rowData(sce.nz) <- rows.meta[!sparse.genes, ]
-sce.nz
+sce.zn <- sce[!sparse.genes, !(sparse.cells|mito.cells)]
+sce.zn
 
 # Write object to file
 tmpFn <- sprintf("%s/%s/Robjects/sce_nz_postQc.Rds",
