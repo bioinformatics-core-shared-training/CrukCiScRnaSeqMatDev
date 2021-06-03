@@ -889,33 +889,45 @@ cells having > 1000 UMIs. When we applied the adaptive filters across all
 samples, these two samples caused the MADs to be distorted and resulted in a
 threshold that was inappropriately high for the Caron samples.
 
-## QC PCA
+## QC filtering using PCA
 
-One can also perform a principal components analysis (PCA) on cells, based on
-the column metadata in a SingleCellExperiment object. Here we will only use the
-library size, the number of genes detected (which is correlated with library
-size) and the mitochondrial content.
+In the previous approach we used the three metrics in isolation to filter
+droplets. Another approach is to combine the three metrics in a single filtering
+step. One way to do this is to perform a principal components analysis (PCA) and
+use this to detect outliers. The `scater` function `runColDataPCA` can be used
+to perform the PCA and detect outliers. Here we will use the same three metrics
+as before: library size, the number of genes detected and the mitochondrial
+content.
 
 ```{r}
-sce <- runColDataPCA(sce, variables=list(
-    "sum", "detected", "subsets_Mito_percent"),
-    outliers=TRUE)
-
-#reducedDimNames(sce)
-#head(reducedDim(sce))
-#head(colData(sce))
-
-#p <- plotReducedDim(sce, dimred="PCA_coldata", colour_by = "Sample.Name")
-p <- plotReducedDim(sce, dimred="PCA_coldata", colour_by = "outlier")
-p + facet_wrap(~sce$discard)
+sce <- runColDataPCA(sce, 
+                     variables=list("sum", "detected", "subsets_Mito_percent"),
+                     outliers=TRUE)
 ```
 
-Compare with previous filtering:
+This has added the results of the principle component analysis into a new slot
+in the SingleCellExperiment object specifically for holding the results of
+dimension reduction transformations such as PCA, t-SNE and UMAP. The results
+can be accessed using the `reducedDim` function.
 
-```{r, eval=TRUE}
-table(sce$discard, sce$outlier)
-table(multi.outlier, sce$outlier)
+```{r}
+head(reducedDim(sce))
 ```
+
+It has also added a column "outlier" to the `colData`, which specifies the 
+droplets that have been identified as outliers.
+
+```{r}
+summary(sce$outlier)
+```
+
+As with the adaptive thresholds above, this method should not be applied across
+batches or samples with differing distributions in the metrics or it will 
+exclude many good quality cells.
+
+These types of approach can provide more power for detecting outliers as they 
+are looking at patterns across multiple metrics, however, it can be difficult to
+interpret the reason why any particular droplet has been excluded. 
 
 ### Other diagnostic plots
 
