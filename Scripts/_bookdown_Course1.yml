@@ -1,0 +1,250 @@
+book_filename: "Course1"
+language:
+  ui:
+    chapter_name: "Chapter "
+delete_merged_file: false
+
+# whole book
+#
+# See AnaCourse1/RobjectsReadOnly
+#
+# preProc.Rmd
+#--------------------------------------
+# Quality Control - with 500 cells per sample
+# uses raw_feature_bc_matrix and molecule_info_h5.Rds, for the first Caron,
+# SRR9264343 aka ETV6-RUNX1-1
+# then reads filtered_feature_bc_matrix for each sample,
+# writes sce_postPool.Rds, sce_postBiomart.Rds, sce_postAddQc.Rds, sce_postQc.Rds,
+# writes sce_nz.Rds, sce_nz_sparsityCellGene.Rds, sce_nz_postQc.Rds,
+# writes caron_sce_nz_postQc.Rds, hca_sce_nz_postQc.Rds
+# See preProcAllCells.Rmd for version with all cells, without downsampling
+# Other Rds files:
+# _sce_nz_quickClus: only to skip quickCluster()
+# _sce_nz_deconvSf: only to skip computeSumFactors() and sizeFactors()
+#
+# normalisation_5hcps.Rmd
+#--------------------------------------
+# knit_expand for normalisation_5hCellPerSpl.Rmd
+#
+# normalisation_5hCellPerSpl.Rmd
+#--------------------------------------
+# needs caron_sce_nz_postQc.Rds (or hca_sce_nz_postQc_5kCellPerSpl.Rds), made by preProc.Rmd.
+# performs the downsampling to 500 cells per sample (and excludes SRR9264351)
+# and save that in caron_sce_nz_postQc.Rds
+#
+# normalisation_GSM3872434_simple.Rmd
+#--------------------------------------
+# needs caron_sce_nz_postQc_allCells.Rds, made by preProcAllCells.Rmd below 
+# so have a copy in init Robjects/
+#
+# dimRedForViz.Rmd
+#--------------------------------------
+# needs caron_sce_nz_postDeconv_5hCellPerSpl.Rds,
+# made by normalisation_5hCellPerSpl.Rmd above
+# so no need in init Robjects/
+#
+# confounding_caron.Rmd calls confounding.Rmd
+#--------------------------------------
+# very short chapter
+# needs caron_sce_nz_postDeconv_5hCellPerSpl.Rds,
+# made by normalisation_5hCellPerSpl.Rmd above
+# so no need in init Robjects/
+#
+# featSelec.Rmd
+#--------------------------------------
+# short chapter
+# needs caron_sce_nz_postDeconv_5hCellPerSpl_dimRed.Rds, made by dimRedForViz.Rmd above
+# so no need in init Robjects/
+#
+# dimRedForAna.Rmd
+#--------------------------------------
+# needs caron_sce_nz_postDeconv_5hCellPerSpl_dimRed.Rds, made by dimRedForViz.Rmd above
+# so no need in init Robjects/
+#
+# batch_GSM3872442.Rmd
+#--------------------------------------
+# needs caron_sce_nz_postQc.Rds made by preProc.Rmd, with 500 cells per sample
+# does write Rds file
+#
+# dataSetIntegration_expand_PBMMC_ETV6-RUNX1_5hcps.Rmd
+#--------------------------------------
+# calls dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd and expands {{setSuf}}
+# where setSuf is _5hCellPerSpl only now that this chapter is separated from
+# that for 'all cells'
+#
+# dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd
+#--------------------------------------
+# called by dataSetIntegration_expand_PBMMC_ETV6-RUNX1_5hcps.Rmd
+# needs caron_sce_nz_postDeconv_5hCellPerSpl.Rds
+# made by normalisation_5hCellPerSpl.Rmd above
+# so no need in read-only
+#
+# dataSetIntegration_expand_allSets_5hcps.Rmd
+#--------------------------------------
+# calls dataSetIntegration_allSets.Rmd
+# where setSuf is _5hCellPerSpl only now that this chapter is separated from
+# that for 'all cells'
+#
+# dataSetIntegration_allSets.Rmd
+#--------------------------------------
+# called by dataSetIntegration_expand_allSets_5hcps.Rmd
+# needs caron_sce_nz_postDeconv_5hCellPerSpl.Rds
+# made by normalisation_5hCellPerSpl.Rmd above
+# so no need in read-only
+#
+# clusteringPostDsi.Rmd
+#--------------------------------------
+# needs caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1.Rds
+# made by dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd
+# called by dataSetIntegration_expand_PBMMC_ETV6-RUNX1_5hcps.Rmd above
+# (writes caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1_clust.Rds)
+#
+# clusterMarkerGenes.Rmd
+#--------------------------------------
+# needs caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1_clust.Rds
+# written by clusteringPostDsi.Rmd above
+# (writes caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1_clustMarkCombi.Rds)
+#
+# multiSplComp.Rmd
+#--------------------------------------
+# needs caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1_Fmwbl.Rds
+# made by dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd above
+# and/or
+# needs caron_sce_nz_postDeconv_allCells_dsi_PBMMC_ETV6-RUNX1_Fmwbl.Rds
+# made by dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd above
+# OR
+# needs caron_sce_nz_postDeconv_5hCellPerSpl_dsi_allSets_Fmwbl.Rds
+# made by dataSetIntegration_allSets.Rmd above
+# and/or
+# needs caron_sce_nz_postDeconv_allCells_dsi_allSets_Fmwbl.Rds
+# made by dataSetIntegration_allSets.Rmd above
+#
+# pseudoTime.Rmd
+#--------------------------------------
+# needs hca hca_sce_nz_postDeconv_5kCellPerSpl.Rds
+# made by preProcAllCells.Rmd, now in annex below
+# so need read-only copy
+#
+#------------------------
+# Annex
+#------------------------
+#
+# Templates:
+# geneAnnot.Rmd
+# preProcAllCells.Rmd
+# normalisation_whole.Rmd
+# normalisation_GSM3872434_simple.Rmd
+# dataSetIntegration_PBMMC.Rmd
+# dataSetIntegration_ETV6-RUNX1.Rmd
+# dataSetIntegration_HHD.Rmd
+# dataSetIntegration_PRE-T.Rmd
+# dataSetIntegration_expand_PBMMC_ETV6-RUNX1.Rmd
+# dataSetIntegration_expand_allSets.Rmd
+# cellCyclePhases.Rmd
+# doubletDetect.Rmd"]
+# 
+#------------------------
+# Read-only files needed:
+#------------------------
+#
+# caron_sce_nz_postQc.Rds
+#--------------------------------------
+# made by preProc.Rmd
+# needed by:
+# normalisation_GSM3872434_simple.Rmd
+# batch_GSM3872442.Rmd
+#
+# caron_sce_nz_postQc_allCells.Rds
+#--------------------------------------
+# made by preProcAllCells.Rmd
+# needed by normalisation_GSM3872434_simple.Rmd
+# --> have a copy/link in init Robjects/
+#
+# caron_sce_nz_postDeconv_5hCellPerSpl.Rds
+#--------------------------------------
+# made by normalisation_5hCellPerSpl.Rmd
+# needed by:
+# dimRedForViz.Rmd
+# confounding_caron.Rmd that calls confounding.Rmd
+# dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd
+# dataSetIntegration_allSets.Rmd
+#
+# caron_sce_nz_postDeconv_5hCellPerSpl_dimRed.Rds
+#--------------------------------------
+# made by dimRedForViz.Rmd
+# needed by:
+# featSelec.Rmd
+# dimRedForAna.Rmd
+#
+# caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1.Rds
+#--------------------------------------
+# made by dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd
+# called by dataSetIntegration_expand_PBMMC_ETV6-RUNX1_5hcps.Rmd above
+# needed by:
+# clusteringPostDsi.Rmdv
+#
+# caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1_clust.Rds
+#--------------------------------------
+# made by clusteringPostDsi.Rmd
+# needed by:
+# clusterMarkerGenes.Rmd
+#
+# caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1_Fmwbl.Rds
+# caron_sce_nz_postDeconv_allCells_dsi_PBMMC_ETV6-RUNX1_Fmwbl.Rds
+#--------------------------------------
+# made by dataSetIntegration_PBMMC_ETV6-RUNX1.Rmd
+# needed by:
+# multiSplComp.Rmd
+#
+# caron_sce_nz_postDeconv_5hCellPerSpl_dsi_allSets_Fmwbl.Rds
+# caron_sce_nz_postDeconv_allCells_dsi_allSets_Fmwbl.Rds
+#--------------------------------------
+# made by dataSetIntegration_allSets.Rmd
+# needed by:
+# multiSplComp.Rmd
+#
+# hca_sce_nz_postDeconv_5kCellPerSpl.Rds
+#--------------------------------------
+# made by preProcAllCells.Rmd, now in annex below
+# --> have a copy in init Robjects/
+# needed by pseudoTime.Rmd
+#
+#------------------------
+# init Robjects files needed:
+#------------------------
+#
+# caron_sce_nz_postQc_allCells.Rds
+# hca_sce_nz_postDeconv_5kCellPerSpl.Rds
+#
+
+rmd_files: ["index.Rmd",
+  "seqQual.Rmd",
+  "cellRanger.Rmd",
+  "preProc.Rmd",
+  "normalisation_5hcps.Rmd",
+  "dimRedForViz.Rmd",
+  "confounding_caron.Rmd",
+  "featSelec.Rmd",
+  "dimRedForAna.Rmd",
+  "batch_GSM3872442.Rmd",
+  "dataSetIntegration_expand_PBMMC_PRE-T_5hcps.Rmd",
+  "dataSetIntegration_expand_PBMMC_ETV6-RUNX1_5hcps.Rmd",
+  "dataSetIntegration_expand_allSets_5hcps.Rmd",
+  "clusteringPostDsi.Rmd",
+  "clusterMarkerGenes.Rmd",
+  "multiSplComp.Rmd",
+  "pseudoTime.Rmd",
+  "annex.Rmd",
+  "geneAnnot.Rmd",
+  "preProcAllCells.Rmd",
+  "normalisation_whole.Rmd",
+  "normalisation_GSM3872434_simple.Rmd",
+  "dataSetIntegration_PBMMC.Rmd",
+  "dataSetIntegration_ETV6-RUNX1.Rmd",
+  "dataSetIntegration_HHD.Rmd",
+  "dataSetIntegration_PRE-T.Rmd",
+  "dataSetIntegration_expand_PBMMC_PRE-T.Rmd",
+  "dataSetIntegration_expand_PBMMC_ETV6-RUNX1.Rmd",
+  "dataSetIntegration_expand_allSets.Rmd",
+  "cellCyclePhases.Rmd",
+  "doubletDetect.Rmd"]
