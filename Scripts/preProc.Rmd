@@ -902,29 +902,27 @@ exclude many good quality cells. To demonstrate these methods, we'll just
 extract one sample from our SingleCellExperiment object.
 
 ```{r}
-isBM1 <- sce$Sample == "MantonBM1"
-sce.BM1 <- subset(sce, select = isBM1)
+sce.BM1 <- sce[ , sce$Sample == "MantonBM1"]
 ```
-
 
 ### Using "outlyingness"
 
-Essentially we need to reduce our 3 metrics to a single metric, we
-can then use `isOutlier` to select outliers based on this metric. One way to do
-this is to use the function `adjOutlyingness` from the `robustbase` package. This 
-function computes the "outlyingness" for each droplet.
+Essentially we need to reduce our 3 metrics to a single metric, we can then use
+`isOutlier` to select outliers based on this metric. One way to do this is to
+use the function `adjOutlyingness` from the `robustbase` package. This function
+computes the "outlyingness" for each droplet.
 
 Here we will use the same three metrics as before: library size, the number of
-genes detected and the mitochondrial content.Remember that for "sum" (total
+genes detected and the mitochondrial content. Remember that for "sum" (total
 UMIs) and "detected" (number of genes detected), we want to use the `log10`
 value.
 
 ```{r}
-stats <- cbind(log10(sce.BM1$sum),
-           log10(sce.BM1$detected),
-           sce.BM1$subsets_Mito_percent)
-
 library(robustbase)
+stats <- cbind(log10(sce.BM1$sum),
+               log10(sce.BM1$detected),
+               sce.BM1$subsets_Mito_percent)
+
 outlying <- adjOutlyingness(stats, only.outlyingness = TRUE)
 multi.outlier <- isOutlier(outlying, type = "higher")
 summary(multi.outlier)
@@ -932,11 +930,11 @@ summary(multi.outlier)
 
 ### Using PCA
 
-Another approach is to perform a principal components analysis (PCA) on the table
-of metrics, apply `adjOutlyingness` to the metrics table and use this to detect 
-outliers. The `scater` function `runColDataPCA` can be used to perform the PCA 
-and detect outliers. We'll need to add a couple of columns to the `colData` for
-the log10 metrics first.
+Another approach is to perform a principal components analysis (PCA) on the
+table of metrics, apply `adjOutlyingness` to the metrics table and use this to
+detect outliers. The `scater` function `runColDataPCA` can be used to perform
+the PCA and detect outliers. We'll need to add a couple of columns to the
+`colData` for the log10 metrics first.
 
 ```{r}
 sce.BM1$log10sum <- log10(sce.BM1$sum)
@@ -965,65 +963,59 @@ summary(sce.BM1$outlier)
 
 ### A note on multi-dimensional filtering
 
-These types of approach can provide more power for detecting outliers as they 
+These types of approach can provide more power for detecting outliers as they
 are looking at patterns across multiple metrics, however, it can be difficult to
-interpret the reason why any particular droplet has been excluded. 
+interpret the reason why any particular droplet has been excluded.
 
-## Other diagnostic plots
+## Mitochondrial content versus library size
 
-Mitochondrial content against library size:
-
-```{r}
-plotColData(sce, x="sum", y="subsets_Mito_percent", colour_by="discard")
-```
+A useful diagnostic plot for assessing the impact of the filterings is to do a
+scatter plot of the mitochondrial content against the library size. We can 
+overlay our final filter metric using the point colour.
 
 ```{r}
-sp <- ggplot(data.frame(colData(sce)),
-	     aes(x=sum, y=subsets_Mito_percent, col=discard)) +
-  geom_point(size = 0.05, alpha = 0.7) +
-  geom_density_2d(size = 0.5, colour = "blue") +
-  guides(colour = guide_legend(override.aes = list(size=1, alpha=1))) +
-  theme(legend.position="bottom")
-#sp
-ggExtra::ggMarginal(sp)
+plotColData(sce, 
+            x="sum", 
+            y="subsets_Mito_percent", 
+            other_fields="Sample",
+            colour_by="discard") +
+    facet_wrap(~Sample, ncol=5, scale="free_x")
 ```
-
-Mind distributions:
-
-```{r}
-sp + facet_wrap(~source_name)
-```
-
 ### Filter low-quality cells out
 
 We will now exclude poor-quality cells.
 
 ```{r sce_qc_ditch}
-scePreQc <- sce
-sce <- scePreQc[,!scePreQc$discard]
-sce
+sceFiltered <- sce[,!sce$discard]
+sceFiltered
 ```
 
 We also write the R object to file to use later if need be.
 
-```{r sce_qc_write, eval=saveRds}
-# Write object to file
-tmpFn <- sprintf("%s/%s/Robjects/sce_postQc.Rds", projDir, outDirBit)
-saveRDS(sce, tmpFn)
+```{r sce_qc_write, eval=FALSE}
+saveRDS(sceFiltered, "results/sce_postQc.Rds")
 ```
 
-```{r sce_qc_read, eval=!saveRds}
-# Read object in:
-tmpFn <- sprintf("%s/%s/Robjects/sce_postQc.Rds",
-		 projDir, outDirBit)
-sce <- readRDS(tmpFn)
+```{r sce_qc_read, eval=FALSE, echo=FALSE}
+sceFiltered <- readRDS("results/sce_postQc.Rds")
 ```
+
+<!--
 
 ## Novelty
 
-The number of genes per UMI for each cell informs on the level of sequencing saturation achieved ( [hbctraining](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/sessionIV/lessons/SC_quality_control_analysis.html)). For a given cell, as sequencing depth increases each extra UMI is less likely to correspnf to a gene not already detected in that cell. Cells with small library size tend to have higher overall 'novelty' i.e. they have not reached saturation for any given gene. Outlier cell may have a library with low complexity. This may suggest the some cell types, e.g. red blood cells. The expected novelty is about 0.8.
+The number of genes per UMI for each cell informs on the level of sequencing
+saturation achieved (
+[hbctraining](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/sessionIV/lessons/SC_quality_control_analysis.html)).
+For a given cell, as sequencing depth increases each extra UMI is less likely to
+correspond to a gene not already detected in that cell. Cells with small library
+size tend to have higher overall 'novelty' i.e. they have not reached saturation
+for any given gene. Outlier cell may have a library with low complexity. This
+may suggest the some cell types, e.g. red blood cells. The expected novelty 
+(log10(Gene per a UMI)) is about 0.8.
 
-Here we see that some PBMMCs have low novelty, ie overall fewer genes were detected for an equivalent number of UMIs in these cells than in others.
+Here we see that some PBMMCs have low novelty, i.e. overall fewer genes were
+detected for an equivalent number of UMIs in these cells than in others.
 
 ```{r novelty_scat}
 p <- colData(sce) %>%
@@ -1036,6 +1028,8 @@ p <- colData(sce) %>%
   geom_vline(xintercept = 800) +
   facet_wrap(~source_name)
 p
+
+plot
 
 # write plot to file
 
@@ -1067,10 +1061,13 @@ ggsave(plot=p, file=tmpFn, type='cairo-png')
 ```{r rm_sce_preProc}
 rm(sce)
 ```
+-->
 
-## QC based on sparsity
+## QC and Filtering based on sparsity
 
-The approach above identified poor-quality using thresholds on the number of genes detected and mitochondrial content. We will here specifically look at the sparsity of the data, both at the gene and cell levels. 
+The approach above identified poor-quality using thresholds on the number of
+genes detected and mitochondrial content. We will here specifically look at the
+sparsity of the data, both at the gene and cell levels.
 
 ### Remove genes that are not expressed at all
 
