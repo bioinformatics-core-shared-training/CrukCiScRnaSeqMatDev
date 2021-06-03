@@ -75,3 +75,21 @@ Rds files needed for the course itself.
 #
 # have soft links for these two,
 # and comment saveRDS() call to write them.
+
+
+# File list (most tracked with 'git lfs'):
+
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  133  2 Jun 14:49 caron_sce_nz_postDeconv_5hCellPerSpl.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  133  2 Jun 14:49 caron_sce_nz_postDeconv_5hCellPerSpl_dimRed.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  132  2 Jun 14:49 caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  132  2 Jun 14:49 caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1_Fmwbl.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  132  2 Jun 14:49 caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_ETV6-RUNX1_clust.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  132  2 Jun 14:49 caron_sce_nz_postDeconv_5hCellPerSpl_dsi_PBMMC_PRE-T.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  133  2 Jun 14:49 caron_sce_nz_postDeconv_5hCellPerSpl_dsi_allSets_Fmwbl.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  134  2 Jun 14:49 caron_sce_nz_postDeconv_allCells.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  133  2 Jun 14:49 caron_sce_nz_postDeconv_allCells_dsi_PBMMC_ETV6-RUNX1_Fmwbl.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  133  2 Jun 14:49 caron_sce_nz_postDeconv_allCells_dsi_PBMMC_PRE-T.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  133  2 Jun 14:49 caron_sce_nz_postDeconv_allCells_dsi_allSets_Fmwbl.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  133  2 Jun 14:49 caron_sce_nz_postQc.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  134 21 May 13:59 caron_sce_nz_postQc_allCells.Rds
+-rw-r--r--  1 baller01  CRI\Unix-Bioinformatics  134  2 Jun 14:49 hca_sce_nz_postDeconv_5kCellPerSpl.Rds
